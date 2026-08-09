@@ -1,0 +1,50 @@
+{
+  "name": "opencode-requesty-sidebar",
+  "version": "0.1.0",
+  "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, with a detail dialog via the /requesty command",
+  "type": "module",
+  "main": "./dist/tui.js",
+  "exports": {
+    ".": "./dist/tui.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test \"test/**/*.test.ts\"",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "requesty",
+    "tui",
+    "sidebar",
+    "llm",
+    "cost-tracking"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.18.0 <2",
+    "@opentui/core": ">=0.4.5 <1",
+    "@opentui/keymap": ">=0.4.5 <1",
+    "@opentui/solid": ">=0.4.5 <1",
+    "solid-js": ">=1.9.10 <2"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.18.15",
+    "@opencode-ai/sdk": "^1.18.15",
+    "@opentui/keymap": "^0.5.1",
+    "@opentui/solid": "^0.5.1",
+    "@types/node": "^24.0.0",
+    "solid-js": "^1.9.12",
+    "tsup": "^8.3.5",
+    "tsx": "^4.23.11",
+    "typescript": "^5.8.3"
+  }
+}
