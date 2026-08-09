@@ -1,10 +1,9 @@
 /** Shared formatting helpers for the Requesty widget and dialog. */
 
+/** Format a USD amount truncated (not rounded) to 2 decimal places. */
 export function formatUsd(amount: number): string {
-  if (amount >= 100) return `$${amount.toFixed(0)}`
-  if (amount >= 1) return `$${amount.toFixed(2)}`
-  if (amount >= 0.01) return `$${amount.toFixed(2)}`
-  return `$${amount.toFixed(4)}`
+  const truncated = Math.trunc(amount * 100) / 100
+  return `$${truncated.toFixed(2)}`
 }
 
 export function formatTokens(count: number): string {
@@ -16,6 +15,14 @@ export function formatTokens(count: number): string {
 
 export function formatPercent(ratio: number): string {
   return `${Math.round(ratio * 100)}%`
+}
+
+/**
+ * Compact input/output token breakdown, e.g. "(↑1.0M ↓200k)".
+ * ↑ = input tokens (into the model), ↓ = output tokens (from the model).
+ */
+export function formatTokenBreakdown(inputTokens: number, outputTokens: number): string {
+  return `(↑${formatTokens(inputTokens)} ↓${formatTokens(outputTokens)})`
 }
 
 const BAR_WIDTH = 16

@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatPercent, formatTokens, formatUsd, monthName, renderBar, shortModel, spendSeverity, type SpendThresholds } from "./format"
+import { formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -81,13 +81,14 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
     <box flexDirection="column" paddingTop={1}>
       <Show when={models().length > 0} fallback={<text fg={props.theme.textMuted}>No model usage recorded this month.</text>}>
         <text fg={props.theme.textMuted}>
-          {padEnd("Model", 30)} {padStart("Spend", 10)} {padStart("Share", 7)} {padStart("Tokens", 10)} {padStart("Reqs", 7)}
+          {padEnd("Model", 30)} {padStart("Spend", 10)} {padStart("Share", 7)} {padEnd("Tokens (↑in ↓out)", 24)} {padStart("Reqs", 7)}
         </text>
         <For each={models()}>
           {(model) => (
             <text fg={props.theme.text}>
               {padEnd(shortModel(model.model, 29), 30)} {padStart(formatUsd(model.spend), 10)}{" "}
-              {padStart(totalSpend() > 0 ? formatPercent(model.spend / totalSpend()) : "—", 7)} {padStart(formatTokens(model.totalTokens), 10)}{" "}
+              {padStart(totalSpend() > 0 ? formatPercent(model.spend / totalSpend()) : "—", 7)}{" "}
+              {padEnd(`${formatTokens(model.totalTokens)} ${formatTokenBreakdown(model.inputTokens, model.outputTokens)}`, 24)}{" "}
               {padStart(formatTokens(model.requests), 7)}
             </text>
           )}

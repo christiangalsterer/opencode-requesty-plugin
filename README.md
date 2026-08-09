@@ -11,15 +11,18 @@ Requesty (my-opencode-key)
 $12.34 / $50.00
 ▓▓▓▓░░░░░░░░░░░░ 24%
 Top models (Aug):
-claude-sonnet-4-5          $8.20   1.2M
-gpt-5                      $3.14   410k
-gemini-2.5-pro             $1.00    98k
+claude-sonnet-4-5            $8.20
+  1.2M (↑1.0M ↓200k)
+gpt-5                        $3.14
+  410k (↑300k ↓110k)
+gemini-2.5-pro               $1.00
+  98k (↑80k ↓18k)
 ```
 
 - Monthly spend vs. monthly limit (from `GET /v1/manage/apikey/self`)
 - Progress bar that turns yellow/red at configurable thresholds (default ≥70% / ≥90% of the limit)
 - API key name shown in the header
-- Top models by spend for the current month, with token counts
+- Top models by spend for the current month, with total tokens plus input (↑) / output (↓) breakdown
 
 **Detail dialog** — run `/requesty` or pick *Requesty: show usage* from the command palette:
 

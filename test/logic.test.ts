@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, startOfCurrentMonth, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -72,11 +72,14 @@ describe("startOfCurrentMonth", () => {
 })
 
 describe("format helpers", () => {
-  test("formatUsd", () => {
-    assert.equal(formatUsd(123.456), "$123")
-    assert.equal(formatUsd(12.345), "$12.35")
+  test("formatUsd truncates to 2 digits", () => {
+    assert.equal(formatUsd(123.456), "$123.45")
+    assert.equal(formatUsd(12.345), "$12.34") // truncated, not rounded
+    assert.equal(formatUsd(12.349), "$12.34")
     assert.equal(formatUsd(0.5), "$0.50")
-    assert.equal(formatUsd(0.001), "$0.0010")
+    assert.equal(formatUsd(0.001), "$0.00")
+    assert.equal(formatUsd(8), "$8.00")
+    assert.equal(formatUsd(18.21894606), "$18.21")
   })
 
   test("formatTokens", () => {
@@ -91,6 +94,14 @@ describe("format helpers", () => {
     assert.equal(renderBar(1, 10), "▓▓▓▓▓▓▓▓▓▓")
     assert.equal(renderBar(0.5, 10), "▓▓▓▓▓░░░░░")
     assert.equal(renderBar(2, 10), "▓▓▓▓▓▓▓▓▓▓") // clamped
+  })
+
+  test("formatTokenBreakdown", () => {
+    assert.equal(formatTokenBreakdown(1_000_000, 200_000), "(↑1.0M ↓200.0k)")
+    assert.equal(formatTokenBreakdown(0, 0), "(↑0 ↓0)")
+    assert.equal(formatTokenBreakdown(500, 0), "(↑500 ↓0)")
+    assert.equal(formatTokenBreakdown(0, 3_000_000_000), "(↑0 ↓3.0B)")
+    assert.equal(formatTokenBreakdown(1_500, 2_500_000), "(↑1.5k ↓2.5M)")
   })
 
   test("shortModel", () => {

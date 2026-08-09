@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatPercent, formatTokens, formatUsd, monthName, renderBar, shortModel, spendSeverity, type SpendThresholds } from "./format"
+import { formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendSeverity, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -79,10 +79,16 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
         </text>
         <For each={models()}>
           {(model) => (
-            <text fg={props.theme.text}>
-              {padEnd(shortModel(model.model, 26), 27)}
-              {padStart(formatUsd(model.spend), 9)} {padStart(formatTokens(model.totalTokens), 7)}
-            </text>
+            <box flexDirection="column">
+              <text fg={props.theme.text}>
+                {padEnd(shortModel(model.model, 26), 27)}
+                {padStart(formatUsd(model.spend), 8)}
+              </text>
+              <text fg={props.theme.textMuted}>
+                {"  "}
+                {formatTokens(model.totalTokens)} {formatTokenBreakdown(model.inputTokens, model.outputTokens)}
+              </text>
+            </box>
           )}
         </For>
       </Show>
