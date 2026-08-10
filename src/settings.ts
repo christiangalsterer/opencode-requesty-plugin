@@ -12,13 +12,18 @@ const MAX_ACTIVITY_DEBOUNCE_MS = 60 * 60 * 1000
 const MIN_MAX_MODELS = 1
 const MAX_MAX_MODELS = 20
 
+export type PromptSettings = {
+  enabled: boolean
+  budgetIndicator: boolean
+}
+
 export type PluginSettings = {
   baseUrl: string
   refreshIntervalMs: number
   activityDebounceMs: number
   maxModels: number
   thresholds: SpendThresholds
-  promptIndicator: boolean
+  prompt: PromptSettings
 }
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
@@ -35,6 +40,14 @@ export function readSettings(options: Record<string, unknown> | undefined): Plug
     activityDebounceMs: clampNumber(options?.activityDebounceMs, MIN_ACTIVITY_DEBOUNCE_MS, MAX_ACTIVITY_DEBOUNCE_MS, DEFAULT_ACTIVITY_DEBOUNCE_MS),
     maxModels: typeof options?.maxModels === "number" && options.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(options.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
-    promptIndicator: typeof options?.promptIndicator === "boolean" ? options.promptIndicator : true,
+    prompt: readPromptSettings(options?.prompt),
+  }
+}
+
+function readPromptSettings(raw: unknown): PromptSettings {
+  const obj = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {}
+  return {
+    enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
+    budgetIndicator: typeof obj.budgetIndicator === "boolean" ? obj.budgetIndicator : true,
   }
 }

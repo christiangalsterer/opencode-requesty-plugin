@@ -31,7 +31,7 @@ gemini-2.5-pro               $1.00
 - Full per-model table: spend, share of total, tokens, request count
 - `r` to refresh, `esc` to close
 
-**Prompt indicator** — a compact spend/limit readout on the right side of the session prompt (e.g. `$12.34/$50.00 24%`, colored by the same thresholds). Disable with `"promptIndicator": false`.
+**Prompt indicator** — a compact spend/limit readout on the right side of the session prompt (e.g. `$12.34/$50.00 24%`, colored by the same thresholds). Disable with `"prompt": { "budgetIndicator": false }`.
 
 Data comes from the [Requesty Management API](https://docs.requesty.ai/api-reference/management-apis) (`apikey/self` + `apikey/self/usage` grouped by `model_used`, current calendar month).
 
@@ -119,7 +119,8 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `maxModels`          | number | `5`                              | Number of models shown in the compact sidebar list                          |
 | `warningThreshold`   | number | `0.7` (70%)                      | Budget usage ratio at which the bar turns yellow (accepts 0–1 or 0–100)     |
 | `errorThreshold`     | number | `0.9` (90%)                      | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100)        |
-| `promptIndicator`    | boolean | `true`                          | Show spend/limit readout on the right side of the session prompt           |
+| `prompt.enabled`          | boolean | `true`                          | Master switch for any prompt-area UI                                       |
+| `prompt.budgetIndicator`| boolean | `true`                          | Show spend/limit readout on the right side of the session prompt           |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 

@@ -55,7 +55,7 @@ const plugin: TuiPluginModule = {
     })
 
     // Prompt indicator (right side of the session prompt)
-    if (settings.promptIndicator) {
+    if (settings.prompt.enabled && settings.prompt.budgetIndicator) {
       api.slots.register({
         order: 60,
         slots: {

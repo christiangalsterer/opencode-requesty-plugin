@@ -9,7 +9,7 @@ const DEFAULTS = {
   activityDebounceMs: 30000,
   maxModels: 5,
   thresholds: DEFAULT_THRESHOLDS,
-  promptIndicator: true,
+  prompt: { enabled: true, budgetIndicator: true },
 }
 
 describe("readSettings", () => {
@@ -105,18 +105,27 @@ describe("readSettings", () => {
     assert.deepEqual(readSettings({ warningThreshold: 60, errorThreshold: 85 }).thresholds, { warning: 0.6, error: 0.85 })
   })
 
-  test("promptIndicator defaults to true", () => {
-    assert.equal(readSettings(undefined).promptIndicator, true)
-    assert.equal(readSettings({}).promptIndicator, true)
+  test("prompt defaults to both enabled", () => {
+    assert.deepEqual(readSettings(undefined).prompt, { enabled: true, budgetIndicator: true })
+    assert.deepEqual(readSettings({}).prompt, { enabled: true, budgetIndicator: true })
   })
 
-  test("promptIndicator can be disabled", () => {
-    assert.equal(readSettings({ promptIndicator: false }).promptIndicator, false)
+  test("prompt.enabled can be disabled", () => {
+    assert.equal(readSettings({ prompt: { enabled: false } }).prompt.enabled, false)
   })
 
-  test("promptIndicator non-boolean → default true", () => {
-    assert.equal(readSettings({ promptIndicator: "no" }).promptIndicator, true)
-    assert.equal(readSettings({ promptIndicator: 0 }).promptIndicator, true)
-    assert.equal(readSettings({ promptIndicator: undefined }).promptIndicator, true)
+  test("prompt.budgetIndicator can be disabled", () => {
+    assert.equal(readSettings({ prompt: { budgetIndicator: false } }).prompt.budgetIndicator, false)
+  })
+
+  test("prompt non-boolean values → defaults", () => {
+    assert.equal(readSettings({ prompt: { enabled: "no" } }).prompt.enabled, true)
+    assert.equal(readSettings({ prompt: { budgetIndicator: 0 } }).prompt.budgetIndicator, true)
+    assert.equal(readSettings({ prompt: { enabled: undefined } }).prompt.enabled, true)
+  })
+
+  test("prompt non-object → defaults", () => {
+    assert.deepEqual(readSettings({ prompt: "nope" }).prompt, { enabled: true, budgetIndicator: true })
+    assert.deepEqual(readSettings({ prompt: null }).prompt, { enabled: true, budgetIndicator: true })
   })
 })
