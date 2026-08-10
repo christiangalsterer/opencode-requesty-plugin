@@ -1,13 +1,10 @@
 /**
  * Requesty API key detection.
  *
- * Detection order (first match wins):
- *   1. Plugin options `apiKey` (from the plugin tuple in opencode.json)
- *   2. `REQUESTY_API_KEY` environment variable
- *   3. `provider.*.options.apiKey` from the merged opencode config for any
- *      provider whose baseURL points at a Requesty router (the built-in
- *      `requesty` provider, or custom entries like `requesty-export`),
- *      with `{env:VAR_NAME}` interpolation resolved
+ * Reads `provider.*.options.apiKey` from the merged opencode config for any
+ * provider whose baseURL points at a Requesty router (the built-in
+ * `requesty` provider, or custom entries like `requesty-export`),
+ * with `{env:VAR}` interpolation resolved.
  *
  * Intentionally does NOT read ~/.local/share/opencode/auth.json.
  */
@@ -16,7 +13,6 @@ export type KeyResult =
   | { ok: true; apiKey: string; source: string }
   | { ok: false; reason: string }
 
-const ENV_VAR = "REQUESTY_API_KEY"
 const ENV_INTERPOLATION = /^\{env:([^}]+)\}$/
 const REQUESTY_HOST = /(^|\.)requesty\.ai$/i
 
@@ -66,17 +62,7 @@ function fromConfig(config: SdkConfigLike | undefined): { apiKey: string; provid
   return undefined
 }
 
-export function detectApiKey(options: Record<string, unknown> | undefined, config: SdkConfigLike | undefined): KeyResult {
-  const fromOptions = resolveValue(options?.apiKey)
-  if (fromOptions) {
-    return { ok: true, apiKey: fromOptions, source: "plugin options" }
-  }
-
-  const fromEnv = process.env[ENV_VAR]
-  if (fromEnv && fromEnv.length > 0) {
-    return { ok: true, apiKey: fromEnv, source: `${ENV_VAR} env var` }
-  }
-
+export function detectApiKey(config: SdkConfigLike | undefined): KeyResult {
   const fromOpencodeConfig = fromConfig(config)
   if (fromOpencodeConfig) {
     return { ok: true, apiKey: fromOpencodeConfig.apiKey, source: `opencode provider config (${fromOpencodeConfig.providerName})` }
@@ -84,6 +70,6 @@ export function detectApiKey(options: Record<string, unknown> | undefined, confi
 
   return {
     ok: false,
-    reason: `No Requesty API key found. Set ${ENV_VAR}, add provider.requesty.options.apiKey to opencode.json, or pass apiKey via plugin options.`,
+    reason: `No Requesty API key found. Add provider.requesty.options.apiKey to opencode.json.`,
   }
 }

@@ -13,7 +13,6 @@ const MIN_MAX_MODELS = 1
 const MAX_MAX_MODELS = 20
 
 export type PluginSettings = {
-  apiKey?: string
   baseUrl: string
   refreshIntervalMs: number
   activityDebounceMs: number
@@ -31,7 +30,6 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
 
 export function readSettings(options: Record<string, unknown> | undefined): PluginSettings {
   return {
-    apiKey: typeof options?.apiKey === "string" && options.apiKey.length > 0 ? options.apiKey : undefined,
     baseUrl: typeof options?.baseUrl === "string" && options.baseUrl.length > 0 ? options.baseUrl : DEFAULT_BASE_URL,
     refreshIntervalMs: clampNumber(options?.refreshIntervalMs, MIN_REFRESH_INTERVAL_MS, MAX_REFRESH_INTERVAL_MS, DEFAULT_REFRESH_INTERVAL_MS),
     activityDebounceMs: clampNumber(options?.activityDebounceMs, MIN_ACTIVITY_DEBOUNCE_MS, MAX_ACTIVITY_DEBOUNCE_MS, DEFAULT_ACTIVITY_DEBOUNCE_MS),

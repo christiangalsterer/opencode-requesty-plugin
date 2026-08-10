@@ -14,7 +14,7 @@ const plugin: TuiPluginModule = {
   tui: async (api, rawOptions) => {
     const settings = readSettings(rawOptions)
 
-    const key = detectApiKey(rawOptions, api.state.config)
+    const key = detectApiKey(api.state.config)
     if (!key.ok) {
       api.slots.register({
         order: 60,
@@ -26,7 +26,7 @@ const plugin: TuiPluginModule = {
                   <strong>Requesty</strong>
                 </text>
                 <text fg={ctx.theme.current.textMuted}>No API key found.</text>
-                <text fg={ctx.theme.current.textMuted}>Set REQUESTY_API_KEY or configure opencode.json.</text>
+                <text fg={ctx.theme.current.textMuted}>Add provider.requesty.options.apiKey to opencode.json.</text>
               </box>
             )
           },

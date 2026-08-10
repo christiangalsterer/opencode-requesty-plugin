@@ -25,7 +25,7 @@ opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly 
 - `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
 - `src/api.ts` — Requesty Management API client (`apikey/self`, `apikey/self/usage`).
 - `src/format.ts` — pure formatting helpers (all unit-tested logic lives here).
-- `src/key.ts` — API key detection: plugin options → `REQUESTY_API_KEY` env → opencode provider config (incl. `{env:VAR}` interpolation and custom providers with a Requesty baseURL).
+- `src/key.ts` — API key detection: reads `provider.*.options.apiKey` from the opencode provider config (incl. `{env:VAR}` interpolation and custom providers with a Requesty baseURL).
 - `test/logic.test.ts` — `format.ts` + `api.ts` pure helpers.
 - `test/settings.test.ts` — `readSettings` option parsing and bounds.
 - `test/state.test.ts` — `createRequestyStore` refresh/debounce/in-flight/error-dedup logic.

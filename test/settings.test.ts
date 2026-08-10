@@ -14,16 +14,15 @@ const DEFAULTS = {
 
 describe("readSettings", () => {
   test("undefined options yield all defaults", () => {
-    assert.deepEqual(readSettings(undefined), { apiKey: undefined, ...DEFAULTS })
+    assert.deepEqual(readSettings(undefined), DEFAULTS)
   })
 
   test("empty object yields all defaults", () => {
-    assert.deepEqual(readSettings({}), { apiKey: undefined, ...DEFAULTS })
+    assert.deepEqual(readSettings({}), DEFAULTS)
   })
 
   test("valid custom values are preserved", () => {
     const settings = readSettings({
-      apiKey: "sk-test",
       baseUrl: "https://eu.requesty.ai",
       refreshIntervalMs: 60000,
       activityDebounceMs: 5000,
@@ -31,16 +30,11 @@ describe("readSettings", () => {
       warningThreshold: 0.6,
       errorThreshold: 0.85,
     })
-    assert.equal(settings.apiKey, "sk-test")
     assert.equal(settings.baseUrl, "https://eu.requesty.ai")
     assert.equal(settings.refreshIntervalMs, 60000)
     assert.equal(settings.activityDebounceMs, 5000)
     assert.equal(settings.maxModels, 10)
     assert.deepEqual(settings.thresholds, { warning: 0.6, error: 0.85 })
-  })
-
-  test("apiKey empty string → undefined", () => {
-    assert.equal(readSettings({ apiKey: "" }).apiKey, undefined)
   })
 
   test("baseUrl empty string → default", () => {

@@ -81,11 +81,29 @@ Run `pnpm install && pnpm run build` in the checkout first.
 
 ## API key detection
 
-The plugin needs your Requesty API key. It is resolved in this order (first match wins):
+The plugin reads your Requesty API key from the opencode provider config: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation. It also detects custom providers whose `baseURL` points at a Requesty router (e.g. `requesty-export`).
 
-1. **Plugin options**: `"plugin": [["opencode-requesty-plugin", { "apiKey": "sk-..." }]]`
-2. **Environment variable**: `REQUESTY_API_KEY` (the canonical variable opencode's Requesty provider uses)
-3. **opencode provider config**: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation
+```json
+{
+  "provider": {
+    "requesty": {
+      "options": { "apiKey": "sk-..." }
+    }
+  }
+}
+```
+
+Or via an environment variable:
+
+```json
+{
+  "provider": {
+    "requesty": {
+      "options": { "apiKey": "{env:REQUESTY_API_KEY}" }
+    }
+  }
+}
+```
 
 If no key is found, the widget shows a short setup hint instead of failing.
 
@@ -95,7 +113,6 @@ If no key is found, the widget shows a short setup hint instead of failing.
 
 | Option               | Type   | Default                          | Description                                                                 |
 | -------------------- | ------ | -------------------------------- | --------------------------------------------------------------------------- |
-| `apiKey`             | string | —                                | Requesty API key (overrides env/config detection)                           |
 | `baseUrl`            | string | `https://api-v2.requesty.ai`     | Management API base URL (e.g. for EU region)                                |
 | `refreshIntervalMs`  | number | `300000` (5 min)                 | Periodic refresh interval                                                   |
 | `activityDebounceMs` | number | `30000`                          | Minimum gap between activity-triggered refreshes                            |
