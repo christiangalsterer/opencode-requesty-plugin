@@ -14,7 +14,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "ci": "pnpm i --prod=false && pnpm run build && pnpm run build && pnpm run test",
+    "ci": "pnpm run clean && pnpm i --prod=false && pnpm run typecheck && pnpm run test && pnpm run build",
     "build": "tsup",
     "clean": "pnpm run clean:dist && pnpm run clean:deps",
     "clean:dist": "rm -rf ./dist",
