@@ -19,12 +19,16 @@ opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly 
 
 ## Structure
 
-- `src/index.tsx` — plugin entry (`TuiPluginModule`): settings parsing, slot registration (`sidebar_content`), keymap commands, refresh timers.
+- `src/index.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`), keymap commands, refresh timers.
 - `src/widget.tsx` / `src/dialog.tsx` — sidebar widget / detail dialog (Solid components).
-- `src/state.ts` — Solid store: fetch + refresh/debounce logic.
+- `src/state.ts` — Solid store: fetch + refresh/debounce logic (injectable fetchers for tests).
+- `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
 - `src/api.ts` — Requesty Management API client (`apikey/self`, `apikey/self/usage`).
 - `src/format.ts` — pure formatting helpers (all unit-tested logic lives here).
 - `src/key.ts` — API key detection: plugin options → `REQUESTY_API_KEY` env → opencode provider config (incl. `{env:VAR}` interpolation and custom providers with a Requesty baseURL).
+- `test/logic.test.ts` — `format.ts` + `api.ts` pure helpers.
+- `test/settings.test.ts` — `readSettings` option parsing and bounds.
+- `test/state.test.ts` — `createRequestyStore` refresh/debounce/in-flight/error-dedup logic.
 
 ## Conventions
 

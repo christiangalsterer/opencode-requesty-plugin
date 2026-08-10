@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, monthName, renderBar, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, monthName, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -11,13 +11,6 @@ export type WidgetProps = {
   maxModels: number
   /** Budget usage thresholds for bar coloring. */
   thresholds: SpendThresholds
-}
-
-function spendColor(ratio: number, theme: TuiThemeCurrent, thresholds: SpendThresholds) {
-  const severity = spendSeverity(ratio, thresholds)
-  if (severity === "critical") return theme.error
-  if (severity === "warning") return theme.warning
-  return theme.success
 }
 
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
@@ -70,12 +63,12 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
 
   return (
     <box flexDirection="column">
-      <text fg={themeText(props)}>
+      <text fg={props.theme.text}>
         {formatUsd(spend())} / {formatLimit(limit())}
         {props.stale ? " (stale)" : ""}
       </text>
       <Show when={limit() > 0}>
-        <text fg={spendColor(ratio(), props.theme, props.thresholds)}>
+        <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
           {renderBar(ratio())} {formatPercent(ratio())}
         </text>
         <text> </text>
@@ -104,16 +97,4 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
       </Show>
     </box>
   )
-}
-
-function themeText(props: WidgetProps) {
-  return props.theme.text
-}
-
-function padEnd(value: string, width: number): string {
-  return value.length >= width ? value : value + " ".repeat(width - value.length)
-}
-
-function padStart(value: string, width: number): string {
-  return value.length >= width ? value : " ".repeat(width - value.length) + value
 }

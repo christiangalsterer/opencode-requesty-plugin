@@ -103,3 +103,27 @@ export function resolveThresholds(warning: unknown, error: unknown): SpendThresh
   if (thresholds.warning >= thresholds.error) return { ...DEFAULT_THRESHOLDS }
   return thresholds
 }
+
+/** Right-pad a string to `width` with spaces; no-op when already long enough. */
+export function padEnd(value: string, width: number): string {
+  return value.length >= width ? value : value + " ".repeat(width - value.length)
+}
+
+/** Left-pad a string to `width` with spaces; no-op when already long enough. */
+export function padStart(value: string, width: number): string {
+  return value.length >= width ? value : " ".repeat(width - value.length) + value
+}
+
+/** Theme subset used to map a severity to a color. Structural type keeps format.ts free of plugin SDK imports. */
+export type SeverityTheme = {
+  error: unknown
+  warning: unknown
+  success: unknown
+}
+
+/** Map a spend severity to the matching theme color. Preserves the theme's color type. */
+export function severityColor<T extends SeverityTheme>(severity: SpendSeverity, theme: T): T["error"] {
+  if (severity === "critical") return theme.error
+  if (severity === "warning") return theme.warning as T["error"]
+  return theme.success as T["error"]
+}

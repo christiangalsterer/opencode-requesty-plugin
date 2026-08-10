@@ -12,6 +12,7 @@
  */
 
 export const DEFAULT_BASE_URL = "https://api-v2.requesty.ai"
+const REQUEST_TIMEOUT_MS = 10_000
 
 export type ApiKeyInfo = {
   id: string
@@ -75,13 +76,22 @@ async function request<T>(baseUrl: string, apiKey: string, path: string, init?: 
   for (const [key, value] of Object.entries(init?.params ?? {})) {
     url.searchParams.set(key, value)
   }
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      Accept: "application/json",
-    },
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    })
+  } catch (error) {
+    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
+      throw new RequestyApiError(408, `Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`)
+    }
+    throw error
+  }
   if (!response.ok) {
     let message = `HTTP ${response.status}`
     try {

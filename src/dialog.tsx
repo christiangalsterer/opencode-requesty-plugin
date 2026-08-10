@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -56,15 +56,7 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
         Monthly spend: {formatUsd(spend())} of {formatLimit(limit())}
       </text>
       <Show when={limit() > 0}>
-        <text
-          fg={
-            spendSeverity(ratio(), props.thresholds) === "critical"
-              ? props.theme.error
-              : spendSeverity(ratio(), props.thresholds) === "warning"
-                ? props.theme.warning
-                : props.theme.success
-          }
-        >
+        <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
           {renderBar(ratio(), 30)} {formatPercent(ratio())}
         </text>
       </Show>
@@ -99,12 +91,4 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
       </Show>
     </box>
   )
-}
-
-function padEnd(value: string, width: number): string {
-  return value.length >= width ? value : value + " ".repeat(width - value.length)
-}
-
-function padStart(value: string, width: number): string {
-  return value.length >= width ? value : " ".repeat(width - value.length) + value
 }

@@ -3,40 +3,11 @@ import { detectApiKey } from "./key"
 import { createRequestyStore, type RequestyStore } from "./state"
 import { RequestySidebarWidget } from "./widget"
 import { RequestyDetailDialog } from "./dialog"
-import { DEFAULT_BASE_URL } from "./api"
-import { resolveThresholds, type SpendThresholds } from "./format"
+import { readSettings } from "./settings"
 
 const PLUGIN_ID = "opencode-requesty-sidebar"
 const COMMAND_OPEN = "requesty.open"
 const COMMAND_REFRESH = "requesty.refresh"
-
-const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000
-const DEFAULT_ACTIVITY_DEBOUNCE_MS = 30 * 1000
-const DEFAULT_MAX_MODELS = 5
-
-type PluginSettings = {
-  apiKey?: string
-  baseUrl: string
-  refreshIntervalMs: number
-  activityDebounceMs: number
-  maxModels: number
-  thresholds: SpendThresholds
-}
-
-function readSettings(options: Record<string, unknown> | undefined): PluginSettings {
-  return {
-    apiKey: typeof options?.apiKey === "string" && options.apiKey.length > 0 ? options.apiKey : undefined,
-    baseUrl: typeof options?.baseUrl === "string" && options.baseUrl.length > 0 ? options.baseUrl : DEFAULT_BASE_URL,
-    refreshIntervalMs:
-      typeof options?.refreshIntervalMs === "number" && options.refreshIntervalMs > 0 ? options.refreshIntervalMs : DEFAULT_REFRESH_INTERVAL_MS,
-    activityDebounceMs:
-      typeof options?.activityDebounceMs === "number" && options.activityDebounceMs > 0
-        ? options.activityDebounceMs
-        : DEFAULT_ACTIVITY_DEBOUNCE_MS,
-    maxModels: typeof options?.maxModels === "number" && options.maxModels > 0 ? Math.floor(options.maxModels) : DEFAULT_MAX_MODELS,
-    thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
-  }
-}
 
 const plugin: TuiPluginModule = {
   id: PLUGIN_ID,
@@ -55,7 +26,7 @@ const plugin: TuiPluginModule = {
                   <strong>Requesty</strong>
                 </text>
                 <text fg={ctx.theme.current.textMuted}>No API key found.</text>
-                <text fg={ctx.theme.current.textMuted}>Set REQUESTY_API_KEY or run /connect.</text>
+                <text fg={ctx.theme.current.textMuted}>Set REQUESTY_API_KEY or configure opencode.json.</text>
               </box>
             )
           },

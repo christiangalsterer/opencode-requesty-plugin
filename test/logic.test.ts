@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, startOfCurrentMonth, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, formatLimit, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, formatLimit, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -41,6 +41,36 @@ describe("aggregateByModel", () => {
     const models = aggregateByModel(response)
     assert.equal(models.length, 1)
     assert.equal(models[0].model, "unknown")
+  })
+
+  test("falls back to model_requested when model_used is absent", () => {
+    const response: UsageResponse = {
+      usage: {
+        "2026-08-01": {
+          grouped_data: [
+            { group_by_values: { model_requested: "openai/gpt-5" }, spend: 1, total_tokens: 10 },
+          ],
+        },
+      },
+    }
+    const models = aggregateByModel(response)
+    assert.equal(models.length, 1)
+    assert.equal(models[0].model, "openai/gpt-5")
+  })
+
+  test("model_used wins over model_requested when both are present", () => {
+    const response: UsageResponse = {
+      usage: {
+        "2026-08-01": {
+          grouped_data: [
+            { group_by_values: { model_used: "openai/gpt-5", model_requested: "openai/gpt-4o" }, spend: 1 },
+          ],
+        },
+      },
+    }
+    const models = aggregateByModel(response)
+    assert.equal(models.length, 1)
+    assert.equal(models[0].model, "openai/gpt-5")
   })
 
   test("coerces string decimals (API returns decimal fields as strings)", () => {
@@ -179,5 +209,35 @@ describe("format helpers", () => {
       analyticsUrl("my key & co"),
       "https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=my%20key%20%26%20co",
     )
+  })
+})
+
+describe("padEnd / padStart", () => {
+  test("padEnd right-pads to width", () => {
+    assert.equal(padEnd("abc", 5), "abc  ")
+    assert.equal(padEnd("abc", 3), "abc")
+    assert.equal(padEnd("abc", 2), "abc")
+  })
+
+  test("padStart left-pads to width", () => {
+    assert.equal(padStart("abc", 5), "  abc")
+    assert.equal(padStart("abc", 3), "abc")
+    assert.equal(padStart("abc", 2), "abc")
+  })
+})
+
+describe("severityColor", () => {
+  const theme = { error: "red", warning: "yellow", success: "green" }
+
+  test("ok → success color", () => {
+    assert.equal(severityColor("ok", theme), "green")
+  })
+
+  test("warning → warning color", () => {
+    assert.equal(severityColor("warning", theme), "yellow")
+  })
+
+  test("critical → error color", () => {
+    assert.equal(severityColor("critical", theme), "red")
   })
 })

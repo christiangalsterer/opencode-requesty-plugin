@@ -1,0 +1,112 @@
+import { describe, test } from "node:test"
+import assert from "node:assert/strict"
+import { readSettings } from "../src/settings"
+import { DEFAULT_THRESHOLDS } from "../src/format"
+
+const DEFAULTS = {
+  baseUrl: "https://api-v2.requesty.ai",
+  refreshIntervalMs: 300000,
+  activityDebounceMs: 30000,
+  maxModels: 5,
+  thresholds: DEFAULT_THRESHOLDS,
+}
+
+describe("readSettings", () => {
+  test("undefined options yield all defaults", () => {
+    assert.deepEqual(readSettings(undefined), { apiKey: undefined, ...DEFAULTS })
+  })
+
+  test("empty object yields all defaults", () => {
+    assert.deepEqual(readSettings({}), { apiKey: undefined, ...DEFAULTS })
+  })
+
+  test("valid custom values are preserved", () => {
+    const settings = readSettings({
+      apiKey: "sk-test",
+      baseUrl: "https://eu.requesty.ai",
+      refreshIntervalMs: 60000,
+      activityDebounceMs: 5000,
+      maxModels: 10,
+      warningThreshold: 0.6,
+      errorThreshold: 0.85,
+    })
+    assert.equal(settings.apiKey, "sk-test")
+    assert.equal(settings.baseUrl, "https://eu.requesty.ai")
+    assert.equal(settings.refreshIntervalMs, 60000)
+    assert.equal(settings.activityDebounceMs, 5000)
+    assert.equal(settings.maxModels, 10)
+    assert.deepEqual(settings.thresholds, { warning: 0.6, error: 0.85 })
+  })
+
+  test("apiKey empty string → undefined", () => {
+    assert.equal(readSettings({ apiKey: "" }).apiKey, undefined)
+  })
+
+  test("baseUrl empty string → default", () => {
+    assert.equal(readSettings({ baseUrl: "" }).baseUrl, DEFAULTS.baseUrl)
+  })
+
+  test("non-number refreshIntervalMs → default", () => {
+    assert.equal(readSettings({ refreshIntervalMs: "fast" }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+    assert.equal(readSettings({ refreshIntervalMs: undefined }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+  })
+
+  test("refreshIntervalMs below minimum → default", () => {
+    assert.equal(readSettings({ refreshIntervalMs: 5000 }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+    assert.equal(readSettings({ refreshIntervalMs: 0 }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+    assert.equal(readSettings({ refreshIntervalMs: -1 }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+  })
+
+  test("refreshIntervalMs above maximum → default", () => {
+    assert.equal(readSettings({ refreshIntervalMs: 3_600_001 }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+  })
+
+  test("refreshIntervalMs at boundaries is accepted", () => {
+    assert.equal(readSettings({ refreshIntervalMs: 10000 }).refreshIntervalMs, 10000)
+    assert.equal(readSettings({ refreshIntervalMs: 3_600_000 }).refreshIntervalMs, 3_600_000)
+  })
+
+  test("activityDebounceMs below minimum → default", () => {
+    assert.equal(readSettings({ activityDebounceMs: 500 }).activityDebounceMs, DEFAULTS.activityDebounceMs)
+  })
+
+  test("activityDebounceMs above maximum → default", () => {
+    assert.equal(readSettings({ activityDebounceMs: 3_600_001 }).activityDebounceMs, DEFAULTS.activityDebounceMs)
+  })
+
+  test("activityDebounceMs at boundaries is accepted", () => {
+    assert.equal(readSettings({ activityDebounceMs: 1000 }).activityDebounceMs, 1000)
+    assert.equal(readSettings({ activityDebounceMs: 3_600_000 }).activityDebounceMs, 3_600_000)
+  })
+
+  test("maxModels below minimum → default", () => {
+    assert.equal(readSettings({ maxModels: 0 }).maxModels, DEFAULTS.maxModels)
+    assert.equal(readSettings({ maxModels: -1 }).maxModels, DEFAULTS.maxModels)
+  })
+
+  test("maxModels above maximum → clamped to maximum", () => {
+    assert.equal(readSettings({ maxModels: 25 }).maxModels, 20)
+  })
+
+  test("maxModels at boundaries is accepted", () => {
+    assert.equal(readSettings({ maxModels: 1 }).maxModels, 1)
+    assert.equal(readSettings({ maxModels: 20 }).maxModels, 20)
+  })
+
+  test("maxModels is floored", () => {
+    assert.equal(readSettings({ maxModels: 3.9 }).maxModels, 3)
+  })
+
+  test("NaN refreshIntervalMs → default", () => {
+    assert.equal(readSettings({ refreshIntervalMs: NaN }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
+  })
+
+  test("thresholds fall back to defaults when invalid ordering", () => {
+    assert.deepEqual(readSettings({ warningThreshold: 0.95, errorThreshold: 0.5 }).thresholds, DEFAULT_THRESHOLDS)
+    assert.deepEqual(readSettings({ warningThreshold: 0.9, errorThreshold: 0.9 }).thresholds, DEFAULT_THRESHOLDS)
+  })
+
+  test("thresholds accept percent values", () => {
+    assert.deepEqual(readSettings({ warningThreshold: 60, errorThreshold: 85 }).thresholds, { warning: 0.6, error: 0.85 })
+  })
+})
