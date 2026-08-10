@@ -1,6 +1,6 @@
 # opencode-requesty-plugin
 
-An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](https://www.requesty.ai) budget, current monthly spend, and per-model cost distribution right in the session sidebar — plus a detail dialog via the `/requesty` slash command.
+An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](https://www.requesty.ai) budget, current monthly spend, and per-model cost distribution right in the session prompt, in the session sidebar, plus a detail dialog via the `/requesty` slash command.
 
 ## What you get
 
@@ -81,7 +81,7 @@ Run `pnpm install && pnpm run build` in the checkout first.
 
 ## API key detection
 
-The plugin reads your Requesty API key from the opencode provider config: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation. It also detects custom providers whose `baseURL` points at a Requesty router (e.g. `requesty-export`).
+The plugin reads your Requesty API key from the opencode provider config: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation.
 
 ```json
 {

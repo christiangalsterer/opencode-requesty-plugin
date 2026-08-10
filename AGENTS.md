@@ -38,10 +38,10 @@ opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly 
 
 ## References
 
-Use the following repositories for working code examples before grepping node_modules and the source code of opencode.
+Use the following repositories for working code examples and the opencodea-ai/plugin source before grepping node_modules.
+
+- https://www.npmjs.com/package/@opencode-ai/plugin?activeTab=code
 - https://github.com/streetturtle/opencode-better-sidebar/tree/main
 - https://github.com/ZackarySantana/opencode-context
 - https://github.com/aamkye/opencode-tools
 - https://github.com/njbraun/opencode-plugin-session-token-summary
-
-
