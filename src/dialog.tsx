@@ -68,6 +68,7 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
 function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JSX.Element {
   const models = () => props.store.data()?.models ?? []
   const totalSpend = () => models().reduce((sum, model) => sum + model.spend, 0)
+  const monthSpend = () => props.store.data()?.keyInfo.monthly_spend ?? totalSpend()
 
   return (
     <box flexDirection="column" paddingTop={1}>
@@ -86,7 +87,7 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
           )}
         </For>
         <text fg={props.theme.textMuted} paddingTop={1}>
-          Total: {formatUsd(totalSpend())} across {models().length} model{models().length === 1 ? "" : "s"}
+          Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? "" : "s"}
         </text>
       </Show>
     </box>
