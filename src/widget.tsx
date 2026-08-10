@@ -71,10 +71,11 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
         <text fg={spendColor(ratio(), props.theme, props.thresholds)}>
           {renderBar(ratio())} {formatPercent(ratio())}
         </text>
+        <text> </text>
       </Show>
       <Show when={models().length > 0}>
-        <text fg={props.theme.textMuted} paddingTop={1}>
-          Top models ({monthName()}):
+        <text fg={props.theme.text}>
+          <strong>Top models ({monthName()})</strong>
         </text>
         <For each={models()}>
           {(model) => (

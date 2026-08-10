@@ -10,7 +10,8 @@ An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](http
 Requesty (my-opencode-key)
 $12.34 / $50.00
 ▓▓▓▓░░░░░░░░░░░░ 24%
-Top models (Aug):
+
+Top models (Aug)
 claude-sonnet-4-5            $8.20
   1.2M (↑1.0M ↓200k)
 gpt-5                        $3.14
