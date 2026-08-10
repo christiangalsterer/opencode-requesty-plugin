@@ -4,10 +4,10 @@ opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly 
 
 ## Commands
 
-- `npm test` — node:test via tsx. The glob is intentionally **unquoted** (`tsx --test test/*.test.ts`): the shell must expand it, because Node 20's `--test` does not expand globs. Quoting it breaks with "Could not find ...".
-- Run one test file: `npx tsx --test test/logic.test.ts`
-- Verify changes: `npm run typecheck && npm test && npm run build` (no lint/format config exists).
-- `npm run build` — tsup bundles `src/index.tsx` → `dist/tui.js`. `dist/` is the published/loaded artifact; always rebuild after source changes.
+- `pnpm test` — node:test via tsx. The glob is intentionally **unquoted** (`tsx --test test/*.test.ts`): the shell must expand it, because Node 20's `--test` does not expand globs. Quoting it breaks with "Could not find ...".
+- Run one test file: `pnpm exec tsx --test test/logic.test.ts`
+- Verify changes: `pnpm run typecheck && pnpm test && pnpm run build` (no lint/format config exists).
+- `pnpm run build` — tsup bundles `src/index.tsx` → `dist/tui.js`. `dist/` is the published/loaded artifact; always rebuild after source changes.
 
 ## Hard-earned gotchas
 

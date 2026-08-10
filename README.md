@@ -75,7 +75,7 @@ Point at a local checkout instead:
 }
 ```
 
-Run `npm install && npm run build` in the checkout first.
+Run `pnpm install && pnpm run build` in the checkout first.
 
 ## API key detection
 
@@ -113,11 +113,11 @@ Data is refreshed on startup, on the interval above, and (debounced) after sessi
 ## Development
 
 ```bash
-npm install
-npm run build       # bundle to dist/tui.js (tsup)
-npm run typecheck   # tsc --noEmit over src/, test/ and tsup.config.ts
-npm test            # unit tests via tsx + node:test
-npm run dev         # watch-mode build
+pnpm install
+pnpm run build       # bundle to dist/tui.js (tsup)
+pnpm run typecheck   # tsc --noEmit over src/, test/ and tsup.config.ts
+pnpm test            # unit tests via tsx + node:test
+pnpm run dev         # watch-mode build
 ```
 
 The project is fully typed TypeScript (`strict` mode). Sources live in `src/` (`.ts`/`.tsx`), tests in `test/`, and the build uses esbuild via `tsup` with the `@opentui/solid` JSX transform.

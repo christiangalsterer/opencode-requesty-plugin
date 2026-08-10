@@ -14,7 +14,12 @@
     "LICENSE"
   ],
   "scripts": {
+    "ci": "pnpm i --prod=false && pnpm run build && pnpm run build && pnpm run test",
     "build": "tsup",
+    "clean": "pnpm run clean:dist && pnpm run clean:deps",
+    "clean:dist": "rm -rf ./dist",
+    "clean:deps": "rm -rf ./node_modules && pnpm run deps",
+    "deps": "pnpm i --prod=false && pnpm audit fix",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
     "dev": "tsup --watch"
@@ -24,8 +29,6 @@
     "opencode-plugin",
     "requesty",
     "tui",
-    "sidebar",
-    "llm",
     "cost-tracking"
   ],
   "license": "MIT",
