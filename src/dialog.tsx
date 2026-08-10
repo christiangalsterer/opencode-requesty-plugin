@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendSeverity, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -43,7 +43,7 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
   const data = () => props.store.data()!
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
-  const ratio = () => (limit() > 0 ? spend() / limit() : 0)
+  const ratio = () => spendRatio(spend(), limit())
   const fetchedAt = () => {
     const state = props.store.state()
     return state.status === "ready" ? state.fetchedAt.toLocaleTimeString() : "—"
@@ -53,7 +53,7 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
     <box flexDirection="column" paddingTop={1}>
       <text fg={props.theme.text}>Key: {data().keyInfo.name}</text>
       <text fg={props.theme.text}>
-        Monthly spend: {formatUsd(spend())} of {limit() > 0 ? formatUsd(limit()) : "unlimited"}
+        Monthly spend: {formatUsd(spend())} of {formatLimit(limit())}
       </text>
       <Show when={limit() > 0}>
         <text

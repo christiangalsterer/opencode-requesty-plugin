@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, startOfCurrentMonth, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, formatLimit, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -87,6 +87,21 @@ describe("format helpers", () => {
     assert.equal(formatTokens(1_500), "1.5k")
     assert.equal(formatTokens(2_500_000), "2.5M")
     assert.equal(formatTokens(3_000_000_000), "3.0B")
+  })
+
+  test("spendRatio: zero/negative limit means unlimited (ratio 0, no Infinity)", () => {
+    assert.equal(spendRatio(50, 0), 0)
+    assert.equal(spendRatio(50, -10), 0)
+    assert.equal(spendRatio(0, 0), 0)
+    assert.equal(spendRatio(50, 100), 0.5)
+    assert.equal(spendRatio(150, 100), 1.5) // over limit
+  })
+
+  test("formatLimit: zero/negative limit renders as unlimited", () => {
+    assert.equal(formatLimit(0), "unlimited")
+    assert.equal(formatLimit(-5), "unlimited")
+    assert.equal(formatLimit(100), "$100.00")
+    assert.equal(formatLimit(18.21894606), "$18.21") // truncated like formatUsd
   })
 
   test("renderBar", () => {

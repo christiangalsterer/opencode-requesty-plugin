@@ -6,6 +6,16 @@ export function formatUsd(amount: number): string {
   return `$${truncated.toFixed(2)}`
 }
 
+/** Spend/limit ratio; 0 when there is no limit (limit <= 0 means unlimited). */
+export function spendRatio(spend: number, limit: number): number {
+  return limit > 0 ? spend / limit : 0
+}
+
+/** Human-readable limit label: formatted amount, or "unlimited" when limit <= 0. */
+export function formatLimit(limit: number): string {
+  return limit > 0 ? formatUsd(limit) : "unlimited"
+}
+
 export function formatTokens(count: number): string {
   if (count >= 1_000_000_000) return `${(count / 1_000_000_000).toFixed(1)}B`
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`

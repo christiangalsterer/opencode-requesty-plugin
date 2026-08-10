@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendSeverity, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -58,13 +58,13 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
   const data = () => props.store.data()!
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
-  const ratio = () => (limit() > 0 ? spend() / limit() : 0)
+  const ratio = () => spendRatio(spend(), limit())
   const models = () => data().models.slice(0, props.maxModels)
 
   return (
     <box flexDirection="column">
       <text fg={themeText(props)}>
-        {formatUsd(spend())} / {limit() > 0 ? formatUsd(limit()) : "unlimited"}
+        {formatUsd(spend())} / {formatLimit(limit())}
         {props.stale ? " (stale)" : ""}
       </text>
       <Show when={limit() > 0}>
