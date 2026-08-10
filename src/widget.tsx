@@ -25,9 +25,8 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
 
   return (
     <box flexDirection="column" paddingTop={1}>
-      <text fg={theme().textMuted}>
-        <strong>Requesty</strong>
-        {props.store.data() ? ` (${props.store.data()!.keyInfo.name})` : ""}
+      <text fg={theme().text}>
+        <strong>Requesty{props.store.data() ? ` (${props.store.data()!.keyInfo.name})` : ""}</strong>
       </text>
       <Show
         when={props.store.state().status !== "error"}
