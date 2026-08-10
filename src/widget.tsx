@@ -13,6 +13,12 @@ export type WidgetProps = {
   thresholds: SpendThresholds
 }
 
+export type PromptIndicatorProps = {
+  store: RequestyStore
+  theme: TuiThemeCurrent
+  thresholds: SpendThresholds
+}
+
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   const theme = () => props.theme
 
@@ -96,5 +102,33 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
         <text fg={props.theme.textMuted}>No usage this month yet.</text>
       </Show>
     </box>
+  )
+}
+
+export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Element {
+  const data = () => props.store.data()
+  const limit = () => data()?.keyInfo.monthly_limit ?? 0
+  const spend = () => data()?.keyInfo.monthly_spend ?? 0
+  const ratio = () => spendRatio(spend(), limit())
+  const status = () => props.store.state().status
+
+  const label = () => {
+    if (status() === "loading" && !data()) return "Requesty …"
+    if (status() === "error" && !data()) return "Requesty !"
+    if (!data()) return "Requesty …"
+    const name = data()!.keyInfo.name
+    if (limit() > 0) return `${formatUsd(spend())}/${formatUsd(limit())} ${formatPercent(ratio())} (${name})`
+    return `${formatUsd(spend())}/unlimited (${name})`
+  }
+
+  const color = () => {
+    if (!data() || limit() <= 0) return props.theme.textMuted
+    return severityColor(spendSeverity(ratio(), props.thresholds), props.theme)
+  }
+
+  return (
+    <text fg={color()}>
+      <a href={analyticsUrl(data()?.keyInfo.name ?? "")}>{label()}</a>
+    </text>
   )
 }

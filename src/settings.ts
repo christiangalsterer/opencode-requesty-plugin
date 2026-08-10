@@ -19,6 +19,7 @@ export type PluginSettings = {
   activityDebounceMs: number
   maxModels: number
   thresholds: SpendThresholds
+  promptIndicator: boolean
 }
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
@@ -36,5 +37,6 @@ export function readSettings(options: Record<string, unknown> | undefined): Plug
     activityDebounceMs: clampNumber(options?.activityDebounceMs, MIN_ACTIVITY_DEBOUNCE_MS, MAX_ACTIVITY_DEBOUNCE_MS, DEFAULT_ACTIVITY_DEBOUNCE_MS),
     maxModels: typeof options?.maxModels === "number" && options.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(options.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
+    promptIndicator: typeof options?.promptIndicator === "boolean" ? options.promptIndicator : true,
   }
 }

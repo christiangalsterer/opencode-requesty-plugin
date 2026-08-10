@@ -9,6 +9,7 @@ const DEFAULTS = {
   activityDebounceMs: 30000,
   maxModels: 5,
   thresholds: DEFAULT_THRESHOLDS,
+  promptIndicator: true,
 }
 
 describe("readSettings", () => {
@@ -108,5 +109,20 @@ describe("readSettings", () => {
 
   test("thresholds accept percent values", () => {
     assert.deepEqual(readSettings({ warningThreshold: 60, errorThreshold: 85 }).thresholds, { warning: 0.6, error: 0.85 })
+  })
+
+  test("promptIndicator defaults to true", () => {
+    assert.equal(readSettings(undefined).promptIndicator, true)
+    assert.equal(readSettings({}).promptIndicator, true)
+  })
+
+  test("promptIndicator can be disabled", () => {
+    assert.equal(readSettings({ promptIndicator: false }).promptIndicator, false)
+  })
+
+  test("promptIndicator non-boolean → default true", () => {
+    assert.equal(readSettings({ promptIndicator: "no" }).promptIndicator, true)
+    assert.equal(readSettings({ promptIndicator: 0 }).promptIndicator, true)
+    assert.equal(readSettings({ promptIndicator: undefined }).promptIndicator, true)
   })
 })
