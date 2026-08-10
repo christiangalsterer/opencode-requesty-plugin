@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, startOfCurrentMonth, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, formatLimit, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, formatLimit, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, renderBar, resolveThresholds, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -167,5 +167,17 @@ describe("format helpers", () => {
     // invalid ordering → defaults
     assert.deepEqual(resolveThresholds(0.95, 0.5), DEFAULT_THRESHOLDS)
     assert.deepEqual(resolveThresholds(0.9, 0.9), DEFAULT_THRESHOLDS)
+  })
+
+  test("analyticsUrl builds the dashboard URL for a key name", () => {
+    assert.equal(
+      analyticsUrl("my-opencode-key"),
+      "https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=my-opencode-key",
+    )
+    // names with spaces/special chars are URL-encoded
+    assert.equal(
+      analyticsUrl("my key & co"),
+      "https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=my%20key%20%26%20co",
+    )
   })
 })

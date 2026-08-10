@@ -1,4 +1,4 @@
-# opencode-requesty-sidebar
+# opencode-requesty-plugin
 
 An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](https://www.requesty.ai) budget, current monthly spend, and per-model cost distribution right in the session sidebar — plus a detail dialog via the `/requesty` slash command.
 
@@ -22,7 +22,7 @@ gemini-2.5-pro               $1.00
 
 - Monthly spend vs. monthly limit (from `GET /v1/manage/apikey/self`)
 - Progress bar that turns yellow/red at configurable thresholds (default ≥70% / ≥90% of the limit)
-- API key name shown in the header
+- API key name shown in the header, linking to the Requesty analytics dashboard filtered by that key
 - Top models by spend for the current month, with total tokens plus input (↑) / output (↓) breakdown
 
 **Detail dialog** — run `/requesty` or pick *Requesty: show usage* from the command palette:
@@ -40,7 +40,7 @@ Add the plugin to your `opencode.json` (project root or `~/.config/opencode/open
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-requesty-sidebar"]
+  "plugin": ["opencode-requesty-plugin"]
 }
 ```
 
@@ -51,7 +51,7 @@ Or with options:
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     [
-      "opencode-requesty-sidebar",
+      "opencode-requesty-plugin",
       {
         "refreshIntervalMs": 300000,
         "maxModels": 5,
@@ -71,7 +71,7 @@ Point at a local checkout instead:
 
 ```json
 {
-  "plugin": ["file:///absolute/path/to/opencode-requesty-sidebar-plugin/dist/tui.js"]
+  "plugin": ["file:///absolute/path/to/opencode-requesty-plugin/dist/tui.js"]
 }
 ```
 
@@ -81,7 +81,7 @@ Run `npm install && npm run build` in the checkout first.
 
 The plugin needs your Requesty API key. It is resolved in this order (first match wins):
 
-1. **Plugin options**: `"plugin": [["opencode-requesty-sidebar", { "apiKey": "sk-..." }]]`
+1. **Plugin options**: `"plugin": [["opencode-requesty-plugin", { "apiKey": "sk-..." }]]`
 2. **Environment variable**: `REQUESTY_API_KEY` (the canonical variable opencode's Requesty provider uses)
 3. **opencode provider config**: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation
 

@@ -1,5 +1,5 @@
 {
-  "name": "opencode-requesty-sidebar",
+  "name": "opencode-requesty-plugin",
   "version": "0.1.0",
   "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, with a detail dialog via the /requesty command",
   "type": "module",

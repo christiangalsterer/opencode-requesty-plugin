@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, renderBar, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, monthName, renderBar, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -26,7 +26,14 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   return (
     <box flexDirection="column" paddingTop={1}>
       <text fg={theme().text}>
-        <strong>Requesty{props.store.data() ? ` (${props.store.data()!.keyInfo.name})` : ""}</strong>
+        <Show
+          when={props.store.data()}
+          fallback={<strong>Requesty</strong>}
+        >
+          <a href={analyticsUrl(props.store.data()!.keyInfo.name)}>
+            <strong>Requesty ({props.store.data()!.keyInfo.name})</strong>
+          </a>
+        </Show>
       </text>
       <Show
         when={props.store.state().status !== "error"}

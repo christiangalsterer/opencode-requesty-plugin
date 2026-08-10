@@ -57,6 +57,11 @@ export function monthName(date = new Date()): string {
   return date.toLocaleString("en-US", { month: "short" })
 }
 
+/** Requesty.ai analytics dashboard URL filtered to a specific API key name. */
+export function analyticsUrl(keyName: string): string {
+  return `https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=${encodeURIComponent(keyName)}`
+}
+
 /** Severity of budget usage, used to color the progress bar. */
 export type SpendSeverity = "ok" | "warning" | "critical"
 
