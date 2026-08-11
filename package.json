@@ -19,7 +19,7 @@
     "clean": "pnpm run clean:dist && pnpm run clean:deps",
     "clean:dist": "rm -rf ./dist",
     "clean:deps": "rm -rf ./node_modules && pnpm run deps",
-    "deps": "pnpm i --prod=false && pnpm audit fix",
+    "deps": "pnpm i --prod=false",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
     "dev": "tsup --watch"

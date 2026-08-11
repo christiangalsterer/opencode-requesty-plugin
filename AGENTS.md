@@ -40,10 +40,10 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 
 ## References
 
-Use the following repositories for working code examples and the opencodea-ai/plugin source before grepping node_modules.
-
-- https://www.npmjs.com/package/@opencode-ai/plugin?activeTab=code
-- https://github.com/streetturtle/opencode-better-sidebar/tree/main
-- https://github.com/ZackarySantana/opencode-context
-- https://github.com/aamkye/opencode-tools
-- https://github.com/njbraun/opencode-plugin-session-token-summary
+Use the following repositories for documentation, working code examples and the opencodea-ai/plugin source before grepping node_modules.
+- https://opentui.com/docs/getting-started/ (TUI plugin API)
+- https://www.npmjs.com/package/@opencode-ai/plugin?activeTab=code (opencode plugin API types)
+- https://github.com/streetturtle/opencode-better-sidebar/tree/main (example plugin with sidebar slot, keymap, and prompt slot)
+- https://github.com/ZackarySantana/opencode-context (example plugin with context slot, keymap, and prompt slot)
+- https://github.com/aamkye/opencode-tools (example plugin with sidebar slot, keymap, and prompt slot)
+- https://github.com/njbraun/opencode-plugin-session-token-summary (example plugin with session token summary slot)
