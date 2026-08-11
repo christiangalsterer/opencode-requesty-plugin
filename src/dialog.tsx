@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { analyticsUrl, formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, projectedMonthEnd, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { analyticsUrl, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, projectedMonthEnd, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -52,6 +52,13 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
+  const exhaustionDays = () => daysToExhaustion(spend(), limit(), data().avg7d)
+  const exhaustionLabel = () => {
+    const d = exhaustionDays()
+    if (d === undefined) return ""
+    const status = d > daysRemaining() ? "On track" : "Over budget"
+    return ` · ${status} · exhausts in ${d}d (7d average)`
+  }
   const projection = () => formatProjection(spend(), limit())
   const projectionOverLimit = () => limit() > 0 && projectedMonthEnd(spend()) > limit()
 
@@ -74,6 +81,16 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
       <text fg={props.theme.textMuted}>
         Today {formatUsd(data().todaySpend)} / 7d {formatUsd(data().avg7d)} / 30d {formatUsd(data().avg30d)}
       </text>
+      <Show when={limit() > 0}>
+        <text fg={props.theme.textMuted}>
+          Remaining: {formatUsd(limit() - spend())} ({daysRemaining()}d left){exhaustionLabel()}
+        </text>
+      </Show>
+      <Show when={formatMonthDelta(spend(), data().lastMonthSpend)}>
+        <text fg={props.theme.textMuted}>
+          vs last month: {formatMonthDelta(spend(), data().lastMonthSpend)}
+        </text>
+      </Show>
     </box>
   )
 }
@@ -87,15 +104,16 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
     <box flexDirection="column" paddingTop={1}>
       <Show when={models().length > 0} fallback={<text fg={props.theme.textMuted}>No model usage recorded this month.</text>}>
         <text fg={props.theme.textMuted}>
-          {padEnd("Model", 30)} {padStart("Spend", 10)} {padStart("Share", 7)} {padEnd("Tokens (↑in ↓out)", 24)} {padStart("Reqs", 7)}
+          {padEnd("Model", 26)} {padStart("Spend", 9)} {padStart("Share", 6)} {padEnd("Tokens (↑in ↓out)", 22)} {padStart("Reqs", 6)} {padStart("Out/In", 6)}
         </text>
         <For each={models()}>
           {(model) => (
             <text fg={props.theme.text}>
-              {padEnd(shortModel(model.model, 29), 30)} {padStart(formatUsd(model.spend), 10)}{" "}
-              {padStart(totalSpend() > 0 ? formatPercent(model.spend / totalSpend()) : "—", 7)}{" "}
-              {padEnd(`${formatTokens(model.totalTokens)} ${formatTokenBreakdown(model.inputTokens, model.outputTokens)}`, 24)}{" "}
-              {padStart(formatTokens(model.requests), 7)}
+              {padEnd(shortModel(model.model, 25), 26)} {padStart(formatUsd(model.spend), 9)}{" "}
+              {padStart(totalSpend() > 0 ? formatPercent(model.spend / totalSpend()) : "—", 6)}{" "}
+              {padEnd(`${formatTokens(model.totalTokens)} ${formatTokenBreakdown(model.inputTokens, model.outputTokens)}`, 22)}{" "}
+              {padStart(formatTokens(model.requests), 6)}{" "}
+              {padStart(formatOutputInputRatio(model.inputTokens, model.outputTokens), 6)}
             </text>
           )}
         </For>

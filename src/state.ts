@@ -3,10 +3,13 @@ import {
   DEFAULT_BASE_URL,
   aggregateByModel,
   avgSpendLastNDays,
+  endOfLastMonth,
   getApiKeySelf,
   getUsageSelf,
   spendForDay,
   startOfCurrentMonth,
+  startOfLastMonth,
+  totalSpendFromUsage,
   type ApiKeyInfo,
   type ModelUsage,
   type UsageResponse,
@@ -25,6 +28,7 @@ export type RequestyData = {
   todaySpend: number
   avg7d: number
   avg30d: number
+  lastMonthSpend: number
 }
 
 export type RequestyStoreOptions = {
@@ -76,7 +80,18 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const todaySpend = spendForDay(usage)
         const avg7d = avgSpendLastNDays(usage, 7)
         const avg30d = avgSpendLastNDays(usage, 30)
-        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, avg7d, avg30d })
+        let lastMonthSpend = 0
+        try {
+          const lastMonthUsage = await fetchUsage(baseUrl, options.apiKey, {
+            start: startOfLastMonth(),
+            end: endOfLastMonth(),
+            resolution: "day",
+          })
+          lastMonthSpend = totalSpendFromUsage(lastMonthUsage)
+        } catch {
+          // last month data is non-critical; continue without it
+        }
+        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, avg7d, avg30d, lastMonthSpend })
         setState({ status: "ready", fetchedAt: new Date() })
         lastError = undefined
       } catch (error) {

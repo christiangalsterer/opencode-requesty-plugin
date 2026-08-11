@@ -53,6 +53,7 @@ describe("createRequestyStore", () => {
     assert.equal(data!.todaySpend, 0)
     assert.equal(data!.avg7d, 0)
     assert.equal(data!.avg30d, 0)
+    assert.equal(data!.lastMonthSpend, 0)
   })
 
   test("error sets state to error and calls onError", async () => {

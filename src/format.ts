@@ -35,6 +35,15 @@ export function formatTokenBreakdown(inputTokens: number, outputTokens: number):
   return `(↑${formatTokens(inputTokens)} ↓${formatTokens(outputTokens)})`
 }
 
+/**
+ * Output/input token ratio as a 2-decimal string, e.g. "0.37".
+ * Returns "—" when input is 0 (avoids division by zero).
+ */
+export function formatOutputInputRatio(inputTokens: number, outputTokens: number): string {
+  if (inputTokens <= 0) return "—"
+  return (outputTokens / inputTokens).toFixed(2)
+}
+
 const BAR_WIDTH = 16
 const BAR_FILLED = "▓"
 const BAR_EMPTY = "░"
@@ -86,6 +95,20 @@ export function projectedMonthEnd(spend: number, date = new Date()): number {
   return day > 0 ? (spend / day) * days : 0
 }
 
+/** Days remaining in the month (inclusive of today). */
+export function daysRemaining(date = new Date()): number {
+  return daysInMonth(date) - dayOfMonth(date) + 1
+}
+
+/**
+ * Days until budget exhaustion at the given daily average spend rate.
+ * Returns undefined when there is no limit (unlimited) or no average.
+ */
+export function daysToExhaustion(spend: number, limit: number, avgDailySpend: number): number | undefined {
+  if (limit <= 0 || avgDailySpend <= 0) return undefined
+  return Math.floor((limit - spend) / avgDailySpend)
+}
+
 export type Pace = "under" | "on" | "over"
 
 /** Spend-ratio vs time-elapsed ratio within this many percentage points is "on pace". */
@@ -123,6 +146,20 @@ export function formatProjection(spend: number, limit: number, date = new Date()
   const projected = projectedMonthEnd(spend, date)
   const marker = paceMarker(paceStatus(spend, limit, date))
   return marker ? `~${formatUsd(projected)} EOM ${marker}` : `~${formatUsd(projected)} EOM`
+}
+
+/**
+ * Format a month-over-month delta, e.g. "▲ +42% ($8.80 last month)".
+ * Compares projected month-end spend to last month's total.
+ * Returns empty string when last month had no spend or no current spend to project from.
+ */
+export function formatMonthDelta(currentSpend: number, lastMonthSpend: number, date = new Date()): string {
+  if (lastMonthSpend <= 0 || currentSpend <= 0) return ""
+  const projected = projectedMonthEnd(currentSpend, date)
+  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100)
+  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "→"
+  const sign = pct > 0 ? "+" : ""
+  return `${arrow} ${sign}${pct}% (${formatUsd(lastMonthSpend)} last month)`
 }
 
 /** Requesty.ai analytics dashboard URL filtered to a specific API key name. */

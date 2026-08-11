@@ -165,9 +165,28 @@ export function aggregateByModel(response: UsageResponse): ModelUsage[] {
   return [...byModel.values()].sort((a, b) => b.spend - a.spend)
 }
 
+/** Sum all spend across every entry in a usage response. */
+export function totalSpendFromUsage(response: UsageResponse): number {
+  let total = 0
+  for (const entry of Object.values(response.usage ?? {})) {
+    total += toNumber(entry.spend)
+  }
+  return total
+}
+
 /** RFC3339 timestamp for the start of the current calendar month (UTC). */
 export function startOfCurrentMonth(now = new Date()): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
+}
+
+/** RFC3339 timestamp for the start of the previous calendar month (UTC). */
+export function startOfLastMonth(now = new Date()): string {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString()
+}
+
+/** RFC3339 timestamp for the end of the previous calendar month (UTC). */
+export function endOfLastMonth(now = new Date()): string {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59)).toISOString()
 }
 
 /** Format a Date as a `YYYY-MM-DD` key matching the usage response (UTC). */

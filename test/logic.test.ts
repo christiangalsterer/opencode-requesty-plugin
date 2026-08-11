@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
-import { aggregateByModel, avgSpendLastNDays, dayKey, spendForDay, startOfCurrentMonth, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, formatLimit, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -98,6 +98,37 @@ describe("startOfCurrentMonth", () => {
   test("returns first day of month in UTC", () => {
     const now = new Date("2026-08-09T15:30:00Z")
     assert.equal(startOfCurrentMonth(now), "2026-08-01T00:00:00.000Z")
+  })
+})
+
+describe("startOfLastMonth / endOfLastMonth", () => {
+  test("returns first and last day of previous month in UTC", () => {
+    const now = new Date("2026-08-09T15:30:00Z")
+    assert.equal(startOfLastMonth(now), "2026-07-01T00:00:00.000Z")
+    assert.equal(endOfLastMonth(now), "2026-07-31T23:59:59.000Z")
+  })
+
+  test("handles January (rolls to previous year)", () => {
+    const now = new Date("2026-01-15T12:00:00Z")
+    assert.equal(startOfLastMonth(now), "2025-12-01T00:00:00.000Z")
+    assert.equal(endOfLastMonth(now), "2025-12-31T23:59:59.000Z")
+  })
+})
+
+describe("totalSpendFromUsage", () => {
+  test("sums spend across all entries", () => {
+    const usage = {
+      usage: {
+        "2026-07-01": { spend: "1.50" },
+        "2026-07-02": { spend: "3.20" },
+        "2026-07-03": { spend: 2 },
+      },
+    } as unknown as UsageResponse
+    assert.equal(totalSpendFromUsage(usage), 6.7)
+  })
+
+  test("returns 0 for empty usage", () => {
+    assert.equal(totalSpendFromUsage({ usage: {} }), 0)
   })
 })
 
@@ -211,6 +242,16 @@ describe("format helpers", () => {
     assert.equal(formatTokenBreakdown(500, 0), "(↑500 ↓0)")
     assert.equal(formatTokenBreakdown(0, 3_000_000_000), "(↑0 ↓3.0B)")
     assert.equal(formatTokenBreakdown(1_500, 2_500_000), "(↑1.5k ↓2.5M)")
+  })
+
+  test("formatOutputInputRatio", () => {
+    assert.equal(formatOutputInputRatio(1_000, 200), "0.20")
+    assert.equal(formatOutputInputRatio(300, 110), "0.37")
+    assert.equal(formatOutputInputRatio(80, 18), "0.23")
+    assert.equal(formatOutputInputRatio(1_000, 500), "0.50")
+    assert.equal(formatOutputInputRatio(100, 0), "0.00")
+    assert.equal(formatOutputInputRatio(0, 200), "—")
+    assert.equal(formatOutputInputRatio(0, 0), "—")
   })
 
   test("shortModel", () => {
@@ -331,6 +372,42 @@ describe("month projection", () => {
     // spend 7, day 15, days 31 → (7/15)*31 = 14.4666…
     const result = formatProjection(7, 0, aug15)
     assert.ok(result.startsWith("~$14.46 EOM"), `expected ~$14.46 EOM…, got ${result}`)
+  })
+
+  test("daysRemaining counts days left including today", () => {
+    // Aug 15 → 31 - 15 + 1 = 17 days left
+    assert.equal(daysRemaining(aug15), 17)
+    // Aug 1 → 31 days left
+    assert.equal(daysRemaining(new Date("2026-08-01T12:00:00Z")), 31)
+    // Aug 31 → 1 day left
+    assert.equal(daysRemaining(new Date("2026-08-31T12:00:00Z")), 1)
+  })
+
+  test("daysToExhaustion computes days until budget runs out", () => {
+    // remaining 70, avg 2/day → 35
+    assert.equal(daysToExhaustion(30, 100, 2), 35)
+    // remaining 10, avg 6/day → 1 (floored)
+    assert.equal(daysToExhaustion(90, 100, 6), 1)
+  })
+
+  test("daysToExhaustion returns undefined for unlimited or no average", () => {
+    assert.equal(daysToExhaustion(30, 0, 2), undefined)
+    assert.equal(daysToExhaustion(30, 100, 0), undefined)
+  })
+
+  test("formatMonthDelta compares projected spend to last month", () => {
+    // current spend 15 (projected 31), last month 10 → +210%
+    assert.equal(formatMonthDelta(15, 10, aug15), `▲ +210% ($10.00 last month)`)
+    // current spend 3 (projected 6.2), last month 20 → -69%
+    assert.equal(formatMonthDelta(3, 20, aug15), `▼ -69% ($20.00 last month)`)
+    // same projected as last month → →
+    // current spend 10 (projected 20.666…), last month ~20.67 → 0%
+    assert.equal(formatMonthDelta(10, (10 / 15) * 31, aug15), `→ 0% (${formatUsd((10 / 15) * 31)} last month)`)
+  })
+
+  test("formatMonthDelta is empty when no current or last month spend", () => {
+    assert.equal(formatMonthDelta(0, 10, aug15), "")
+    assert.equal(formatMonthDelta(10, 0, aug15), "")
   })
 })
 
