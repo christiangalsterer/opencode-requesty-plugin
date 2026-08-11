@@ -16,7 +16,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   const theme = () => props.theme
   const data = () => props.store.data()
   const state = () => props.store.state()
-  const fetchedAt = () => state().status === "ready" ? (state() as { fetchedAt: Date }).fetchedAt.toLocaleTimeString() : "—"
+  const fetchedAt = () => state().status === "ready" ? (state() as { fetchedAt: Date }).fetchedAt.toLocaleString("sv-SE", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).replace("T", " ") : "—"
 
   return (
     <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1}>
@@ -41,7 +41,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
       </Show>
 
       <text fg={theme().textMuted} paddingTop={1}>
-        {padEnd("r: refresh · esc: close", 60)}{padStart(`Updated: ${fetchedAt()}`, 22)}
+        {padEnd("r: refresh · esc: close", 54)}{padStart(`Updated: ${fetchedAt()}`, 28)}
       </text>
     </box>
   )
