@@ -27,7 +27,7 @@ gemini-2.5-pro               $1.00
 
 **Detail dialog** — run `/requesty` or pick *Requesty: show usage* from the command palette:
 
-- Key summary (name, spend/limit, last-updated time)
+- Spend vs. limit, last-updated time
 - Full per-model table: spend, share of total, tokens, request count
 - `r` to refresh, `esc` to close
 

@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, monthName, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { analyticsUrl, formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -20,7 +20,14 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   return (
     <box flexDirection="column" paddingLeft={1} paddingRight={1} paddingTop={1}>
       <text fg={theme().text}>
-        <strong>Requesty.ai — key usage ({monthName()})</strong>
+        <Show
+          when={data()}
+          fallback={<strong>Requesty</strong>}
+        >
+          <a href={analyticsUrl(data()!.keyInfo.name)}>
+            <strong>Requesty ({data()!.keyInfo.name})</strong>
+          </a>
+        </Show>
       </text>
 
       <Show when={data()} fallback={<text fg={theme().textMuted}>{state().status === "loading" ? "Loading…" : "No data yet."}</text>}>
@@ -44,23 +51,17 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
-  const fetchedAt = () => {
-    const state = props.store.state()
-    return state.status === "ready" ? state.fetchedAt.toLocaleTimeString() : "—"
-  }
 
   return (
     <box flexDirection="column" paddingTop={1}>
-      <text fg={props.theme.text}>Key: {data().keyInfo.name}</text>
       <text fg={props.theme.text}>
-        Monthly spend: {formatUsd(spend())} of {formatLimit(limit())}
+        {formatUsd(spend())} of {formatLimit(limit())}
       </text>
       <Show when={limit() > 0}>
         <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
           {renderBar(ratio(), 30)} {formatPercent(ratio())}
         </text>
       </Show>
-      <text fg={props.theme.textMuted}>Updated: {fetchedAt()}</text>
     </box>
   )
 }
@@ -69,6 +70,10 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
   const models = () => props.store.data()?.models ?? []
   const totalSpend = () => models().reduce((sum, model) => sum + model.spend, 0)
   const monthSpend = () => props.store.data()?.keyInfo.monthly_spend ?? totalSpend()
+  const fetchedAt = () => {
+    const state = props.store.state()
+    return state.status === "ready" ? state.fetchedAt.toLocaleTimeString() : "—"
+  }
 
   return (
     <box flexDirection="column" paddingTop={1}>
@@ -87,7 +92,7 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
           )}
         </For>
         <text fg={props.theme.textMuted} paddingTop={1}>
-          Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? "" : "s"}
+          {padEnd(`Total: ${formatUsd(monthSpend())} across ${models().length} model${models().length === 1 ? "" : "s"}`, 60)}{padStart(`Updated: ${fetchedAt()}`, 22)}
         </text>
       </Show>
     </box>
