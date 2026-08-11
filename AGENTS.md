@@ -4,9 +4,11 @@ opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly 
 
 ## Commands
 
+Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. If the exit code is non-zero, rerun the command **without** the redirect so the failure output is visible. Example: run `pnpm test >/dev/null 2>&1`; on failure rerun `pnpm test`.
+
 - `pnpm test` — node:test via tsx. The glob is intentionally **unquoted** (`tsx --test test/*.test.ts`): the shell must expand it, because Node 20's `--test` does not expand globs. Quoting it breaks with "Could not find ...".
 - Run one test file: `pnpm exec tsx --test test/logic.test.ts`
-- Verify changes: `pnpm run typecheck && pnpm test && pnpm run build` (no lint/format config exists).
+- Verify changes: `pnpm run typecheck && pnpm test && pnpm run build` (no lint/format config exists). Pipe the whole chain to `/dev/null` (`... >/dev/null 2>&1`); on non-zero exit rerun without the redirect.
 - `pnpm run build` — tsup bundles `src/index.tsx` → `dist/tui.js`. `dist/` is the published/loaded artifact; always rebuild after source changes.
 
 ## Hard-earned gotchas
