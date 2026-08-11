@@ -16,9 +16,10 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   const theme = () => props.theme
   const data = () => props.store.data()
   const state = () => props.store.state()
+  const fetchedAt = () => state().status === "ready" ? (state() as { fetchedAt: Date }).fetchedAt.toLocaleTimeString() : "—"
 
   return (
-    <box flexDirection="column" paddingLeft={1} paddingRight={1} paddingTop={1}>
+    <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1}>
       <text fg={theme().text}>
         <Show
           when={data()}
@@ -40,7 +41,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
       </Show>
 
       <text fg={theme().textMuted} paddingTop={1}>
-        r: refresh · esc: close
+        {padEnd("r: refresh · esc: close", 60)}{padStart(`Updated: ${fetchedAt()}`, 22)}
       </text>
     </box>
   )
@@ -70,10 +71,6 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
   const models = () => props.store.data()?.models ?? []
   const totalSpend = () => models().reduce((sum, model) => sum + model.spend, 0)
   const monthSpend = () => props.store.data()?.keyInfo.monthly_spend ?? totalSpend()
-  const fetchedAt = () => {
-    const state = props.store.state()
-    return state.status === "ready" ? state.fetchedAt.toLocaleTimeString() : "—"
-  }
 
   return (
     <box flexDirection="column" paddingTop={1}>
@@ -92,7 +89,7 @@ function ModelTable(props: { store: RequestyStore; theme: TuiThemeCurrent }): JS
           )}
         </For>
         <text fg={props.theme.textMuted} paddingTop={1}>
-          {padEnd(`Total: ${formatUsd(monthSpend())} across ${models().length} model${models().length === 1 ? "" : "s"}`, 60)}{padStart(`Updated: ${fetchedAt()}`, 22)}
+          Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? "" : "s"}
         </text>
       </Show>
     </box>
