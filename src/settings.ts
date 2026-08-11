@@ -15,6 +15,7 @@ const MAX_MAX_MODELS = 20
 export type PromptSettings = {
   enabled: boolean
   budgetIndicator: boolean
+  dailySpend: boolean
 }
 
 export type PluginSettings = {
@@ -49,5 +50,6 @@ function readPromptSettings(raw: unknown): PromptSettings {
   return {
     enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
     budgetIndicator: typeof obj.budgetIndicator === "boolean" ? obj.budgetIndicator : true,
+    dailySpend: typeof obj.dailySpend === "boolean" ? obj.dailySpend : true,
   }
 }

@@ -17,6 +17,7 @@ export type PromptIndicatorProps = {
   store: RequestyStore
   theme: TuiThemeCurrent
   thresholds: SpendThresholds
+  dailySpend: boolean
 }
 
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
@@ -139,7 +140,7 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
 
   return (
     <text fg={color()}>
-      <Show when={data()}>
+      <Show when={data() && props.dailySpend}>
         <span style={{ fg: props.theme.textMuted }}>{formatUsd(data()!.todaySpend)} </span>
       </Show>
       <a href={analyticsUrl(data()?.keyInfo.name ?? "")}>{linkLabel()}</a>

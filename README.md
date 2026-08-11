@@ -123,6 +123,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `errorThreshold`     | number | `0.9` (90%)                      | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100)        |
 | `prompt.enabled`          | boolean | `true`                          | Master switch for any prompt-area UI                                       |
 | `prompt.budgetIndicator`| boolean | `true`                          | Show spend/limit readout on the right side of the session prompt           |
+| `prompt.dailySpend`     | boolean | `true`                          | Show today's spend to the left of the budget indicator in the session prompt |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 
