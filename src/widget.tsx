@@ -120,7 +120,7 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
   const ratio = () => spendRatio(spend(), limit())
   const status = () => props.store.state().status
 
-  const label = () => {
+  const linkLabel = () => {
     if (status() === "loading" && !data()) return "Requesty …"
     if (status() === "error" && !data()) return "Requesty !"
     if (!data()) return "Requesty …"
@@ -136,7 +136,10 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
 
   return (
     <text fg={color()}>
-      <a href={analyticsUrl(data()?.keyInfo.name ?? "")}>{label()}</a>
+      <Show when={data()}>
+        <span style={{ fg: props.theme.textMuted }}>{formatUsd(data()!.todaySpend)} </span>
+      </Show>
+      <a href={analyticsUrl(data()?.keyInfo.name ?? "")}>{linkLabel()}</a>
     </text>
   )
 }

@@ -169,3 +169,28 @@ export function aggregateByModel(response: UsageResponse): ModelUsage[] {
 export function startOfCurrentMonth(now = new Date()): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
 }
+
+/** Format a Date as a `YYYY-MM-DD` key matching the usage response (UTC). */
+export function dayKey(now = new Date()): string {
+  return now.toISOString().slice(0, 10)
+}
+
+function toNumberOrZero(value: unknown): number {
+  if (typeof value === "number") return value
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
+}
+
+/**
+ * Sum spend for a specific day from a usage response. The response keys are
+ * `YYYY-MM-DD` date strings; `dayKey` defaults to today (UTC).
+ */
+export function spendForDay(response: UsageResponse, now = new Date()): number {
+  const key = dayKey(now)
+  const entry = response.usage?.[key]
+  if (!entry) return 0
+  return toNumberOrZero(entry.spend)
+}

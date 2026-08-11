@@ -1,6 +1,6 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
-import { aggregateByModel, startOfCurrentMonth, type UsageResponse } from "../src/api"
+import { aggregateByModel, dayKey, spendForDay, startOfCurrentMonth, type UsageResponse } from "../src/api"
 import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, formatLimit, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
@@ -98,6 +98,40 @@ describe("startOfCurrentMonth", () => {
   test("returns first day of month in UTC", () => {
     const now = new Date("2026-08-09T15:30:00Z")
     assert.equal(startOfCurrentMonth(now), "2026-08-01T00:00:00.000Z")
+  })
+})
+
+describe("spendForDay", () => {
+  const usage = {
+    usage: {
+      "2026-08-14": { spend: "1.50", grouped_data: [{ group_by_values: { model_used: "openai/gpt-5" }, spend: 1.5 }] },
+      "2026-08-15": { spend: "3.20", grouped_data: [{ group_by_values: { model_used: "openai/gpt-5" }, spend: 3.2 }] },
+    },
+  } as unknown as UsageResponse
+
+  test("dayKey returns YYYY-MM-DD in UTC", () => {
+    assert.equal(dayKey(new Date("2026-08-15T23:59:00Z")), "2026-08-15")
+    assert.equal(dayKey(new Date("2026-08-16T00:01:00Z")), "2026-08-16")
+  })
+
+  test("returns spend for the matching day", () => {
+    assert.equal(spendForDay(usage, new Date("2026-08-15T12:00:00Z")), 3.2)
+    assert.equal(spendForDay(usage, new Date("2026-08-14T12:00:00Z")), 1.5)
+  })
+
+  test("returns 0 when no entry for the day", () => {
+    assert.equal(spendForDay(usage, new Date("2026-08-01T12:00:00Z")), 0)
+  })
+
+  test("returns 0 for empty usage", () => {
+    assert.equal(spendForDay({ usage: {} }, new Date("2026-08-15T12:00:00Z")), 0)
+  })
+
+  test("coerces string decimals", () => {
+    const strUsage = {
+      usage: { "2026-08-15": { spend: "7.99" } },
+    } as unknown as UsageResponse
+    assert.equal(spendForDay(strUsage, new Date("2026-08-15T12:00:00Z")), 7.99)
   })
 })
 

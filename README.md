@@ -31,7 +31,7 @@ gemini-2.5-pro               $1.00
 - Full per-model table: spend, share of total, tokens, request count
 - `r` to refresh, `esc` to close
 
-**Prompt indicator** — a compact spend/limit readout on the right side of the session prompt (e.g. `$12.34/$50.00 24%`, colored by the same thresholds). Disable with `"prompt": { "budgetIndicator": false }`.
+**Prompt indicator** — today's spend followed by a compact spend/limit readout on the right side of the session prompt (e.g. `$3.20 $12.34/$50.00 24%`, colored by the same thresholds). Disable with `"prompt": { "budgetIndicator": false }`.
 
 Data comes from the [Requesty Management API](https://docs.requesty.ai/api-reference/management-apis) (`apikey/self` + `apikey/self/usage` grouped by `model_used`, current calendar month).
 

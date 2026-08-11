@@ -50,6 +50,7 @@ describe("createRequestyStore", () => {
     assert.equal(data!.models.length, 1)
     assert.equal(data!.models[0].model, "openai/gpt-5")
     assert.equal(data!.monthSpendFromUsage, 8)
+    assert.equal(data!.todaySpend, 0)
   })
 
   test("error sets state to error and calls onError", async () => {

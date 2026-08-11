@@ -4,6 +4,7 @@ import {
   aggregateByModel,
   getApiKeySelf,
   getUsageSelf,
+  spendForDay,
   startOfCurrentMonth,
   type ApiKeyInfo,
   type ModelUsage,
@@ -20,6 +21,7 @@ export type RequestyData = {
   keyInfo: ApiKeyInfo
   models: ModelUsage[]
   monthSpendFromUsage: number
+  todaySpend: number
 }
 
 export type RequestyStoreOptions = {
@@ -68,7 +70,8 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         })
         const models = aggregateByModel(usage)
         const monthSpendFromUsage = models.reduce((total, model) => total + model.spend, 0)
-        setData({ keyInfo, models, monthSpendFromUsage })
+        const todaySpend = spendForDay(usage)
+        setData({ keyInfo, models, monthSpendFromUsage, todaySpend })
         setState({ status: "ready", fetchedAt: new Date() })
         lastError = undefined
       } catch (error) {
