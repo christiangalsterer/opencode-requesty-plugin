@@ -10,6 +10,7 @@ An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](http
 Requesty (my-opencode-key)
 ▓▓▓▓░░░░░░░░░░░░ 24%
 $12.34 / $50.00 / ~$25.50 EOM ↓
+Today $3.20 / 7d $2.14 / 30d $1.05
 
 Top models (Aug)
 claude-sonnet-4-5            $8.20
@@ -21,6 +22,7 @@ gemini-2.5-pro               $1.00
 ```
 
 - Monthly spend vs. monthly limit (from `GET /v1/manage/apikey/self`), with projected month-end spend at the current run rate (`~$X EOM`). The pace marker shows ↑ over pace, → on pace, ↓ under pace; the projection turns red when it exceeds the limit.
+- Daily spend trend: today / 7-day average / 30-day average
 - Progress bar that turns yellow/red at configurable thresholds (default ≥70% / ≥90% of the limit)
 - API key name shown in the header, linking to the Requesty analytics dashboard filtered by that key
 - Top models by spend for the current month, with total tokens plus input (↑) / output (↓) breakdown

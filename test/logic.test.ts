@@ -1,6 +1,6 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
-import { aggregateByModel, dayKey, spendForDay, startOfCurrentMonth, type UsageResponse } from "../src/api"
+import { aggregateByModel, avgSpendLastNDays, dayKey, spendForDay, startOfCurrentMonth, type UsageResponse } from "../src/api"
 import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, formatLimit, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
@@ -132,6 +132,36 @@ describe("spendForDay", () => {
       usage: { "2026-08-15": { spend: "7.99" } },
     } as unknown as UsageResponse
     assert.equal(spendForDay(strUsage, new Date("2026-08-15T12:00:00Z")), 7.99)
+  })
+})
+
+describe("avgSpendLastNDays", () => {
+  const usage = {
+    usage: {
+      "2026-08-13": { spend: 2 },
+      "2026-08-14": { spend: 4 },
+      "2026-08-15": { spend: 6 },
+    },
+  } as unknown as UsageResponse
+  const now = new Date("2026-08-15T12:00:00Z")
+
+  test("averages spend over the last N days including today", () => {
+    // last 3 days: 2 + 4 + 6 = 12 / 3 = 4
+    assert.equal(avgSpendLastNDays(usage, 3, now), 4)
+  })
+
+  test("days with no entry count as 0", () => {
+    // last 5 days: 0 + 0 + 2 + 4 + 6 = 12 / 5 = 2.4
+    assert.equal(avgSpendLastNDays(usage, 5, now), 2.4)
+  })
+
+  test("returns 0 when days <= 0", () => {
+    assert.equal(avgSpendLastNDays(usage, 0, now), 0)
+    assert.equal(avgSpendLastNDays(usage, -1, now), 0)
+  })
+
+  test("returns 0 for empty usage", () => {
+    assert.equal(avgSpendLastNDays({ usage: {} }, 7, now), 0)
   })
 })
 

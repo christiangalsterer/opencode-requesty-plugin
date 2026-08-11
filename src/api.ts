@@ -194,3 +194,18 @@ export function spendForDay(response: UsageResponse, now = new Date()): number {
   if (!entry) return 0
   return toNumberOrZero(entry.spend)
 }
+
+/**
+ * Average daily spend over the last `days` calendar days (including today).
+ * Days with no usage entry count as 0. Returns 0 when `days` <= 0.
+ */
+export function avgSpendLastNDays(response: UsageResponse, days: number, now = new Date()): number {
+  if (days <= 0) return 0
+  let total = 0
+  for (let offset = 0; offset < days; offset++) {
+    const date = new Date(now)
+    date.setUTCDate(date.getUTCDate() - offset)
+    total += spendForDay(response, date)
+  }
+  return total / days
+}

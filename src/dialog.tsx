@@ -71,6 +71,9 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
           </span>
         </Show>
       </text>
+      <text fg={props.theme.textMuted}>
+        Today {formatUsd(data().todaySpend)} / 7d {formatUsd(data().avg7d)} / 30d {formatUsd(data().avg30d)}
+      </text>
     </box>
   )
 }

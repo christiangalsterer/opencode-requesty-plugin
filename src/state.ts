@@ -2,6 +2,7 @@ import { createSignal } from "solid-js"
 import {
   DEFAULT_BASE_URL,
   aggregateByModel,
+  avgSpendLastNDays,
   getApiKeySelf,
   getUsageSelf,
   spendForDay,
@@ -22,6 +23,8 @@ export type RequestyData = {
   models: ModelUsage[]
   monthSpendFromUsage: number
   todaySpend: number
+  avg7d: number
+  avg30d: number
 }
 
 export type RequestyStoreOptions = {
@@ -71,7 +74,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const models = aggregateByModel(usage)
         const monthSpendFromUsage = models.reduce((total, model) => total + model.spend, 0)
         const todaySpend = spendForDay(usage)
-        setData({ keyInfo, models, monthSpendFromUsage, todaySpend })
+        const avg7d = avgSpendLastNDays(usage, 7)
+        const avg30d = avgSpendLastNDays(usage, 30)
+        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, avg7d, avg30d })
         setState({ status: "ready", fetchedAt: new Date() })
         lastError = undefined
       } catch (error) {

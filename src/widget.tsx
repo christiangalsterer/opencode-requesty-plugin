@@ -86,6 +86,9 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
         </Show>
         {props.stale ? " (stale)" : ""}
       </text>
+      <text fg={props.theme.textMuted}>
+        Today {formatUsd(data().todaySpend)} / 7d {formatUsd(data().avg7d)} / 30d {formatUsd(data().avg30d)}
+      </text>
       <text> </text>
       <Show when={models().length > 0}>
         <text fg={props.theme.text}>
