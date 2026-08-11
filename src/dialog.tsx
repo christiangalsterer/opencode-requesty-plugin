@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { analyticsUrl, formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { analyticsUrl, formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, projectedMonthEnd, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -52,17 +52,25 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
+  const projection = () => formatProjection(spend(), limit())
+  const projectionOverLimit = () => limit() > 0 && projectedMonthEnd(spend()) > limit()
 
   return (
     <box flexDirection="column" paddingTop={1}>
-      <text fg={props.theme.text}>
-        {formatUsd(spend())} of {formatLimit(limit())}
-      </text>
       <Show when={limit() > 0}>
         <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
           {renderBar(ratio(), 30)} {formatPercent(ratio())}
         </text>
       </Show>
+      <text fg={props.theme.textMuted}>
+        {formatUsd(spend())} / {formatLimit(limit())}
+        <Show when={projection()}>
+          {" / "}
+          <span style={{ fg: projectionOverLimit() ? props.theme.error : undefined }}>
+            {projection()}
+          </span>
+        </Show>
+      </text>
     </box>
   )
 }

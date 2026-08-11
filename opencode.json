@@ -3,7 +3,10 @@
   "permission": {
     "bash": {
       "pnpm run typecheck && pnpm test && pnpm run build 2>&1 | tail -12": "allow",
-      "pnpm run typecheck && pnpm test && pnpm run build": "allow"
+      "pnpm run typecheck && pnpm test && pnpm run build": "allow",
+      "pnpm run typecheck *": "allow",
+      "pnpm run test *": "allow",
+      "pnpm run build *": "allow"
     }
   }
 }

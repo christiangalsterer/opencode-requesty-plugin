@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, monthName, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, monthName, padEnd, padStart, projectedMonthEnd, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -66,19 +66,27 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
   const models = () => data().models.slice(0, props.maxModels)
+  const projection = () => formatProjection(spend(), limit())
+  const projectionOverLimit = () => limit() > 0 && projectedMonthEnd(spend()) > limit()
 
   return (
     <box flexDirection="column">
-      <text fg={props.theme.text}>
-        {formatUsd(spend())} / {formatLimit(limit())}
-        {props.stale ? " (stale)" : ""}
-      </text>
       <Show when={limit() > 0}>
         <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
           {renderBar(ratio())} {formatPercent(ratio())}
         </text>
-        <text> </text>
       </Show>
+      <text fg={props.theme.textMuted}>
+        {formatUsd(spend())} / {formatLimit(limit())}
+        <Show when={projection()}>
+          {" / "}
+          <span style={{ fg: projectionOverLimit() ? props.theme.error : undefined }}>
+            {projection()}
+          </span>
+        </Show>
+        {props.stale ? " (stale)" : ""}
+      </text>
+      <text> </text>
       <Show when={models().length > 0}>
         <text fg={props.theme.text}>
           <strong>Top models ({monthName()})</strong>

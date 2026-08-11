@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, startOfCurrentMonth, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, formatLimit, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, formatLimit, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -209,6 +209,64 @@ describe("format helpers", () => {
       analyticsUrl("my key & co"),
       "https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=my%20key%20%26%20co",
     )
+  })
+})
+
+describe("month projection", () => {
+  // All dates fixed to 2026-08-15 (15/31 ≈ 48.4% of month elapsed).
+  const aug15 = new Date("2026-08-15T12:00:00Z")
+
+  test("projectedMonthEnd scales spend by daysInMonth / dayOfMonth", () => {
+    // $10 over 15 days → $20 over 31 days
+    assert.equal(projectedMonthEnd(10, aug15), (10 / 15) * 31)
+  })
+
+  test("dailyAverage is spend / dayOfMonth", () => {
+    assert.equal(dailyAverage(30, aug15), 2)
+    assert.equal(dailyAverage(0, aug15), 0)
+  })
+
+  test("paceStatus compares spend ratio to time ratio", () => {
+    // limit 100, spend 10 → 10% spent vs 48% elapsed → under
+    assert.equal(paceStatus(10, 100, aug15), "under")
+    // limit 100, spend 60 → 60% spent vs 48% elapsed → over
+    assert.equal(paceStatus(60, 100, aug15), "over")
+    // limit 100, spend 50 → 50% spent vs 48% elapsed → on (within tolerance)
+    assert.equal(paceStatus(50, 100, aug15), "on")
+  })
+
+  test("paceStatus returns undefined for unlimited (limit <= 0)", () => {
+    assert.equal(paceStatus(1000, 0, aug15), undefined)
+    assert.equal(paceStatus(1000, -1, aug15), undefined)
+  })
+
+  test("paceMarker glyphs", () => {
+    assert.equal(paceMarker("over"), "↑")
+    assert.equal(paceMarker("under"), "↓")
+    assert.equal(paceMarker("on"), "→")
+    assert.equal(paceMarker(undefined), "")
+  })
+
+  test("formatProjection renders `~$X EOM <marker>`", () => {
+    // limit 100, spend 60 → over pace; (60/15)*31 = 124.0
+    assert.equal(formatProjection(60, 100, aug15), `~${formatUsd((60 / 15) * 31)} EOM ↑`)
+    // limit 100, spend 10 → under pace; (10/15)*31 = 20.6666… → truncated to $20.66
+    assert.equal(formatProjection(10, 100, aug15), `~${formatUsd((10 / 15) * 31)} EOM ↓`)
+  })
+
+  test("formatProjection omits marker when limit is unlimited", () => {
+    // (30/15)*31 = 62.0
+    assert.equal(formatProjection(30, 0, aug15), `~${formatUsd((30 / 15) * 31)} EOM`)
+  })
+
+  test("formatProjection is empty when there is no spend", () => {
+    assert.equal(formatProjection(0, 100, aug15), "")
+  })
+
+  test("formatProjection truncates (not rounds) to 2 decimals", () => {
+    // spend 7, day 15, days 31 → (7/15)*31 = 14.4666…
+    const result = formatProjection(7, 0, aug15)
+    assert.ok(result.startsWith("~$14.46 EOM"), `expected ~$14.46 EOM…, got ${result}`)
   })
 })
 

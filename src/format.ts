@@ -57,6 +57,74 @@ export function monthName(date = new Date()): string {
   return date.toLocaleString("en-US", { month: "short" })
 }
 
+/** Number of days in the month of `date` (UTC). */
+export function daysInMonth(date = new Date()): number {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate()
+}
+
+/** Day of month (1-based, UTC). */
+export function dayOfMonth(date = new Date()): number {
+  return date.getUTCDate()
+}
+
+/** Fraction of the month elapsed [0,1] — dayOfMonth / daysInMonth. */
+export function monthElapsedRatio(date = new Date()): number {
+  const days = daysInMonth(date)
+  return days > 0 ? dayOfMonth(date) / days : 0
+}
+
+/** Average spend per day so far this month. */
+export function dailyAverage(spend: number, date = new Date()): number {
+  const day = dayOfMonth(date)
+  return day > 0 ? spend / day : 0
+}
+
+/** Projected month-end spend at the current daily run rate. */
+export function projectedMonthEnd(spend: number, date = new Date()): number {
+  const day = dayOfMonth(date)
+  const days = daysInMonth(date)
+  return day > 0 ? (spend / day) * days : 0
+}
+
+export type Pace = "under" | "on" | "over"
+
+/** Spend-ratio vs time-elapsed ratio within this many percentage points is "on pace". */
+export const PACE_TOLERANCE = 0.05
+
+/**
+ * Compare spend pace to calendar pace. Only meaningful with a limit > 0;
+ * returns undefined when the limit is unlimited (0 or negative).
+ *   spend/limit vs dayOfMonth/daysInMonth, within PACE_TOLERANCE → "on".
+ */
+export function paceStatus(spend: number, limit: number, date = new Date()): Pace | undefined {
+  if (limit <= 0) return undefined
+  const timeRatio = monthElapsedRatio(date)
+  const spendRatio = spend / limit
+  if (spendRatio - timeRatio > PACE_TOLERANCE) return "over"
+  if (timeRatio - spendRatio > PACE_TOLERANCE) return "under"
+  return "on"
+}
+
+/** Direction glyph for a pace: ↑ over, → on, ↓ under, "" when unlimited. */
+export function paceMarker(pace: Pace | undefined): string {
+  if (pace === "over") return "↑"
+  if (pace === "under") return "↓"
+  if (pace === "on") return "→"
+  return ""
+}
+
+/**
+ * One-line projection for the sidebar, e.g. "~$42.80 EOM ↑".
+ * Empty string when there is no spend to project from (spend <= 0).
+ * The pace marker is omitted when the limit is unlimited.
+ */
+export function formatProjection(spend: number, limit: number, date = new Date()): string {
+  if (spend <= 0) return ""
+  const projected = projectedMonthEnd(spend, date)
+  const marker = paceMarker(paceStatus(spend, limit, date))
+  return marker ? `~${formatUsd(projected)} EOM ${marker}` : `~${formatUsd(projected)} EOM`
+}
+
 /** Requesty.ai analytics dashboard URL filtered to a specific API key name. */
 export function analyticsUrl(keyName: string): string {
   return `https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=${encodeURIComponent(keyName)}`
