@@ -50,7 +50,9 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 
 ## References
 
-Use the following repositories for documentation, working code examples and the opencodea-ai/plugin source before grepping node_modules.
+For any library, framework, SDK, API, CLI tool, or cloud service documentation, **consult the Context7 MCP server first** (`resolve-library-id` → `query-docs`) to fetch current docs, even for well-known packages — training data may be stale. Only fall back to the URLs below if Context7 lacks the package or returns insufficient detail.
+
+Use the following repositories for documentation, working code examples.
 - https://opentui.com/docs/getting-started/ (TUI plugin API)
 - https://www.npmjs.com/package/@opencode-ai/plugin?activeTab=code (opencode plugin API types)
 - https://github.com/streetturtle/opencode-better-sidebar/tree/main (example plugin with sidebar slot, keymap, and prompt slot)
