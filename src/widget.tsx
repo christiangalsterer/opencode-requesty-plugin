@@ -1,6 +1,6 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, type JSX } from "solid-js"
-import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
+import { Show, For, createMemo, type JSX } from "solid-js"
+import type { TuiPluginApi, TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
 import { formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, monthName, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
 
@@ -15,6 +15,8 @@ export type WidgetProps = {
 
 export type PromptIndicatorProps = {
   store: RequestyStore
+  api: TuiPluginApi
+  sessionID: string
   theme: TuiThemeCurrent
   thresholds: SpendThresholds
   dailySpend: boolean
@@ -119,38 +121,54 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
 }
 
 export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Element {
-  const data = () => props.store.data()
-  const limit = () => data()?.keyInfo.monthly_limit ?? 0
-  const spend = () => data()?.keyInfo.monthly_spend ?? 0
-  const ratio = () => spendRatio(spend(), limit())
-  const status = () => props.store.state().status
+  const segments = createMemo(() => {
+    // Read host-tracked reactive state to force slot repaints on message updates.
+    props.store.version()
+    props.api.state.session.messages(props.sessionID).length
 
-  const linkLabel = () => {
-    if (status() === "loading" && !data()) return "Requesty …"
-    if (status() === "error" && !data()) return "Requesty !"
-    if (!data()) return "Requesty …"
-    const name = data()!.keyInfo.name
-    if (limit() > 0) return `${formatUsd(spend())}/${formatUsd(limit())} ${formatPercent(ratio())} (${name})`
-    return `${formatUsd(spend())}/unlimited (${name})`
-  }
+    const d = props.store.data()
+    const status = props.store.state().status
+    const limit = d?.keyInfo.monthly_limit ?? 0
+    const spend = d?.keyInfo.monthly_spend ?? 0
+    const ratio = spendRatio(spend, limit)
+    const name = d?.keyInfo.name ?? ""
+    const color = !d || limit <= 0
+      ? props.theme.textMuted
+      : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
+    const projectionLabel = formatProjection(spend, limit)
+    const projectionOverLimit = isProjectionOverLimit(spend, limit)
 
-  const color = () => {
-    if (!data() || limit() <= 0) return props.theme.textMuted
-    return severityColor(spendSeverity(ratio(), props.thresholds), props.theme)
-  }
-
-  const projectionLabel = () => formatProjection(spend(), limit())
-  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
+    const parts: { text: string; color?: unknown; href?: string }[] = []
+    if (d && props.dailySpend) {
+      parts.push({ text: `${formatUsd(d.todaySpend)} `, color: props.theme.textMuted })
+    }
+    if (status === "loading" && !d) {
+      parts.push({ text: "Requesty …", color: props.theme.textMuted })
+    } else if (status === "error" && !d) {
+      parts.push({ text: "Requesty !", color: props.theme.textMuted })
+    } else if (!d) {
+      parts.push({ text: "Requesty …", color: props.theme.textMuted })
+    } else {
+      const label = limit > 0
+        ? `${formatUsd(spend)}/${formatUsd(limit)} ${formatPercent(ratio)} (${name})`
+        : `${formatUsd(spend)}/unlimited (${name})`
+      parts.push({ text: label, color, href: analyticsUrl(name) })
+    }
+    if (props.monthlyProjection && projectionLabel) {
+      parts.push({ text: ` ${projectionLabel}`, color: projectionOverLimit ? props.theme.error : props.theme.textMuted })
+    }
+    return { parts, color }
+  })
 
   return (
-    <text fg={color()}>
-      <Show when={data() && props.dailySpend}>
-        <span style={{ fg: props.theme.textMuted }}>{formatUsd(data()!.todaySpend)} </span>
-      </Show>
-      <a href={analyticsUrl(data()?.keyInfo.name ?? "")}>{linkLabel()}</a>
-      <Show when={props.monthlyProjection && projectionLabel()}>
-        <span style={{ fg: projectionOverLimit() ? props.theme.error : props.theme.textMuted }}>{" "}{projectionLabel()}</span>
-      </Show>
+    <text fg={segments().color}>
+      <For each={segments().parts}>
+        {(seg) => (
+          <Show when={seg.href} fallback={<span style={{ fg: seg.color }}>{seg.text}</span>}>
+            <a href={seg.href!} style={{ fg: seg.color }}>{seg.text}</a>
+          </Show>
+        )}
+      </For>
     </text>
   )
 }

@@ -34,8 +34,6 @@ export type RequestyData = {
 export type RequestyStoreOptions = {
   apiKey: string
   baseUrl?: string
-  /** Minimum interval between automatic refreshes (activity-triggered). */
-  activityDebounceMs: number
   onError?: (message: string) => void
   /** Injectable fetchers (defaults to the real API client); used by tests. */
   fetchApiKey?: typeof getApiKeySelf
@@ -45,26 +43,30 @@ export type RequestyStoreOptions = {
 export type RequestyStore = {
   state: () => RefreshState
   data: () => RequestyData | undefined
-  /** Force a refresh (manual, interval, startup). */
+  /** Force a refresh (manual, interval, startup, session events). */
   refresh: () => Promise<void>
-  /** Debounced refresh for session-activity events. */
-  refreshFromActivity: () => void
+  /** Reactive version counter — bumps on message events to force slot re-renders. */
+  version: () => number
+  /** Bump the version counter (called on message events). */
+  bumpVersion: () => void
 }
 
 export function createRequestyStore(options: RequestyStoreOptions): RequestyStore {
   const [state, setState] = createSignal<RefreshState>({ status: "idle" })
   const [data, setData] = createSignal<RequestyData | undefined>(undefined)
+  const [version, setVersion] = createSignal(0)
 
   const fetchApiKey = options.fetchApiKey ?? getApiKeySelf
   const fetchUsage = options.fetchUsage ?? getUsageSelf
 
   let inFlight: Promise<void> | undefined
-  let lastAttempt = 0
-  let lastError: string | undefined
+  let pending = false
 
   async function refresh(): Promise<void> {
-    if (inFlight) return inFlight
-    lastAttempt = Date.now()
+    if (inFlight) {
+      pending = true
+      return inFlight
+    }
     setState((previous) => (previous.status === "ready" ? previous : { status: "loading" }))
     const baseUrl = options.baseUrl ?? DEFAULT_BASE_URL
     inFlight = (async () => {
@@ -73,7 +75,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const usage = await fetchUsage(baseUrl, options.apiKey, {
           start: startOfCurrentMonth(),
           groupBy: ["model_used"],
-          resolution: "day",
+          resolution: "day" as const,
         })
         const models = aggregateByModel(usage)
         const monthSpendFromUsage = models.reduce((total, model) => total + model.spend, 0)
@@ -93,30 +95,27 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         }
         setData({ keyInfo, models, monthSpendFromUsage, todaySpend, avg7d, avg30d, lastMonthSpend })
         setState({ status: "ready", fetchedAt: new Date() })
-        lastError = undefined
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        // Avoid spamming toasts for repeated identical failures.
-        if (message !== lastError) options.onError?.(message)
-        lastError = message
+        options.onError?.(message)
         setState({ status: "error", message })
       } finally {
         inFlight = undefined
+        if (pending) {
+          pending = false
+          void refresh()
+        }
       }
     })()
     return inFlight
-  }
-
-  function refreshFromActivity(): void {
-    if (Date.now() - lastAttempt < options.activityDebounceMs) return
-    void refresh()
   }
 
   return {
     state,
     data,
     refresh,
-    refreshFromActivity,
+    version,
+    bumpVersion: () => setVersion((v) => v + 1),
   }
 }
 

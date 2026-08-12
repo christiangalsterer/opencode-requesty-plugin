@@ -25,13 +25,11 @@ const USAGE: UsageResponse = {
 function createStore(opts: {
   fetchApiKey?: () => Promise<ApiKeyInfo>
   fetchUsage?: () => Promise<UsageResponse>
-  activityDebounceMs?: number
   onError?: (msg: string) => void
 }) {
   return createRequestyStore({
     apiKey: "sk-test",
     baseUrl: "https://api-v2.requesty.ai",
-    activityDebounceMs: opts.activityDebounceMs ?? 1000,
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
     fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE),
@@ -70,7 +68,7 @@ describe("createRequestyStore", () => {
     assert.equal(onError.mock.calls[0].arguments[0], "boom")
   })
 
-  test("concurrent refresh calls share a single in-flight promise", async () => {
+  test("concurrent refresh calls share a single in-flight promise, then run a follow-up", async () => {
     let calls = 0
     const store = createStore({
       fetchApiKey: () => {
@@ -81,44 +79,14 @@ describe("createRequestyStore", () => {
     const p1 = store.refresh()
     const p2 = store.refresh()
     await Promise.all([p1, p2])
-    assert.equal(calls, 1)
-  })
-
-  test("refreshFromActivity is debounced within the window", async () => {
-    let calls = 0
-    const store = createStore({
-      activityDebounceMs: 100,
-      fetchApiKey: () => {
-        calls++
-        return Promise.resolve(KEY_INFO)
-      },
-    })
-    await store.refresh()
-    assert.equal(calls, 1)
-    store.refreshFromActivity()
-    assert.equal(calls, 1)
-    store.refreshFromActivity()
-    assert.equal(calls, 1)
-  })
-
-  test("refreshFromActivity triggers after the debounce window", async () => {
-    let calls = 0
-    const store = createStore({
-      activityDebounceMs: 30,
-      fetchApiKey: () => {
-        calls++
-        return Promise.resolve(KEY_INFO)
-      },
-    })
-    await store.refresh()
-    assert.equal(calls, 1)
-    await new Promise((r) => setTimeout(r, 40))
-    store.refreshFromActivity()
-    await new Promise((r) => setTimeout(r, 10))
+    // p2 was debounced (pending=true), follow-up refresh starts immediately in finally
     assert.equal(calls, 2)
+    // Wait for follow-up to complete
+    await new Promise((r) => setTimeout(r, 50))
+    assert.equal(store.state().status, "ready")
   })
 
-  test("repeated identical errors call onError only once", async () => {
+  test("repeated identical errors call onError each time", async () => {
     const onError = mock.fn()
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error("same")),
@@ -127,7 +95,7 @@ describe("createRequestyStore", () => {
     await store.refresh()
     await store.refresh()
     await store.refresh()
-    assert.equal(onError.mock.callCount(), 1)
+    assert.equal(onError.mock.callCount(), 3)
   })
 
   test("a different error calls onError again", async () => {

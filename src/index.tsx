@@ -38,7 +38,6 @@ const plugin: TuiPluginModule = {
     const store: RequestyStore = createRequestyStore({
       apiKey: key.apiKey,
       baseUrl: settings.baseUrl,
-      activityDebounceMs: settings.activityDebounceMs,
       onError: (message) => {
         api.ui.toast({ variant: "error", title: "Requesty", message })
       },
@@ -59,8 +58,8 @@ const plugin: TuiPluginModule = {
       api.slots.register({
         order: 60,
         slots: {
-          session_prompt_right(ctx) {
-            return <RequestyPromptIndicator store={store} theme={ctx.theme.current} thresholds={settings.thresholds} dailySpend={settings.prompt.dailySpend} monthlyProjection={settings.prompt.monthlyProjection} />
+          session_prompt_right(ctx, slotProps) {
+            return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} dailySpend={settings.prompt.dailySpend} monthlyProjection={settings.prompt.monthlyProjection} />
           },
         },
       })
@@ -108,19 +107,30 @@ const plugin: TuiPluginModule = {
       ],
     })
 
-    // Refresh triggers: startup, interval, session activity (debounced)
+    // Refresh triggers: startup, interval safety net, session lifecycle
     void store.refresh()
 
     const interval = setInterval(() => {
       void store.refresh()
     }, settings.refreshIntervalMs)
 
+    const unsubSessionCreated = api.event.on("session.created", () => {
+      void store.refresh()
+    })
+
+    const unsubSessionIdle = api.event.on("session.idle", () => {
+      void store.refresh()
+    })
+
     const unsubMessage = api.event.on("message.updated", () => {
-      store.refreshFromActivity()
+      store.bumpVersion()
+      void store.refresh()
     })
 
     api.lifecycle.onDispose(() => {
       clearInterval(interval)
+      unsubSessionCreated()
+      unsubSessionIdle()
       unsubMessage()
     })
   },

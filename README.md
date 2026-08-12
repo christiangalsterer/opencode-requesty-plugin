@@ -109,15 +109,12 @@ Or via an environment variable:
 
 If no key is found, the widget shows a short setup hint instead of failing.
 
-> The plugin intentionally does **not** read opencode's `auth.json` credential store.
-
 ## Options
 
 | Option               | Type   | Default                          | Description                                                                 |
 | -------------------- | ------ | -------------------------------- | --------------------------------------------------------------------------- |
 | `baseUrl`            | string | `https://api-v2.requesty.ai`     | Management API base URL (e.g. for EU region)                                |
-| `refreshIntervalMs`  | number | `300000` (5 min)                 | Periodic refresh interval                                                   |
-| `activityDebounceMs` | number | `30000`                          | Minimum gap between activity-triggered refreshes                            |
+| `refreshIntervalMs`  | number | `300000` (5 min)                 | Periodic refresh interval (safety net)                                       |
 | `maxModels`          | number | `5`                              | Number of models shown in the compact sidebar list                          |
 | `warningThreshold`   | number | `0.7` (70%)                      | Budget usage ratio at which the bar turns yellow (accepts 0–1 or 0–100)     |
 | `errorThreshold`     | number | `0.9` (90%)                      | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100)        |
@@ -128,7 +125,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 
-Data is refreshed on startup, on the interval above, and (debounced) after session activity such as completed messages.
+Data is refreshed on startup, on a periodic interval, when a new session is created, and when messages are updated.
 
 ## Requirements
 

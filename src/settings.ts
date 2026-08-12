@@ -2,13 +2,10 @@ import { DEFAULT_BASE_URL } from "./api"
 import { resolveThresholds, type SpendThresholds } from "./format"
 
 const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000
-const DEFAULT_ACTIVITY_DEBOUNCE_MS = 30 * 1000
 const DEFAULT_MAX_MODELS = 5
 
 const MIN_REFRESH_INTERVAL_MS = 10 * 1000
 const MAX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
-const MIN_ACTIVITY_DEBOUNCE_MS = 1 * 1000
-const MAX_ACTIVITY_DEBOUNCE_MS = 60 * 60 * 1000
 const MIN_MAX_MODELS = 1
 const MAX_MAX_MODELS = 20
 
@@ -22,7 +19,6 @@ export type PromptSettings = {
 export type PluginSettings = {
   baseUrl: string
   refreshIntervalMs: number
-  activityDebounceMs: number
   maxModels: number
   thresholds: SpendThresholds
   prompt: PromptSettings
@@ -39,7 +35,6 @@ export function readSettings(options: Record<string, unknown> | undefined): Plug
   return {
     baseUrl: typeof options?.baseUrl === "string" && options.baseUrl.length > 0 ? options.baseUrl : DEFAULT_BASE_URL,
     refreshIntervalMs: clampNumber(options?.refreshIntervalMs, MIN_REFRESH_INTERVAL_MS, MAX_REFRESH_INTERVAL_MS, DEFAULT_REFRESH_INTERVAL_MS),
-    activityDebounceMs: clampNumber(options?.activityDebounceMs, MIN_ACTIVITY_DEBOUNCE_MS, MAX_ACTIVITY_DEBOUNCE_MS, DEFAULT_ACTIVITY_DEBOUNCE_MS),
     maxModels: typeof options?.maxModels === "number" && options.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(options.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
     prompt: readPromptSettings(options?.prompt),

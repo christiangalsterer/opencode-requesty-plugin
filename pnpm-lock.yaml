@@ -7,17 +7,22 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@opentui/core':
-        specifier: '>=0.4.5 <1'
-        version: 0.5.1(typescript@5.9.3)(web-tree-sitter@0.25.10)
     devDependencies:
+      '@babel/core':
+        specifier: ^7.28.0
+        version: 7.28.0
+      '@babel/preset-typescript':
+        specifier: ^7.27.0
+        version: 7.27.1(@babel/core@7.28.0)
       '@opencode-ai/plugin':
-        specifier: ^1.18.15
+        specifier: ^1.18.16
         version: 1.18.16(@opentui/core@0.5.1(typescript@5.9.3)(web-tree-sitter@0.25.10))(@opentui/keymap@0.5.1(@opentui/solid@0.5.1(solid-js@1.9.14)(typescript@5.9.3)(web-tree-sitter@0.25.10))(solid-js@1.9.14)(typescript@5.9.3)(web-tree-sitter@0.25.10))(@opentui/solid@0.5.1(solid-js@1.9.14)(typescript@5.9.3)(web-tree-sitter@0.25.10))
       '@opencode-ai/sdk':
-        specifier: ^1.18.15
+        specifier: ^1.18.16
         version: 1.18.16
+      '@opentui/core':
+        specifier: ^0.5.1
+        version: 0.5.1(typescript@5.9.3)(web-tree-sitter@0.25.10)
       '@opentui/keymap':
         specifier: ^0.5.1
         version: 0.5.1(@opentui/solid@0.5.1(solid-js@1.9.14)(typescript@5.9.3)(web-tree-sitter@0.25.10))(solid-js@1.9.14)(typescript@5.9.3)(web-tree-sitter@0.25.10)
@@ -27,6 +32,9 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3
+      babel-preset-solid:
+        specifier: ^1.9.12
+        version: 1.9.12(@babel/core@7.28.0)(solid-js@1.9.14)
       solid-js:
         specifier: ^1.9.12
         version: 1.9.14

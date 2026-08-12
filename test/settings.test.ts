@@ -6,7 +6,6 @@ import { DEFAULT_THRESHOLDS } from "../src/format"
 const DEFAULTS = {
   baseUrl: "https://api-v2.requesty.ai",
   refreshIntervalMs: 300000,
-  activityDebounceMs: 30000,
   maxModels: 5,
   thresholds: DEFAULT_THRESHOLDS,
   prompt: { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true },
@@ -25,14 +24,12 @@ describe("readSettings", () => {
     const settings = readSettings({
       baseUrl: "https://eu.requesty.ai",
       refreshIntervalMs: 60000,
-      activityDebounceMs: 5000,
       maxModels: 10,
       warningThreshold: 0.6,
       errorThreshold: 0.85,
     })
     assert.equal(settings.baseUrl, "https://eu.requesty.ai")
     assert.equal(settings.refreshIntervalMs, 60000)
-    assert.equal(settings.activityDebounceMs, 5000)
     assert.equal(settings.maxModels, 10)
     assert.deepEqual(settings.thresholds, { warning: 0.6, error: 0.85 })
   })
@@ -59,19 +56,6 @@ describe("readSettings", () => {
   test("refreshIntervalMs at boundaries is accepted", () => {
     assert.equal(readSettings({ refreshIntervalMs: 10000 }).refreshIntervalMs, 10000)
     assert.equal(readSettings({ refreshIntervalMs: 3_600_000 }).refreshIntervalMs, 3_600_000)
-  })
-
-  test("activityDebounceMs below minimum → default", () => {
-    assert.equal(readSettings({ activityDebounceMs: 500 }).activityDebounceMs, DEFAULTS.activityDebounceMs)
-  })
-
-  test("activityDebounceMs above maximum → default", () => {
-    assert.equal(readSettings({ activityDebounceMs: 3_600_001 }).activityDebounceMs, DEFAULTS.activityDebounceMs)
-  })
-
-  test("activityDebounceMs at boundaries is accepted", () => {
-    assert.equal(readSettings({ activityDebounceMs: 1000 }).activityDebounceMs, 1000)
-    assert.equal(readSettings({ activityDebounceMs: 3_600_000 }).activityDebounceMs, 3_600_000)
   })
 
   test("maxModels below minimum → default", () => {
