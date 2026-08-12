@@ -60,7 +60,7 @@ const plugin: TuiPluginModule = {
         order: 60,
         slots: {
           session_prompt_right(ctx) {
-            return <RequestyPromptIndicator store={store} theme={ctx.theme.current} thresholds={settings.thresholds} dailySpend={settings.prompt.dailySpend} />
+            return <RequestyPromptIndicator store={store} theme={ctx.theme.current} thresholds={settings.thresholds} dailySpend={settings.prompt.dailySpend} monthlyProjection={settings.prompt.monthlyProjection} />
           },
         },
       })

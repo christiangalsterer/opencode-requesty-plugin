@@ -1,7 +1,7 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -408,6 +408,30 @@ describe("month projection", () => {
   test("formatMonthDelta is empty when no current or last month spend", () => {
     assert.equal(formatMonthDelta(0, 10, aug15), "")
     assert.equal(formatMonthDelta(10, 0, aug15), "")
+  })
+
+  test("isProjectionOverLimit is true when projected spend exceeds limit", () => {
+    // spend 60, limit 100 → projects (60/15)*31 = 124 > 100
+    assert.equal(isProjectionOverLimit(60, 100, aug15), true)
+  })
+
+  test("isProjectionOverLimit is false when projected spend is under limit", () => {
+    // spend 10, limit 100 → projects (10/15)*31 ≈ 20.67 < 100
+    assert.equal(isProjectionOverLimit(10, 100, aug15), false)
+  })
+
+  test("isProjectionOverLimit is false when projected spend equals limit exactly", () => {
+    // spend 15, limit 31 → projects (15/15)*31 = 31 (clean integers, no FP drift)
+    assert.equal(isProjectionOverLimit(15, 31, aug15), false)
+  })
+
+  test("isProjectionOverLimit is false for unlimited (limit <= 0)", () => {
+    assert.equal(isProjectionOverLimit(60, 0, aug15), false)
+    assert.equal(isProjectionOverLimit(60, -1, aug15), false)
+  })
+
+  test("isProjectionOverLimit is false when there is no spend", () => {
+    assert.equal(isProjectionOverLimit(0, 100, aug15), false)
   })
 })
 

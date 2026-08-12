@@ -33,7 +33,7 @@ gemini-2.5-pro               $1.00
 - Full per-model table: spend, share of total, tokens, request count
 - `r` to refresh, `esc` to close
 
-**Prompt indicator** — today's spend followed by a compact spend/limit readout on the right side of the session prompt (e.g. `$3.20 $12.34/$50.00 24%`, colored by the same thresholds). Disable with `"prompt": { "budgetIndicator": false }`.
+**Prompt indicator** — today's spend followed by a compact spend/limit readout on the right side of the session prompt (e.g. `$3.20 $12.34/$50.00 24%`, colored by the same thresholds). When `prompt.monthlyProjection` is enabled, a month-end projection (`~$X EOM ↑`) is always appended, colored red when the estimate exceeds the budget (e.g. `$3.20 $42.80/$50.00 86% (my-opencode-key) ~$53.07 EOM ↑`). Disable the readout with `"prompt": { "budgetIndicator": false }`.
 
 Data comes from the [Requesty Management API](https://docs.requesty.ai/api-reference/management-apis) (`apikey/self` + `apikey/self/usage` grouped by `model_used`, current calendar month).
 
@@ -124,6 +124,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `prompt.enabled`          | boolean | `true`                          | Master switch for any prompt-area UI                                       |
 | `prompt.budgetIndicator`| boolean | `true`                          | Show spend/limit readout on the right side of the session prompt           |
 | `prompt.dailySpend`     | boolean | `true`                          | Show today's spend to the left of the budget indicator in the session prompt |
+| `prompt.monthlyProjection` | boolean | `true`                        | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 

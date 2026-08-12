@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, monthName, padEnd, padStart, projectedMonthEnd, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, monthName, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -18,6 +18,7 @@ export type PromptIndicatorProps = {
   theme: TuiThemeCurrent
   thresholds: SpendThresholds
   dailySpend: boolean
+  monthlyProjection: boolean
 }
 
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
@@ -68,7 +69,7 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
   const ratio = () => spendRatio(spend(), limit())
   const models = () => data().models.slice(0, props.maxModels)
   const projection = () => formatProjection(spend(), limit())
-  const projectionOverLimit = () => limit() > 0 && projectedMonthEnd(spend()) > limit()
+  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
 
   return (
     <box flexDirection="column">
@@ -138,12 +139,18 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     return severityColor(spendSeverity(ratio(), props.thresholds), props.theme)
   }
 
+  const projectionLabel = () => formatProjection(spend(), limit())
+  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
+
   return (
     <text fg={color()}>
       <Show when={data() && props.dailySpend}>
         <span style={{ fg: props.theme.textMuted }}>{formatUsd(data()!.todaySpend)} </span>
       </Show>
       <a href={analyticsUrl(data()?.keyInfo.name ?? "")}>{linkLabel()}</a>
+      <Show when={props.monthlyProjection && projectionLabel()}>
+        <span style={{ fg: projectionOverLimit() ? props.theme.error : props.theme.textMuted }}>{" "}{projectionLabel()}</span>
+      </Show>
     </text>
   )
 }

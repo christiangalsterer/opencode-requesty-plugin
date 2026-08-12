@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { analyticsUrl, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, projectedMonthEnd, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { analyticsUrl, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -60,7 +60,7 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
     return ` · ${status} · exhausts in ${d}d (7d average)`
   }
   const projection = () => formatProjection(spend(), limit())
-  const projectionOverLimit = () => limit() > 0 && projectedMonthEnd(spend()) > limit()
+  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
 
   return (
     <box flexDirection="column" paddingTop={1}>

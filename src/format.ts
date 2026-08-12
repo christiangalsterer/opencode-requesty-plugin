@@ -101,6 +101,15 @@ export function daysRemaining(date = new Date()): number {
 }
 
 /**
+ * Whether the projected month-end spend exceeds the budget limit.
+ * Returns false when there is no limit (unlimited) or the projection
+ * is at or below the limit (strictly "over").
+ */
+export function isProjectionOverLimit(spend: number, limit: number, date = new Date()): boolean {
+  return limit > 0 && projectedMonthEnd(spend, date) > limit
+}
+
+/**
  * Days until budget exhaustion at the given daily average spend rate.
  * Returns undefined when there is no limit (unlimited) or no average.
  */

@@ -9,7 +9,7 @@ const DEFAULTS = {
   activityDebounceMs: 30000,
   maxModels: 5,
   thresholds: DEFAULT_THRESHOLDS,
-  prompt: { enabled: true, budgetIndicator: true, dailySpend: true },
+  prompt: { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true },
 }
 
 describe("readSettings", () => {
@@ -105,9 +105,9 @@ describe("readSettings", () => {
     assert.deepEqual(readSettings({ warningThreshold: 60, errorThreshold: 85 }).thresholds, { warning: 0.6, error: 0.85 })
   })
 
-  test("prompt defaults to all enabled", () => {
-    assert.deepEqual(readSettings(undefined).prompt, { enabled: true, budgetIndicator: true, dailySpend: true })
-    assert.deepEqual(readSettings({}).prompt, { enabled: true, budgetIndicator: true, dailySpend: true })
+  test("prompt defaults to all enabled (monthlyProjection on)", () => {
+    assert.deepEqual(readSettings(undefined).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
+    assert.deepEqual(readSettings({}).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
   })
 
   test("prompt.enabled can be disabled", () => {
@@ -122,15 +122,21 @@ describe("readSettings", () => {
     assert.equal(readSettings({ prompt: { dailySpend: false } }).prompt.dailySpend, false)
   })
 
+  test("prompt.monthlyProjection defaults to true and can be disabled", () => {
+    assert.equal(readSettings(undefined).prompt.monthlyProjection, true)
+    assert.equal(readSettings({ prompt: { monthlyProjection: false } }).prompt.monthlyProjection, false)
+  })
+
   test("prompt non-boolean values → defaults", () => {
     assert.equal(readSettings({ prompt: { enabled: "no" } }).prompt.enabled, true)
     assert.equal(readSettings({ prompt: { budgetIndicator: 0 } }).prompt.budgetIndicator, true)
     assert.equal(readSettings({ prompt: { dailySpend: "yes" } }).prompt.dailySpend, true)
+    assert.equal(readSettings({ prompt: { monthlyProjection: "yes" } }).prompt.monthlyProjection, true)
     assert.equal(readSettings({ prompt: { enabled: undefined } }).prompt.enabled, true)
   })
 
   test("prompt non-object → defaults", () => {
-    assert.deepEqual(readSettings({ prompt: "nope" }).prompt, { enabled: true, budgetIndicator: true, dailySpend: true })
-    assert.deepEqual(readSettings({ prompt: null }).prompt, { enabled: true, budgetIndicator: true, dailySpend: true })
+    assert.deepEqual(readSettings({ prompt: "nope" }).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
+    assert.deepEqual(readSettings({ prompt: null }).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
   })
 })

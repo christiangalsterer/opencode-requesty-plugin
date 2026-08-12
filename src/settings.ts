@@ -16,6 +16,7 @@ export type PromptSettings = {
   enabled: boolean
   budgetIndicator: boolean
   dailySpend: boolean
+  monthlyProjection: boolean
 }
 
 export type PluginSettings = {
@@ -51,5 +52,6 @@ function readPromptSettings(raw: unknown): PromptSettings {
     enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
     budgetIndicator: typeof obj.budgetIndicator === "boolean" ? obj.budgetIndicator : true,
     dailySpend: typeof obj.dailySpend === "boolean" ? obj.dailySpend : true,
+    monthlyProjection: typeof obj.monthlyProjection === "boolean" ? obj.monthlyProjection : true,
   }
 }
