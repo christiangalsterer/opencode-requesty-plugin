@@ -45,8 +45,8 @@ export function formatOutputInputRatio(inputTokens: number, outputTokens: number
 }
 
 const BAR_WIDTH = 16
-const BAR_FILLED = "■"
-const BAR_EMPTY = "□"
+const BAR_FILLED = "▓"
+const BAR_EMPTY = "░"
 
 export function renderBar(ratio: number, width = BAR_WIDTH): string {
   const clamped = Math.max(0, Math.min(1, ratio))

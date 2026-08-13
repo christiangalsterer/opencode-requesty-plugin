@@ -72,16 +72,13 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
   const models = () => data().models.slice(0, props.maxModels)
   const projection = () => formatProjection(spend(), limit())
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
-  const barColor = () => severityColor(spendSeverity(ratio(), props.thresholds), props.theme)
-  const progressBar = createMemo(() => renderBar(ratio()))
 
   return (
     <box flexDirection="column">
       <Show when={limit() > 0}>
-        <box flexDirection="row">
-          <text fg={barColor()}>{progressBar()}</text>
-          <text fg={barColor()}> {formatPercent(ratio())}</text>
-        </box>
+        <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
+          {renderBar(ratio())} {formatPercent(ratio())}
+        </text>
       </Show>
       <text fg={props.theme.textMuted}>
         {formatUsd(spend())} / {formatLimit(limit())}
