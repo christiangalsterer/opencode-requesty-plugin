@@ -1,12 +1,1 @@
-{
-  "$schema": "https://opencode.ai/config.json",
-  "permission": {
-    "bash": {
-      "*": "ask",
-      "pnpm run typecheck *": "allow",
-      "pnpm run test *": "allow",
-      "pnpm test *": "allow",
-      "pnpm run build *": "allow"
-    }
-  }
-}
+{"$schema": "https://opencode.ai/config.json", "permission": {"bash": {"*": "ask", "bun run typecheck *": "allow", "bun test *": "allow", "bun run build *": "allow"}}}

@@ -16,4 +16,11 @@ permissions:
 
 jobs:
   ci:
-    uses: christiangalsterer/github-actions/.github/workflows/node_ci.yaml@main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run build

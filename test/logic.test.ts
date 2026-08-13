@@ -1,4 +1,4 @@
-import { describe, test } from "node:test"
+import { describe, test } from "bun:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
 import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"

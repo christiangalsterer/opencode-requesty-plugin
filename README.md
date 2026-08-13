@@ -75,11 +75,11 @@ Point at a local checkout instead:
 
 ```json
 {
-  "plugin": ["file:///absolute/path/to/opencode-requesty-plugin/dist/tui.js"]
+  "plugin": ["file:///absolute/path/to/opencode-requesty-plugin/dist/tui.tsx"]
 }
 ```
 
-Run `pnpm install && pnpm run build` in the checkout first.
+Run `bun install && bun run build` in the checkout first.
 
 ## API key detection
 
@@ -135,14 +135,13 @@ Data is refreshed on startup, on a periodic interval, when a new session is crea
 ## Development
 
 ```bash
-pnpm install
-pnpm run build       # bundle to dist/tui.js (tsup)
-pnpm run typecheck   # tsc --noEmit over src/, test/ and tsup.config.ts
-pnpm test            # unit tests via tsx + node:test
-pnpm run dev         # watch-mode build
+bun install
+bun run build       # copy src/index.tsx → dist/tui.tsx
+bun run typecheck   # tsc --noEmit over src/ and test/
+bun test            # unit tests via bun:test
 ```
 
-The project is fully typed TypeScript (`strict` mode). Sources live in `src/` (`.ts`/`.tsx`), tests in `test/`, and the build uses esbuild via `tsup` with the `@opentui/solid` JSX transform.
+The project is fully typed TypeScript (`strict` mode). Sources live in `src/` (`.ts`/`.tsx`), tests in `test/`. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used.
 
 ## License
 

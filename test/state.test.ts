@@ -1,4 +1,4 @@
-import { describe, test, mock } from "node:test"
+import { describe, test, mock } from "bun:test"
 import assert from "node:assert/strict"
 import { createRequestyStore } from "../src/state"
 import type { ApiKeyInfo, UsageResponse } from "../src/api"
@@ -55,7 +55,7 @@ describe("createRequestyStore", () => {
   })
 
   test("error sets state to error and calls onError", async () => {
-    const onError = mock.fn()
+    const onError = mock((_message: string) => {})
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error("boom")),
       onError,
@@ -64,8 +64,8 @@ describe("createRequestyStore", () => {
     assert.equal(store.state().status, "error")
     assert.equal((store.state() as { message: string }).message, "boom")
     assert.equal(store.data(), undefined)
-    assert.equal(onError.mock.callCount(), 1)
-    assert.equal(onError.mock.calls[0].arguments[0], "boom")
+    assert.equal(onError.mock.calls.length, 1)
+    assert.equal(onError.mock.calls[0][0], "boom")
   })
 
   test("concurrent refresh calls share a single in-flight promise, then run a follow-up", async () => {
@@ -87,7 +87,7 @@ describe("createRequestyStore", () => {
   })
 
   test("repeated identical errors call onError each time", async () => {
-    const onError = mock.fn()
+    const onError = mock((_message: string) => {})
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error("same")),
       onError,
@@ -95,11 +95,11 @@ describe("createRequestyStore", () => {
     await store.refresh()
     await store.refresh()
     await store.refresh()
-    assert.equal(onError.mock.callCount(), 3)
+    assert.equal(onError.mock.calls.length, 3)
   })
 
   test("a different error calls onError again", async () => {
-    const onError = mock.fn()
+    const onError = mock((_message: string) => {})
     let err = "first"
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error(err)),
@@ -108,8 +108,8 @@ describe("createRequestyStore", () => {
     await store.refresh()
     err = "second"
     await store.refresh()
-    assert.equal(onError.mock.callCount(), 2)
-    assert.equal(onError.mock.calls[0].arguments[0], "first")
-    assert.equal(onError.mock.calls[1].arguments[0], "second")
+    assert.equal(onError.mock.calls.length, 2)
+    assert.equal(onError.mock.calls[0][0], "first")
+    assert.equal(onError.mock.calls[1][0], "second")
   })
 })
