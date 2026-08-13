@@ -8,7 +8,7 @@ An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](http
 
 ```
 Requesty (my-opencode-key)
-▓▓▓▓░░░░░░░░░░░░ 24%
+■■■■□□□□□□□□□□□□ 24%
 $12.34 / $50.00 / ~$25.50 EOM ↓
 Today $3.20 / 7d $2.14 / 30d $1.05
 

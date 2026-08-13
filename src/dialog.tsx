@@ -1,5 +1,5 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, type JSX } from "solid-js"
+import { Show, For, createMemo, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
 import { analyticsUrl, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
@@ -61,13 +61,16 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
   }
   const projection = () => formatProjection(spend(), limit())
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
+  const barColor = () => severityColor(spendSeverity(ratio(), props.thresholds), props.theme)
+  const progressBar = createMemo(() => renderBar(ratio(), 30))
 
   return (
     <box flexDirection="column" paddingTop={1}>
       <Show when={limit() > 0}>
-        <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
-          {renderBar(ratio(), 30)} {formatPercent(ratio())}
-        </text>
+        <box flexDirection="row">
+          <text fg={barColor()}>{progressBar()}</text>
+          <text fg={barColor()}> {formatPercent(ratio())}</text>
+        </box>
       </Show>
       <text fg={props.theme.textMuted}>
         {formatUsd(spend())} / {formatLimit(limit())}

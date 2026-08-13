@@ -230,10 +230,10 @@ describe("format helpers", () => {
   })
 
   test("renderBar", () => {
-    assert.equal(renderBar(0, 10), "░░░░░░░░░░")
-    assert.equal(renderBar(1, 10), "▓▓▓▓▓▓▓▓▓▓")
-    assert.equal(renderBar(0.5, 10), "▓▓▓▓▓░░░░░")
-    assert.equal(renderBar(2, 10), "▓▓▓▓▓▓▓▓▓▓") // clamped
+    assert.equal(renderBar(0, 10), "□□□□□□□□□□")
+    assert.equal(renderBar(1, 10), "■■■■■■■■■■")
+    assert.equal(renderBar(0.5, 10), "■■■■■□□□□□")
+    assert.equal(renderBar(2, 10), "■■■■■■■■■■") // clamped
   })
 
   test("formatTokenBreakdown", () => {
