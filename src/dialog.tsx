@@ -16,6 +16,7 @@ import {
   formatTokens,
   formatUsd,
   isProjectionOverLimit,
+  modelAnalyticsUrl,
   padEnd,
   padStart,
   renderBar,
@@ -119,42 +120,34 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
         />
       </Show>
       <Show when={projectionParts()}>
-        <box flexDirection="column">
-          <text
-            fg={isProjectionOverLimit(spend(), limit()) ? props.theme.error : props.theme.text}
-          >
-            <strong>~{formatUsd(projectionParts()!.projected)}</strong>
-          </text>
-          <text fg={props.theme.textMuted}>
-            End of Month{" "}
-            <Show when={projectionParts()!.arrow}>
-              <span style={{ fg: paceColor(projectionParts()!.pace) }}>{projectionParts()!.arrow}</span>
-            </Show>
-          </text>
-        </box>
+        <TrendMetric
+          label="End of Month"
+          value={`~${formatUsd(projectionParts()!.projected)}`}
+          theme={props.theme}
+          color={isProjectionOverLimit(spend(), limit()) ? props.theme.error : props.theme.text}
+          indicator={
+            projectionParts()!.arrow
+              ? { text: projectionParts()!.arrow, color: paceColor(projectionParts()!.pace) }
+              : undefined
+          }
+        />
       </Show>
       <Show when={monthDelta()}>
-        <box flexDirection="column">
-          <text fg={props.theme.text}>
-            <strong>{formatUsd(data().lastMonthSpend)}</strong>
-          </text>
-          <text fg={props.theme.textMuted}>
-            last month{" "}
-            <span
-              style={{
-                fg:
-                  monthDelta()!.pct > 0
-                    ? props.theme.error
-                    : monthDelta()!.pct < 0
-                      ? props.theme.success
-                      : props.theme.textMuted,
-              }}
-            >
-              {monthDelta()!.arrow}
-            </span>{" "}
-            {monthDelta()!.sign}{monthDelta()!.pct}%
-          </text>
-        </box>
+        <TrendMetric
+          label="last month"
+          value={formatUsd(data().lastMonthSpend)}
+          theme={props.theme}
+          color={props.theme.text}
+          indicator={{
+            text: `${monthDelta()!.arrow} ${monthDelta()!.sign}${monthDelta()!.pct}%`,
+            color:
+              monthDelta()!.pct > 0
+                ? props.theme.error
+                : monthDelta()!.pct < 0
+                  ? props.theme.success
+                  : props.theme.textMuted,
+          }}
+        />
       </Show>
     </box>
   )
@@ -172,6 +165,29 @@ function Metric(props: {
         <strong>{props.value}</strong>
       </text>
       <text fg={props.theme.textMuted}>{props.label}</text>
+    </box>
+  )
+}
+
+function TrendMetric(props: {
+  label: string
+  value: string
+  theme: TuiThemeCurrent
+  color: TuiThemeCurrent["text"]
+  indicator?: { text: string; color: unknown }
+}): JSX.Element {
+  return (
+    <box flexDirection="column">
+      <text fg={props.color}>
+        <strong>{props.value}</strong>
+      </text>
+      <text fg={props.theme.textMuted}>
+        {props.label}
+        <Show when={props.indicator}>
+          {" "}
+          <span style={{ fg: props.indicator!.color }}>{props.indicator!.text}</span>
+        </Show>
+      </text>
     </box>
   )
 }
@@ -268,7 +284,7 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
       >
         <TableHeader theme={props.theme} />
         <For each={models()}>
-          {(model) => <ModelRow model={model} totalSpend={totalSpend()} theme={props.theme} />}
+          {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
         </For>
         <text fg={props.theme.textMuted}>
           Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? "" : "s"}
@@ -291,11 +307,14 @@ function TableHeader(props: { theme: TuiThemeCurrent }): JSX.Element {
   )
 }
 
-function ModelRow(props: { model: ModelUsage; totalSpend: number; theme: TuiThemeCurrent }): JSX.Element {
+function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: string; theme: TuiThemeCurrent }): JSX.Element {
   const share = props.totalSpend > 0 ? formatPercent(props.model.spend / props.totalSpend) : "—"
   return (
     <text fg={props.theme.text}>
-      {padEnd(shortModel(props.model.model, 25), 26)} {padStart(formatUsd(props.model.spend), 9)}{" "}
+      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>
+        {padEnd(shortModel(props.model.model, 25), 26)}
+      </a>{" "}
+      {padStart(formatUsd(props.model.spend), 9)}{" "}
       {padStart(share, 6)}{" "}
       {padEnd(
         `${formatTokens(props.model.totalTokens)} ${formatTokenBreakdown(props.model.inputTokens, props.model.outputTokens)}`,

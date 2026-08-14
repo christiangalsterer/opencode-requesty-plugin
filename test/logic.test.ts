@@ -1,7 +1,7 @@
 import { describe, test } from "bun:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatMonthDeltaParts, formatOutputInputRatio, formatProjection, formatProjectionParts, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatMonthDeltaParts, formatOutputInputRatio, formatProjection, formatProjectionParts, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, modelAnalyticsUrl, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -322,6 +322,13 @@ describe("format helpers", () => {
     assert.equal(
       analyticsUrl("my key & co"),
       "https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=my%20key%20%26%20co",
+    )
+  })
+
+  test("modelAnalyticsUrl adds a model filter to the dashboard URL", () => {
+    assert.equal(
+      modelAnalyticsUrl("my-opencode-key", "anthropic/claude-sonnet-4-5"),
+      "https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=my-opencode-key&filter.model=anthropic%2Fclaude-sonnet-4-5",
     )
   })
 })

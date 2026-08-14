@@ -13,7 +13,7 @@ Requesty (my-opencode-key)
 $12.34    ·    $50.00    ·    ~$25.50 EOM ↓
 Today $3.20    ·    7d $2.14    ·    30d $1.05
 
-Top Models (Aug)
+Top Models (Current Month)
 claude-sonnet-4-5            $8.20
   1.2M (↑1.0M ↓200.0k)
 gpt-5                        $3.14

@@ -62,10 +62,6 @@ export function shortModel(model: string, maxLength: number): string {
   return short.slice(0, Math.max(1, maxLength - 1)) + "…"
 }
 
-export function monthName(date = new Date()): string {
-  return date.toLocaleString("en-US", { month: "short" })
-}
-
 /** Format a Date as a compact locale string for the "Updated" footer. */
 export function formatTimestamp(date: Date): string {
   return date
@@ -225,6 +221,11 @@ export function formatMonthDelta(currentSpend: number, lastMonthSpend: number, d
 /** Requesty.ai analytics dashboard URL filtered to a specific API key name. */
 export function analyticsUrl(keyName: string): string {
   return `https://app.requesty.ai/analytics/advanced?groupBy=model&metric=cost&aggMethod=sum&timeRange=this_month&timeGroup=day&filter.api_key=${encodeURIComponent(keyName)}`
+}
+
+/** Requesty.ai analytics dashboard URL filtered to a specific API key name and model. */
+export function modelAnalyticsUrl(keyName: string, modelName: string): string {
+  return `${analyticsUrl(keyName)}&filter.model=${encodeURIComponent(modelName)}`
 }
 
 /** Severity of budget usage, used to color the progress bar. */
