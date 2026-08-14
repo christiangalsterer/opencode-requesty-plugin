@@ -40,11 +40,11 @@ Data comes from the [Requesty Management API](https://docs.requesty.ai/api-refer
 
 ## Installation
 
-Add the plugin to your `opencode.json` (project root or `~/.config/opencode/opencode.json`):
+Add the plugin to your `tui.json` (project root or `~/.config/opencode/tui.json`):
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
+  $schema": "https://opencode.ai/tui.json",
   "plugin": ["opencode-requesty-plugin"]
 }
 ```
@@ -53,7 +53,7 @@ Or with options:
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
+  $schema": "https://opencode.ai/tui.json",
   "plugin": [
     [
       "opencode-requesty-plugin",
@@ -137,9 +137,9 @@ Data is refreshed on startup, on a periodic interval, when a new session is crea
 
 ```bash
 bun install
-bun run build       # copy src/index.tsx → dist/tui.tsx
 bun run typecheck   # tsc --noEmit over src/ and test/
 bun test            # unit tests via bun:test
+bun run build       # copy src/index.tsx → dist/tui.tsx
 ```
 
 The project is fully typed TypeScript (`strict` mode). Sources live in `src/` (`.ts`/`.tsx`), tests in `test/`. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used.
