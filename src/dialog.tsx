@@ -2,7 +2,7 @@
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { analyticsUrl, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
+import { analyticsUrl, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatPercent, formatProjection, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, padEnd, padStart, renderBar, severityColor, shortModel, spendRatio, spendSeverity, type SpendThresholds } from "./format"
 
 export type DetailDialogProps = {
   store: RequestyStore
@@ -16,7 +16,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   const theme = () => props.theme
   const data = () => props.store.data()
   const state = () => props.store.state()
-  const fetchedAt = () => state().status === "ready" ? (state() as { fetchedAt: Date }).fetchedAt.toLocaleString("sv-SE", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).replace("T", " ") : "—"
+  const fetchedAt = () => state().status === "ready" ? formatTimestamp((state() as { fetchedAt: Date }).fetchedAt) : "—"
 
   return (
     <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1}>
@@ -60,7 +60,6 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
     return ` · ${status} · exhausts in ${d}d (7d average)`
   }
   const projection = () => formatProjection(spend(), limit())
-  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
 
   return (
     <box flexDirection="column" paddingTop={1}>
@@ -70,25 +69,27 @@ function KeySummary(props: { store: RequestyStore; theme: TuiThemeCurrent; thres
         </text>
       </Show>
       <text fg={props.theme.textMuted}>
-        {formatUsd(spend())} / {formatLimit(limit())}
-        <Show when={projection()}>
-          {" / "}
-          <span style={{ fg: projectionOverLimit() ? props.theme.error : undefined }}>
-            {projection()}
-          </span>
-        </Show>
+        Spent {formatUsd(spend())}
       </text>
       <text fg={props.theme.textMuted}>
-        Today {formatUsd(data().todaySpend)} / 7d {formatUsd(data().avg7d)} / 30d {formatUsd(data().avg30d)}
+        Limit {formatLimit(limit())}
       </text>
       <Show when={limit() > 0}>
         <text fg={props.theme.textMuted}>
           Remaining: {formatUsd(limit() - spend())} ({daysRemaining()}d left){exhaustionLabel()}
         </text>
       </Show>
+      <text fg={props.theme.textMuted}>
+        Averages: today {formatUsd(data().todaySpend)} · 7d avg {formatUsd(data().avg7d)} · 30d avg {formatUsd(data().avg30d)}
+      </text>
       <Show when={formatMonthDelta(spend(), data().lastMonthSpend)}>
         <text fg={props.theme.textMuted}>
           vs last month: {formatMonthDelta(spend(), data().lastMonthSpend)}
+        </text>
+      </Show>
+      <Show when={projection()}>
+        <text fg={props.theme.textMuted}>
+          Estimation: {projection()}
         </text>
       </Show>
     </box>

@@ -31,9 +31,18 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
   return value
 }
 
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value)
+    return url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 export function readSettings(options: Record<string, unknown> | undefined): PluginSettings {
   return {
-    baseUrl: typeof options?.baseUrl === "string" && options.baseUrl.length > 0 ? options.baseUrl : DEFAULT_BASE_URL,
+    baseUrl: typeof options?.baseUrl === "string" && options.baseUrl.length > 0 && isValidHttpUrl(options.baseUrl) ? options.baseUrl : DEFAULT_BASE_URL,
     refreshIntervalMs: clampNumber(options?.refreshIntervalMs, MIN_REFRESH_INTERVAL_MS, MAX_REFRESH_INTERVAL_MS, DEFAULT_REFRESH_INTERVAL_MS),
     maxModels: typeof options?.maxModels === "number" && options.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(options.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),

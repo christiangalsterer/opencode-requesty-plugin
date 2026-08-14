@@ -38,6 +38,20 @@ describe("readSettings", () => {
     assert.equal(readSettings({ baseUrl: "" }).baseUrl, DEFAULTS.baseUrl)
   })
 
+  test("baseUrl missing protocol → default", () => {
+    assert.equal(readSettings({ baseUrl: "api-v2.requesty.ai" }).baseUrl, DEFAULTS.baseUrl)
+  })
+
+  test("baseUrl invalid protocol → default", () => {
+    assert.equal(readSettings({ baseUrl: "htps://api-v2.requesty.ai" }).baseUrl, DEFAULTS.baseUrl)
+    assert.equal(readSettings({ baseUrl: "ftp://api-v2.requesty.ai" }).baseUrl, DEFAULTS.baseUrl)
+  })
+
+  test("baseUrl http or https is accepted", () => {
+    assert.equal(readSettings({ baseUrl: "https://eu.requesty.ai" }).baseUrl, "https://eu.requesty.ai")
+    assert.equal(readSettings({ baseUrl: "http://localhost:8080" }).baseUrl, "http://localhost:8080")
+  })
+
   test("non-number refreshIntervalMs → default", () => {
     assert.equal(readSettings({ refreshIntervalMs: "fast" }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
     assert.equal(readSettings({ refreshIntervalMs: undefined }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)

@@ -66,6 +66,21 @@ export function monthName(date = new Date()): string {
   return date.toLocaleString("en-US", { month: "short" })
 }
 
+/** Format a Date as a compact locale string for the "Updated" footer. */
+export function formatTimestamp(date: Date): string {
+  return date
+    .toLocaleString("sv-SE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    })
+    .replace("T", " ")
+}
+
 /** Number of days in the month of `date` (UTC). */
 export function daysInMonth(date = new Date()): number {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate()

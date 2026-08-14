@@ -14,11 +14,11 @@ Today $3.20 / 7d $2.14 / 30d $1.05
 
 Top models (Aug)
 claude-sonnet-4-5            $8.20
-  1.2M (↑1.0M ↓200k)
+  1.2M (↑1.0M ↓200.0k)
 gpt-5                        $3.14
-  410k (↑300k ↓110k)
+  410.0k (↑300.0k ↓110.0k)
 gemini-2.5-pro               $1.00
-  98k (↑80k ↓18k)
+  98.0k (↑80.0k ↓18.0k)
 ```
 
 - Monthly spend vs. monthly limit (from `GET /v1/manage/apikey/self`), with projected month-end spend at the current run rate (`~$X EOM`). The pace marker shows ↑ over pace, → on pace, ↓ under pace; the projection turns red when it exceeds the limit.

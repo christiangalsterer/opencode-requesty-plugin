@@ -1,7 +1,7 @@
 import { describe, test } from "bun:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -205,6 +205,15 @@ describe("format helpers", () => {
     assert.equal(formatUsd(0.001), "$0.00")
     assert.equal(formatUsd(8), "$8.00")
     assert.equal(formatUsd(18.21894606), "$18.21")
+  })
+
+  test("formatTimestamp renders a locale string with spaces", () => {
+    const formatted = formatTimestamp(new Date("2026-08-14T23:05:09.123Z"))
+    assert.ok(formatted.includes("2026"))
+    assert.ok(formatted.includes("08"))
+    assert.ok(formatted.includes("14"))
+    assert.ok(formatted.includes("23"))
+    assert.ok(!formatted.includes("T"))
   })
 
   test("formatTokens", () => {

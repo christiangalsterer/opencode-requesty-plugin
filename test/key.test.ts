@@ -1,56 +1,130 @@
-import { describe, test, afterEach } from "bun:test"
+import { describe, test, beforeEach, afterEach } from "bun:test"
 import assert from "node:assert/strict"
 import { detectApiKey } from "../src/key"
 
-const ENV_KEY = "REQUESTY_API_KEY"
-const savedEnv = process.env[ENV_KEY]
-
-afterEach(() => {
-  if (savedEnv === undefined) delete process.env[ENV_KEY]
-  else process.env[ENV_KEY] = savedEnv
-})
-
 describe("detectApiKey", () => {
-  test("reads canonical requesty provider config", () => {
-    delete process.env[ENV_KEY]
-    const result = detectApiKey({ provider: { requesty: { options: { apiKey: "config-key" } } } })
-    assert.deepEqual(result, { ok: true, apiKey: "config-key", source: "opencode provider config (requesty)" })
+  const originalEnv = { ...process.env }
+
+  beforeEach(() => {
+    delete process.env.REQUESTY_TEST_KEY
+    delete process.env.REQUESTY_EMPTY_KEY
+    delete process.env.REQUESTY_WHITESPACE_KEY
   })
 
-  test("resolves {env:VAR} interpolation in provider config", () => {
-    delete process.env[ENV_KEY]
-    process.env.MY_REQUESTY_KEY = "interpolated-key"
-    const result = detectApiKey({ provider: { requesty: { options: { apiKey: "{env:MY_REQUESTY_KEY}" } } } })
-    assert.deepEqual(result, { ok: true, apiKey: "interpolated-key", source: "opencode provider config (requesty)" })
-    delete process.env.MY_REQUESTY_KEY
+  afterEach(() => {
+    process.env = { ...originalEnv }
   })
 
-  test("detects custom providers with a Requesty baseURL", () => {
-    delete process.env[ENV_KEY]
+  test("returns error when no providers are configured", () => {
+    const result = detectApiKey({})
+    assert.equal(result.ok, false)
+    assert.ok((result as { reason: string }).reason.includes("No Requesty API key found"))
+  })
+
+  test("detects canonical provider.requesty.options.apiKey", () => {
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "sk-test" } } },
+    })
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.apiKey, "sk-test")
+    assert.ok(result.source.includes("requesty"))
+  })
+
+  test("detects custom provider with Requesty baseURL", () => {
     const result = detectApiKey({
       provider: {
         "requesty-export": {
-          options: { baseURL: "https://router.eu.requesty.ai/v1", apiKey: "eu-key" },
+          options: {
+            baseURL: "https://api-v2.requesty.ai/v1",
+            apiKey: "sk-custom",
+          },
         },
       },
     })
-    assert.deepEqual(result, { ok: true, apiKey: "eu-key", source: "opencode provider config (requesty-export)" })
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.apiKey, "sk-custom")
+    assert.ok(result.source.includes("requesty-export"))
   })
 
-  test("ignores providers pointing at non-Requesty hosts", () => {
-    delete process.env[ENV_KEY]
+  test("ignores providers whose baseURL is not Requesty", () => {
     const result = detectApiKey({
       provider: {
-        openai: { options: { baseURL: "https://api.openai.com/v1", apiKey: "openai-key" } },
+        openai: {
+          options: {
+            baseURL: "https://api.openai.com/v1",
+            apiKey: "sk-openai",
+          },
+        },
       },
     })
     assert.equal(result.ok, false)
   })
 
-  test("reports failure when nothing is configured", () => {
-    delete process.env[ENV_KEY]
-    const result = detectApiKey(undefined)
+  test("trims whitespace from a plain API key", () => {
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "  sk-padded  " } } },
+    })
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.apiKey, "sk-padded")
+  })
+
+  test("resolves {env:VAR} and trims whitespace", () => {
+    process.env.REQUESTY_TEST_KEY = "  sk-from-env\n"
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "{env:REQUESTY_TEST_KEY}" } } },
+    })
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.apiKey, "sk-from-env")
+  })
+
+  test("empty string API key is rejected", () => {
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "" } } },
+    })
     assert.equal(result.ok, false)
-    assert.match((result as { reason: string }).reason, /provider\.requesty\.options\.apiKey/)
+  })
+
+  test("whitespace-only API key is rejected", () => {
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "   " } } },
+    })
+    assert.equal(result.ok, false)
+  })
+
+  test("empty env var is rejected", () => {
+    process.env.REQUESTY_EMPTY_KEY = ""
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "{env:REQUESTY_EMPTY_KEY}" } } },
+    })
+    assert.equal(result.ok, false)
+  })
+
+  test("whitespace-only env var is rejected", () => {
+    process.env.REQUESTY_WHITESPACE_KEY = "  \n  "
+    const result = detectApiKey({
+      provider: { requesty: { options: { apiKey: "{env:REQUESTY_WHITESPACE_KEY}" } } },
+    })
+    assert.equal(result.ok, false)
+  })
+
+  test("prefers canonical requesty provider over custom Requesty providers", () => {
+    const result = detectApiKey({
+      provider: {
+        "requesty-export": {
+          options: { baseURL: "https://api-v2.requesty.ai", apiKey: "sk-custom" },
+        },
+        requesty: {
+          options: { apiKey: "sk-canonical" },
+        },
+      },
+    })
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.apiKey, "sk-canonical")
+    assert.ok(result.source.includes("requesty"))
   })
 })

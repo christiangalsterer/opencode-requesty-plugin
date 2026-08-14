@@ -1,3 +1,4 @@
+/** @jsxImportSource @opentui/solid */
 import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
 import { detectApiKey } from "./key"
 import { createRequestyStore, type RequestyStore } from "./state"

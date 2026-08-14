@@ -28,13 +28,13 @@ type SdkConfigLike = {
 }
 
 function resolveValue(raw: unknown): string | undefined {
-  if (typeof raw !== "string" || raw.length === 0) return undefined
+  if (typeof raw !== "string" || raw.trim().length === 0) return undefined
   const match = ENV_INTERPOLATION.exec(raw.trim())
   if (match) {
     const value = process.env[match[1]]
-    return value && value.length > 0 ? value : undefined
+    return value && value.trim().length > 0 ? value.trim() : undefined
   }
-  return raw
+  return raw.trim()
 }
 
 function isRequestyProvider(provider: ProviderConfig, name: string): boolean {

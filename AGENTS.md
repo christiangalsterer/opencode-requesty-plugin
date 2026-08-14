@@ -2,6 +2,10 @@
 
 opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly budget/spend in the session sidebar, plus a detail dialog via `/requesty`.
 
+## Output Guidelines
+
+Do not include code changes, diffs, or patch output in responses unless the user explicitly asks for them.
+
 ## Commands
 
 Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. If the exit code is non-zero, rerun the command **without** the redirect so the failure output is visible. Example: run `bun test >/dev/null 2>&1`; on failure rerun `bun test`.
