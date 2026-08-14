@@ -256,7 +256,7 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
       border
       borderStyle="single"
       borderColor={props.theme.textMuted}
-      title="Model Breakdown"
+      title="Model Breakdown (Current Month)"
       titleColor={props.theme.textMuted}
       flexDirection="column"
       padding={1}
