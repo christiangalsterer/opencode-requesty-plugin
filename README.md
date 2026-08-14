@@ -33,7 +33,7 @@ gemini-2.5-pro               $1.00
 - Top KPI row with spent, limit, remaining, End of Month projection with a colored pace arrow, and last month spend with a colored trend chevron
 - *Budget Overview* card with a wide progress bar, colored budget-health badge, and daily averages
 - *Model Breakdown (Current Month)* card with a full per-model table: spend, share of total, tokens, request count
-- `r` to refresh, `esc` to close
+- **Refresh** r · **Close** esc
 
 **Prompt indicator** — today's spend followed by a compact spend/limit readout on the right side of the session prompt (e.g. `$3.20 $12.34/$50.00 24%`, colored by the same thresholds). When `prompt.monthlyProjection` is enabled, a month-end projection (`~$X EOM ↑`) is always appended, colored red when the estimate exceeds the budget (e.g. `$3.20 $42.80/$50.00 86% (my-opencode-key) ~$53.07 EOM ↑`). Disable the readout with `"prompt": { "budgetIndicator": false }`.
 

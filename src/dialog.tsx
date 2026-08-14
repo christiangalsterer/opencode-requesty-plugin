@@ -317,7 +317,17 @@ function Footer(props: { fetchedAt: string; theme: TuiThemeCurrent }): JSX.Eleme
       paddingX={1}
       alignItems="center"
     >
-      <text fg={props.theme.textMuted}>r: refresh · esc: close</text>
+      <box flexDirection="row" gap={1}>
+        <text fg={props.theme.text}>
+          <strong>Refresh</strong>
+        </text>
+        <text fg={props.theme.textMuted}>r</text>
+        <text fg={props.theme.textMuted}>·</text>
+        <text fg={props.theme.text}>
+          <strong>Close</strong>
+        </text>
+        <text fg={props.theme.textMuted}>esc</text>
+      </box>
       <box flexGrow={1} />
       <text fg={props.theme.textMuted}>Updated: {props.fetchedAt}</text>
     </box>
