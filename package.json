@@ -1,6 +1,6 @@
 {
   "name": "@christiangalsterer/opencode-requesty-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, in the session prompt and with a detail dialog via the /requesty command",
   "type": "module",
   "exports": {
@@ -12,6 +12,14 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.18.16 <2",
+    "@opencode-ai/sdk": ">=1.18.16 <2",
+    "@opentui/core": ">=0.5.1 <1",
+    "@opentui/keymap": ">=0.5.1 <1",
+    "@opentui/solid": ">=0.5.1 <1",
+    "solid-js": ">=1.9.12 <2"
   },
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
