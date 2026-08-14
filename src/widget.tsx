@@ -38,28 +38,30 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
           </a>
         </Show>
       </text>
-      <Show
-        when={props.store.state().status !== "error"}
-        fallback={
-          <box flexDirection="column">
-            <text fg={theme().error}>Requesty: {props.store.state().status === "error" ? (props.store.state() as { message: string }).message : ""}</text>
-            <Show when={props.store.data()}>
-              <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} stale />
-            </Show>
-          </box>
-        }
-      >
+      <box flexDirection="column" paddingTop={1}>
         <Show
-          when={props.store.data()}
+          when={props.store.state().status !== "error"}
           fallback={
-            <text fg={theme().textMuted}>
-              {props.store.state().status === "loading" ? "Loading Requesty usage…" : "Requesty: waiting for first refresh…"}
-            </text>
+            <box flexDirection="column">
+              <text fg={theme().error}>Requesty: {props.store.state().status === "error" ? (props.store.state() as { message: string }).message : ""}</text>
+              <Show when={props.store.data()}>
+                <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} stale />
+              </Show>
+            </box>
           }
         >
-          <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} />
+          <Show
+            when={props.store.data()}
+            fallback={
+              <text fg={theme().textMuted}>
+                {props.store.state().status === "loading" ? "Loading Requesty usage…" : "Requesty: waiting for first refresh…"}
+              </text>
+            }
+          >
+            <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} />
+          </Show>
         </Show>
-      </Show>
+      </box>
     </box>
   )
 }
@@ -75,28 +77,43 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
 
   return (
     <box flexDirection="column">
-      <Show when={limit() > 0}>
-        <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
-          {renderBar(ratio())} {formatPercent(ratio())}
-        </text>
-      </Show>
-      <text fg={props.theme.textMuted}>
-        {formatUsd(spend())} / {formatLimit(limit())}
-        <Show when={projection()}>
-          {" / "}
-          <span style={{ fg: projectionOverLimit() ? props.theme.error : undefined }}>
-            {projection()}
-          </span>
+      <box flexDirection="column" paddingRight={1}>
+        <Show when={limit() > 0}>
+          <box flexDirection="row" justifyContent="space-between" alignItems="center">
+            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
+              {renderBar(ratio(), 24)}
+            </text>
+            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
+              {formatPercent(ratio())}
+            </text>
+          </box>
         </Show>
-        {props.stale ? " (stale)" : ""}
-      </text>
-      <text fg={props.theme.textMuted}>
-        Today {formatUsd(data().todaySpend)} / 7d {formatUsd(data().avg7d)} / 30d {formatUsd(data().avg30d)}
-      </text>
+        <box flexDirection="row" justifyContent="space-between">
+          <text fg={props.theme.textMuted}>{formatUsd(spend())}</text>
+          <text fg={props.theme.textMuted}>·</text>
+          <text fg={props.theme.textMuted}>{formatLimit(limit())}</text>
+          <Show when={projection()}>
+            <text fg={props.theme.textMuted}>·</text>
+            <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
+              {projection()}
+            </text>
+          </Show>
+          <Show when={props.stale}>
+            <text fg={props.theme.textMuted}>(stale)</text>
+          </Show>
+        </box>
+        <box flexDirection="row" justifyContent="space-between">
+          <text fg={props.theme.textMuted}>Today {formatUsd(data().todaySpend)}</text>
+          <text fg={props.theme.textMuted}>·</text>
+          <text fg={props.theme.textMuted}>7d {formatUsd(data().avg7d)}</text>
+          <text fg={props.theme.textMuted}>·</text>
+          <text fg={props.theme.textMuted}>30d {formatUsd(data().avg30d)}</text>
+        </box>
+      </box>
       <text> </text>
       <Show when={models().length > 0}>
         <text fg={props.theme.text}>
-          <strong>Top models ({monthName()})</strong>
+          <strong>Top Models ({monthName()})</strong>
         </text>
         <For each={models()}>
           {(model) => (
