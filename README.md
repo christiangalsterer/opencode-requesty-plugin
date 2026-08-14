@@ -45,7 +45,7 @@ Add the plugin to your `tui.json` (project root or `~/.config/opencode/tui.json`
 ```json
 {
   $schema": "https://opencode.ai/tui.json",
-  "plugin": ["opencode-requesty-plugin"]
+  "plugin": ["@christiangalsterer/opencode-requesty-plugin"]
 }
 ```
 
@@ -56,7 +56,7 @@ Or with options:
   $schema": "https://opencode.ai/tui.json",
   "plugin": [
     [
-      "opencode-requesty-plugin",
+      "@christiangalsterer/opencode-requesty-plugin",
       {
         "refreshIntervalMs": 300000,
         "maxModels": 5,
