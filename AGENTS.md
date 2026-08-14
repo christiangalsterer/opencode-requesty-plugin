@@ -1,10 +1,10 @@
 # AGENTS.md
 
-opencode TUI plugin (single package, not a monorepo). Shows Requesty.ai monthly budget/spend in the session sidebar, plus a detail dialog via `/requesty`.
+opencode TUI plugin. Shows Requesty.ai monthly budget/spend in the session sidebar, plus a detail dialog via `/requesty`.
 
 ## Output Guidelines
 
-Do not include code changes, diffs, or patch output in responses unless the user explicitly asks for them.
+Do NOT include code changes, diffs of changes, or patch output in responses unless the user explicitly asks for them.
 
 ## Commands
 
@@ -32,7 +32,7 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 - `test/settings.test.ts` — `readSettings` option parsing and bounds.
 - `test/state.test.ts` — `createRequestyStore` refresh/in-flight/pending-refresh/error logic.
 
-## Code Standards
+## Coding Standards
 
 - TypeScript `strict`, ESM, no semicolons (match existing style), 2-space indent.
 - README contains the user-facing docs — update it when changing options, display output, or behavior (its ASCII sidebar example must match actual rendering).
