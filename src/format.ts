@@ -160,16 +160,55 @@ export function paceMarker(pace: Pace | undefined): string {
   return ""
 }
 
+export type ProjectionParts = {
+  projected: number
+  arrow: string
+  pace: Pace | undefined
+}
+
+/**
+ * Decompose a month-end spend projection into its parts.
+ * Returns undefined when there is no spend to project from (spend <= 0).
+ * The pace arrow is empty when the limit is unlimited.
+ */
+export function formatProjectionParts(spend: number, limit: number, date = new Date()): ProjectionParts | undefined {
+  if (spend <= 0) return undefined
+  const projected = projectedMonthEnd(spend, date)
+  const pace = paceStatus(spend, limit, date)
+  return { projected, arrow: paceMarker(pace), pace }
+}
+
 /**
  * One-line projection for the sidebar, e.g. "~$42.80 EOM ↑".
  * Empty string when there is no spend to project from (spend <= 0).
  * The pace marker is omitted when the limit is unlimited.
  */
 export function formatProjection(spend: number, limit: number, date = new Date()): string {
-  if (spend <= 0) return ""
-  const projected = projectedMonthEnd(spend, date)
-  const marker = paceMarker(paceStatus(spend, limit, date))
-  return marker ? `~${formatUsd(projected)} EOM ${marker}` : `~${formatUsd(projected)} EOM`
+  const parts = formatProjectionParts(spend, limit, date)
+  if (!parts) return ""
+  return parts.arrow
+    ? `~${formatUsd(parts.projected)} EOM ${parts.arrow}`
+    : `~${formatUsd(parts.projected)} EOM`
+}
+
+export type MonthDeltaParts = {
+  arrow: string
+  sign: string
+  pct: number
+}
+
+/**
+ * Decompose a month-over-month delta into its parts (arrow, sign, percentage).
+ * Compares projected month-end spend to last month's total.
+ * Returns undefined when last month had no spend or no current spend to project from.
+ */
+export function formatMonthDeltaParts(currentSpend: number, lastMonthSpend: number, date = new Date()): MonthDeltaParts | undefined {
+  if (lastMonthSpend <= 0 || currentSpend <= 0) return undefined
+  const projected = projectedMonthEnd(currentSpend, date)
+  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100)
+  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "→"
+  const sign = pct > 0 ? "+" : ""
+  return { arrow, sign, pct }
 }
 
 /**
@@ -178,12 +217,9 @@ export function formatProjection(spend: number, limit: number, date = new Date()
  * Returns empty string when last month had no spend or no current spend to project from.
  */
 export function formatMonthDelta(currentSpend: number, lastMonthSpend: number, date = new Date()): string {
-  if (lastMonthSpend <= 0 || currentSpend <= 0) return ""
-  const projected = projectedMonthEnd(currentSpend, date)
-  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100)
-  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "→"
-  const sign = pct > 0 ? "+" : ""
-  return `${arrow} ${sign}${pct}% (${formatUsd(lastMonthSpend)} last month)`
+  const parts = formatMonthDeltaParts(currentSpend, lastMonthSpend, date)
+  if (!parts) return ""
+  return `${parts.arrow} ${parts.sign}${parts.pct}% (${formatUsd(lastMonthSpend)} last month)`
 }
 
 /** Requesty.ai analytics dashboard URL filtered to a specific API key name. */

@@ -1,7 +1,7 @@
 import { describe, test } from "bun:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatOutputInputRatio, formatProjection, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatMonthDeltaParts, formatOutputInputRatio, formatProjection, formatProjectionParts, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -383,6 +383,19 @@ describe("month projection", () => {
     assert.ok(result.startsWith("~$14.46 EOM"), `expected ~$14.46 EOM…, got ${result}`)
   })
 
+  test("formatProjectionParts returns projected amount and pace arrow", () => {
+    assert.deepEqual(formatProjectionParts(60, 100, aug15), { projected: (60 / 15) * 31, arrow: "↑", pace: "over" })
+    assert.deepEqual(formatProjectionParts(10, 100, aug15), { projected: (10 / 15) * 31, arrow: "↓", pace: "under" })
+  })
+
+  test("formatProjectionParts omits arrow when limit is unlimited", () => {
+    assert.deepEqual(formatProjectionParts(30, 0, aug15), { projected: (30 / 15) * 31, arrow: "", pace: undefined })
+  })
+
+  test("formatProjectionParts is undefined when there is no spend", () => {
+    assert.equal(formatProjectionParts(0, 100, aug15), undefined)
+  })
+
   test("daysRemaining counts days left including today", () => {
     // Aug 15 → 31 - 15 + 1 = 17 days left
     assert.equal(daysRemaining(aug15), 17)
@@ -417,6 +430,17 @@ describe("month projection", () => {
   test("formatMonthDelta is empty when no current or last month spend", () => {
     assert.equal(formatMonthDelta(0, 10, aug15), "")
     assert.equal(formatMonthDelta(10, 0, aug15), "")
+  })
+
+  test("formatMonthDeltaParts returns arrow, sign, and percentage", () => {
+    assert.deepEqual(formatMonthDeltaParts(15, 10, aug15), { arrow: "▲", sign: "+", pct: 210 })
+    assert.deepEqual(formatMonthDeltaParts(3, 20, aug15), { arrow: "▼", sign: "", pct: -69 })
+    assert.deepEqual(formatMonthDeltaParts(10, (10 / 15) * 31, aug15), { arrow: "→", sign: "", pct: 0 })
+  })
+
+  test("formatMonthDeltaParts is undefined when no current or last month spend", () => {
+    assert.equal(formatMonthDeltaParts(0, 10, aug15), undefined)
+    assert.equal(formatMonthDeltaParts(10, 0, aug15), undefined)
   })
 
   test("isProjectionOverLimit is true when projected spend exceeds limit", () => {
