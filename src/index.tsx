@@ -20,7 +20,7 @@ const plugin: TuiPluginModule = {
       api.slots.register({
         order: 60,
         slots: {
-          sidebar_content(ctx) {
+          sidebar_content(ctx, _slotProps) {
             return (
               <box flexDirection="column" paddingTop={1}>
                 <text fg={ctx.theme.current.textMuted}>
@@ -48,8 +48,19 @@ const plugin: TuiPluginModule = {
     api.slots.register({
       order: 60,
       slots: {
-        sidebar_content(ctx) {
-          return <RequestySidebarWidget store={store} theme={ctx.theme.current} maxModels={settings.maxModels} thresholds={settings.thresholds} />
+        sidebar_content(ctx, slotProps) {
+          // Read host-tracked state to force sidebar slot repaints on session/message updates.
+          api.state.session.messages(slotProps.session_id).length
+          return (
+            <RequestySidebarWidget
+              store={store}
+              api={api}
+              sessionID={slotProps.session_id}
+              theme={ctx.theme.current}
+              maxModels={settings.maxModels}
+              thresholds={settings.thresholds}
+            />
+          )
         },
       },
     })

@@ -2,10 +2,12 @@
 import { Show, For, createMemo, type JSX } from "solid-js"
 import type { TuiPluginApi, TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatProjection, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, monthName, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatProjectionParts, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type Pace, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
+  api: TuiPluginApi
+  sessionID: string
   theme: TuiThemeCurrent
   /** Max number of models listed in the compact sidebar view. */
   maxModels: number
@@ -23,18 +25,30 @@ export type PromptIndicatorProps = {
   monthlyProjection: boolean
 }
 
+function paceColor(pace: Pace | undefined, theme: TuiThemeCurrent) {
+  if (pace === "over") return theme.error
+  if (pace === "under") return theme.success
+  return theme.textMuted
+}
+
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   const theme = () => props.theme
+  const snapshot = createMemo(() => ({
+    // Read host-tracked state to force sidebar slot repaints on session/message updates.
+    data: props.store.data(),
+    messagesLength: props.api.state.session.messages(props.sessionID).length,
+    version: props.store.version(),
+  }))
 
   return (
     <box flexDirection="column" paddingTop={1}>
       <text fg={theme().text}>
         <Show
-          when={props.store.data()}
+          when={snapshot().data}
           fallback={<strong>Requesty</strong>}
         >
-          <a href={analyticsUrl(props.store.data()!.keyInfo.name)}>
-            <strong>Requesty ({props.store.data()!.keyInfo.name})</strong>
+          <a href={analyticsUrl(snapshot().data!.keyInfo.name)}>
+            <strong>Requesty ({snapshot().data!.keyInfo.name})</strong>
           </a>
         </Show>
       </text>
@@ -44,14 +58,14 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
           fallback={
             <box flexDirection="column">
               <text fg={theme().error}>Requesty: {props.store.state().status === "error" ? (props.store.state() as { message: string }).message : ""}</text>
-              <Show when={props.store.data()}>
+              <Show when={snapshot().data}>
                 <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} stale />
               </Show>
             </box>
           }
         >
           <Show
-            when={props.store.data()}
+            when={snapshot().data}
             fallback={
               <text fg={theme().textMuted}>
                 {props.store.state().status === "loading" ? "Loading Requesty usage…" : "Requesty: waiting for first refresh…"}
@@ -66,13 +80,21 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   )
 }
 
-function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
+type SnapshotProps = {
+  store: RequestyStore
+  theme: TuiThemeCurrent
+  maxModels: number
+  thresholds: SpendThresholds
+  stale?: boolean
+}
+
+function Snapshot(props: SnapshotProps): JSX.Element {
   const data = () => props.store.data()!
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
   const models = () => data().models.slice(0, props.maxModels)
-  const projection = () => formatProjection(spend(), limit())
+  const projectionParts = () => formatProjectionParts(spend(), limit())
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
 
   return (
@@ -92,10 +114,13 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
           <text fg={props.theme.textMuted}>{formatUsd(spend())}</text>
           <text fg={props.theme.textMuted}>·</text>
           <text fg={props.theme.textMuted}>{formatLimit(limit())}</text>
-          <Show when={projection()}>
+          <Show when={projectionParts()}>
             <text fg={props.theme.textMuted}>·</text>
             <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
-              {projection()}
+              ~{formatUsd(projectionParts()!.projected)} EOM{" "}
+              <Show when={projectionParts()!.arrow}>
+                <span style={{ fg: paceColor(projectionParts()!.pace, props.theme) }}>{projectionParts()!.arrow}</span>
+              </Show>
             </text>
           </Show>
           <Show when={props.stale}>
@@ -112,9 +137,9 @@ function Snapshot(props: WidgetProps & { stale?: boolean }): JSX.Element {
       </box>
       <text> </text>
       <Show when={models().length > 0}>
-        <text fg={props.theme.text}>
-          <strong>Top Models ({monthName()})</strong>
-        </text>
+          <text fg={props.theme.text}>
+            <strong>Top Models (Current Month)</strong>
+          </text>
         <For each={models()}>
           {(model) => (
             <box flexDirection="column">
@@ -152,7 +177,7 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     const color = !d || limit <= 0
       ? props.theme.textMuted
       : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
-    const projectionLabel = formatProjection(spend, limit)
+    const projectionParts = formatProjectionParts(spend, limit)
     const projectionOverLimit = isProjectionOverLimit(spend, limit)
 
     const parts: { text: string; color?: unknown; href?: string }[] = []
@@ -171,8 +196,12 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
         : `${formatUsd(spend)}/unlimited (${name})`
       parts.push({ text: label, color, href: analyticsUrl(name) })
     }
-    if (props.monthlyProjection && projectionLabel) {
-      parts.push({ text: ` ${projectionLabel}`, color: projectionOverLimit ? props.theme.error : props.theme.textMuted })
+    if (props.monthlyProjection && projectionParts) {
+      const valueColor = projectionOverLimit ? props.theme.error : props.theme.textMuted
+      parts.push({ text: ` ~${formatUsd(projectionParts.projected)} EOM`, color: valueColor })
+      if (projectionParts.arrow) {
+        parts.push({ text: projectionParts.arrow, color: paceColor(projectionParts.pace, props.theme) })
+      }
     }
     return { parts, color }
   })
