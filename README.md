@@ -127,6 +127,32 @@ If no key is found, the widget shows a short setup hint instead of failing.
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 
+## Complete configuration example
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": [
+    [
+      "@christiangalsterer/opencode-requesty-plugin",
+      {
+        "baseUrl": "https://api-v2.requesty.ai",
+        "refreshIntervalMs": 300000,
+        "maxModels": 5,
+        "warningThreshold": 0.7,
+        "errorThreshold": 0.9,
+        "prompt": {
+          "enabled": true,
+          "budgetIndicator": true,
+          "dailySpend": true,
+          "monthlyProjection": true
+        }
+      }
+    ]
+  ]
+}
+```
+
 Data is refreshed on startup, on a periodic interval, when a new session is created, and when messages are updated.
 
 ## Requirements
