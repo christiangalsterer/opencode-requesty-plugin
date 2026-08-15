@@ -17,22 +17,24 @@ const plugin: TuiPluginModule = {
 
     const key = detectApiKey(api.state.config)
     if (!key.ok) {
-      api.slots.register({
-        order: 60,
-        slots: {
-          sidebar_content(ctx, _slotProps) {
-            return (
-              <box flexDirection="column" paddingTop={1}>
-                <text fg={ctx.theme.current.textMuted}>
-                  <strong>Requesty</strong>
-                </text>
-                <text fg={ctx.theme.current.textMuted}>No API key found.</text>
-                <text fg={ctx.theme.current.textMuted}>Add provider.requesty.options.apiKey to opencode.json.</text>
-              </box>
-            )
+      if (settings.sidebar.enabled) {
+        api.slots.register({
+          order: 60,
+          slots: {
+            sidebar_content(ctx, _slotProps) {
+              return (
+                <box flexDirection="column" paddingTop={1}>
+                  <text fg={ctx.theme.current.textMuted}>
+                    <strong>Requesty</strong>
+                  </text>
+                  <text fg={ctx.theme.current.textMuted}>No API key found.</text>
+                  <text fg={ctx.theme.current.textMuted}>Add provider.requesty.options.apiKey to opencode.json.</text>
+                </box>
+              )
+            },
           },
-        },
-      })
+        })
+      }
       return
     }
 
@@ -45,25 +47,27 @@ const plugin: TuiPluginModule = {
     })
 
     // Sidebar widget
-    api.slots.register({
-      order: 60,
-      slots: {
-        sidebar_content(ctx, slotProps) {
-          // Read host-tracked state to force sidebar slot repaints on session/message updates.
-          api.state.session.messages(slotProps.session_id).length
-          return (
-            <RequestySidebarWidget
-              store={store}
-              api={api}
-              sessionID={slotProps.session_id}
-              theme={ctx.theme.current}
-              maxModels={settings.maxModels}
-              thresholds={settings.thresholds}
-            />
-          )
+    if (settings.sidebar.enabled) {
+      api.slots.register({
+        order: 60,
+        slots: {
+          sidebar_content(ctx, slotProps) {
+            // Read host-tracked state to force sidebar slot repaints on session/message updates.
+            api.state.session.messages(slotProps.session_id).length
+            return (
+              <RequestySidebarWidget
+                store={store}
+                api={api}
+                sessionID={slotProps.session_id}
+                theme={ctx.theme.current}
+                maxModels={settings.sidebar.maxModels}
+                thresholds={settings.thresholds}
+              />
+            )
+          },
         },
-      },
-    })
+      })
+    }
 
     // Prompt indicator (right side of the session prompt)
     if (settings.prompt.enabled && settings.prompt.budgetIndicator) {

@@ -14,13 +14,13 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 
 - `bun test` — bun:test test runner.
 - Run one test file: `bun test test/logic.test.ts`
-- Verify changes: `bun run typecheck && bun test && bun run build` (no lint/format config exists). Pipe each command to `/dev/null` (`bun run typecheck >/dev/null 2>&1 && bun test >/dev/null 2>&1 && bun run build >/dev/null 2>&1`); on non-zero exit rerun without the redirect.
-- `bun run build` — copies `src/index.tsx` → `dist/tui.tsx`. `package.json` exposes `dist/tui.tsx` via `exports["./tui"]`, which is the entry point the opencode TUI loader resolves. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used. `dist/` is the published/loaded artifact; always rebuild after source changes.
+- Verify changes: `bun clean && bun run deps && bun run typecheck && bun test && bun run build` (no lint/format config exists). Pipe each command to `/dev/null` (`bun run clean >/dev/null 2>&1 && bun run deps >/dev/null 2>&1 && bun run typecheck >/dev/null 2>&1 && bun test >/dev/null 2>&1 && bun run build >/dev/null 2>&1`); on non-zero exit rerun without the redirect.
+- `bun run build` — copies `src/*` → `dist/`. `package.json` exposes `dist/tui.tsx` via `exports["./tui"]`, which is the entry point the opencode TUI loader resolves. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used. `dist/` is the published/loaded artifact; always rebuild after source changes.
 
 
 ## Project Structure
 
-- `src/index.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`, `session_prompt_right`), keymap commands, refresh timers.
+- `src/tui.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`, `session_prompt_right`), keymap commands, refresh timers.
 - `src/widget.tsx` / `src/dialog.tsx` — sidebar widget / detail dialog (Solid components); `RequestyPromptIndicator` renders the `session_prompt_right` indicator.
 - `src/state.ts` — Solid store: fetch + refresh logic with in-flight dedup and pending-refresh pattern (injectable fetchers for tests).
 - `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
@@ -40,7 +40,7 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 ## Hard-earned gotchas
 
 - **JSX pragma is mandatory.** Every `.tsx` file needs `/** @jsxImportSource @opentui/solid */` on line 1 (tsc/`jsx: preserve` relies on the pragma). JSX tags are OpenTUI intrinsics (`<box>`, `<text>`), not DOM.
-- **No bundler — the host transforms TSX at load time.** The opencode host installs `@opentui/solid/preload` (a Bun preload hook) that transforms Solid TSX via babel-preset-solid (`moduleName: "@opentui/solid"`, `generate: "universal"`) before execution. The build step just copies `src/index.tsx` → `dist/tui.tsx`. Do NOT use a bundler (tsup, esbuild, Bun.build) — it would strip the `/** @jsxImportSource */` pragma or break reactivity by using the wrong JSX transform.
+- **No bundler — the host transforms TSX at load time.** The opencode host installs `@opentui/solid/preload` (a Bun preload hook) that transforms Solid TSX via babel-preset-solid (`moduleName: "@opentui/solid"`, `generate: "universal"`) before execution. The build step just copies `src/*` → `dist/`. Do NOT use a bundler (tsup, esbuild, Bun.build) — it would strip the `/** @jsxImportSource */` pragma or break reactivity by using the wrong JSX transform.
 - **Tests are pure-logic only.** `@opentui/core/testing`'s `createTestRenderer` fails in Node ("native FFI is not available"), so TSX components (`widget.tsx`, `dialog.tsx`) are untested. Keep display logic in pure helpers in `src/format.ts` and test those in `test/logic.test.ts`.
 - **bun:test mock API differs from node:test.** Use `mock(() => {})` instead of `mock.fn()`. Access call count via `.mock.calls.length` (not `.mock.callCount()`). Access call arguments via `.mock.calls[i][j]` (not `.mock.calls[i].arguments[j]`).
 - **API decimals are strings.** Requesty's management API serializes decimal fields as strings; coerce with `toNumber` in `src/api.ts` (there are tests relying on this).

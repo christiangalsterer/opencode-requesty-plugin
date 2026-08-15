@@ -6,8 +6,8 @@ import { DEFAULT_THRESHOLDS } from "../src/format"
 const DEFAULTS = {
   baseUrl: "https://api-v2.requesty.ai",
   refreshIntervalMs: 300000,
-  maxModels: 5,
   thresholds: DEFAULT_THRESHOLDS,
+  sidebar: { enabled: true, maxModels: 5 },
   prompt: { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true },
 }
 
@@ -24,13 +24,13 @@ describe("readSettings", () => {
     const settings = readSettings({
       baseUrl: "https://eu.requesty.ai",
       refreshIntervalMs: 60000,
-      maxModels: 10,
+      sidebar: { maxModels: 10 },
       warningThreshold: 0.6,
       errorThreshold: 0.85,
     })
     assert.equal(settings.baseUrl, "https://eu.requesty.ai")
     assert.equal(settings.refreshIntervalMs, 60000)
-    assert.equal(settings.maxModels, 10)
+    assert.equal(settings.sidebar.maxModels, 10)
     assert.deepEqual(settings.thresholds, { warning: 0.6, error: 0.85 })
   })
 
@@ -72,22 +72,43 @@ describe("readSettings", () => {
     assert.equal(readSettings({ refreshIntervalMs: 3_600_000 }).refreshIntervalMs, 3_600_000)
   })
 
-  test("maxModels below minimum → default", () => {
-    assert.equal(readSettings({ maxModels: 0 }).maxModels, DEFAULTS.maxModels)
-    assert.equal(readSettings({ maxModels: -1 }).maxModels, DEFAULTS.maxModels)
+  test("sidebar.maxModels below minimum → default", () => {
+    assert.equal(readSettings({ sidebar: { maxModels: 0 } }).sidebar.maxModels, DEFAULTS.sidebar.maxModels)
+    assert.equal(readSettings({ sidebar: { maxModels: -1 } }).sidebar.maxModels, DEFAULTS.sidebar.maxModels)
   })
 
-  test("maxModels above maximum → clamped to maximum", () => {
-    assert.equal(readSettings({ maxModels: 25 }).maxModels, 20)
+  test("sidebar.maxModels above maximum → clamped to maximum", () => {
+    assert.equal(readSettings({ sidebar: { maxModels: 25 } }).sidebar.maxModels, 20)
   })
 
-  test("maxModels at boundaries is accepted", () => {
-    assert.equal(readSettings({ maxModels: 1 }).maxModels, 1)
-    assert.equal(readSettings({ maxModels: 20 }).maxModels, 20)
+  test("sidebar.maxModels at boundaries is accepted", () => {
+    assert.equal(readSettings({ sidebar: { maxModels: 1 } }).sidebar.maxModels, 1)
+    assert.equal(readSettings({ sidebar: { maxModels: 20 } }).sidebar.maxModels, 20)
   })
 
-  test("maxModels is floored", () => {
-    assert.equal(readSettings({ maxModels: 3.9 }).maxModels, 3)
+  test("sidebar.maxModels is floored", () => {
+    assert.equal(readSettings({ sidebar: { maxModels: 3.9 } }).sidebar.maxModels, 3)
+  })
+
+  test("sidebar.enabled defaults to true", () => {
+    assert.equal(readSettings(undefined).sidebar.enabled, true)
+    assert.equal(readSettings({}).sidebar.enabled, true)
+    assert.equal(readSettings({ sidebar: {} }).sidebar.enabled, true)
+  })
+
+  test("sidebar.enabled can be disabled", () => {
+    assert.equal(readSettings({ sidebar: { enabled: false } }).sidebar.enabled, false)
+  })
+
+  test("sidebar.enabled non-boolean values → default", () => {
+    assert.equal(readSettings({ sidebar: { enabled: "no" } }).sidebar.enabled, true)
+    assert.equal(readSettings({ sidebar: { enabled: 0 } }).sidebar.enabled, true)
+    assert.equal(readSettings({ sidebar: { enabled: undefined } }).sidebar.enabled, true)
+  })
+
+  test("sidebar non-object → defaults", () => {
+    assert.deepEqual(readSettings({ sidebar: "nope" }).sidebar, DEFAULTS.sidebar)
+    assert.deepEqual(readSettings({ sidebar: null }).sidebar, DEFAULTS.sidebar)
   })
 
   test("NaN refreshIntervalMs → default", () => {

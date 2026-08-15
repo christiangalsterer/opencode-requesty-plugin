@@ -60,7 +60,10 @@ Or with options:
       "@christiangalsterer/opencode-requesty-plugin",
       {
         "refreshIntervalMs": 300000,
-        "maxModels": 5,
+        "sidebar": {
+          "enabled": true,
+          "maxModels": 5
+        },
         "warningThreshold": 0.6,
         "errorThreshold": 0.85
       }
@@ -113,17 +116,18 @@ If no key is found, the widget shows a short setup hint instead of failing.
 
 ## Options
 
-| Option               | Type   | Default                          | Description                                                                 |
-| -------------------- | ------ | -------------------------------- | --------------------------------------------------------------------------- |
-| `baseUrl`            | string | `https://api-v2.requesty.ai`     | Management API base URL (e.g. for EU region)                                |
-| `refreshIntervalMs`  | number | `300000` (5 min)                 | Periodic refresh interval (safety net)                                       |
-| `maxModels`          | number | `5`                              | Number of models shown in the compact sidebar list                          |
-| `warningThreshold`   | number | `0.7` (70%)                      | Budget usage ratio at which the bar turns yellow (accepts 0–1 or 0–100)     |
-| `errorThreshold`     | number | `0.9` (90%)                      | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100)        |
-| `prompt.enabled`          | boolean | `true`                          | Master switch for any prompt-area UI                                       |
-| `prompt.budgetIndicator`| boolean | `true`                          | Show spend/limit readout on the right side of the session prompt           |
-| `prompt.dailySpend`     | boolean | `true`                          | Show today's spend to the left of the budget indicator in the session prompt |
-| `prompt.monthlyProjection` | boolean | `true`                        | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
+| Option                    | Type    | Default                      | Description                                                                 |
+| ------------------------- | ------- | ---------------------------- | --------------------------------------------------------------------------- |
+| `baseUrl`                 | string  | `https://api-v2.requesty.ai` | Management API base URL (e.g. for EU region)                                |
+| `refreshIntervalMs`       | number  | `300000` (5 min)             | Periodic refresh interval (safety net)                                      |
+| `warningThreshold`        | number  | `0.7` (70%)                  | Budget usage ratio at which the bar turns yellow (accepts 0–1 or 0–100)     |
+| `errorThreshold`          | number  | `0.9` (90%)                  | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100)        |
+| `sidebar.enabled`         | boolean | `true`                       | Show the sidebar widget                                                     |
+| `sidebar.maxModels`       | number  | `5`                          | Number of models shown in the compact sidebar list                          |
+| `prompt.enabled`          | boolean | `true`                       | Master switch for any prompt-area UI                                        |
+| `prompt.budgetIndicator`  | boolean | `true`                       | Show spend/limit readout on the right side of the session prompt            |
+| `prompt.dailySpend`       | boolean | `true`                       | Show today's spend to the left of the budget indicator in the session prompt |
+| `prompt.monthlyProjection`| boolean | `true`                       | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 
@@ -138,7 +142,10 @@ If no key is found, the widget shows a short setup hint instead of failing.
       {
         "baseUrl": "https://api-v2.requesty.ai",
         "refreshIntervalMs": 300000,
-        "maxModels": 5,
+        "sidebar": {
+          "enabled": true,
+          "maxModels": 5
+        },
         "warningThreshold": 0.7,
         "errorThreshold": 0.9,
         "prompt": {
@@ -166,7 +173,7 @@ Data is refreshed on startup, on a periodic interval, when a new session is crea
 bun install
 bun run typecheck   # tsc --noEmit over src/ and test/
 bun test            # unit tests via bun:test
-bun run build       # copy src/index.tsx → dist/tui.tsx
+bun run build       # copy src/* → dist/
 ```
 
 The project is fully typed TypeScript (`strict` mode). Sources live in `src/` (`.ts`/`.tsx`), tests in `test/`. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used.
