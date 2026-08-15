@@ -19,7 +19,7 @@ const plugin: TuiPluginModule = {
     if (!key.ok) {
       if (settings.sidebar.enabled) {
         api.slots.register({
-          order: 60,
+          order: settings.sidebar.order,
           slots: {
             sidebar_content(ctx, _slotProps) {
               return (
