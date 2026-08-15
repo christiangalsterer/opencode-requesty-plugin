@@ -1,5 +1,5 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, createMemo, type JSX } from "solid-js"
+import { Show, For, createMemo, createSignal, type JSX } from "solid-js"
 import type { TuiPluginApi, TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
 import { formatLimit, formatPercent, formatProjectionParts, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type Pace, type SpendThresholds } from "./format"
@@ -96,6 +96,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
   const models = () => data().models.slice(0, props.maxModels)
   const projectionParts = () => formatProjectionParts(spend(), limit())
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
+  const [expanded, setExpanded] = createSignal(true)
 
   return (
     <box flexDirection="column">
@@ -137,23 +138,33 @@ function Snapshot(props: SnapshotProps): JSX.Element {
       </box>
       <text> </text>
       <Show when={models().length > 0}>
+        <box
+          flexDirection="row"
+          gap={1}
+          // @ts-expect-error selectable is a runtime Renderable property not yet in BoxProps
+          selectable={true}
+          onMouseDown={() => setExpanded((e) => !e)}
+        >
           <text fg={props.theme.text}>
-            <strong>Top Models (Current Month)</strong>
+            <strong>{expanded() ? "▼" : "▶"} Top Models (Current Month)</strong>
           </text>
-        <For each={models()}>
-          {(model) => (
-            <box flexDirection="column">
-              <text fg={props.theme.text}>
-                {padEnd(shortModel(model.model, 26), 27)}
-                {padStart(formatUsd(model.spend), 8)}
-              </text>
-              <text fg={props.theme.textMuted}>
-                {"  "}
-                {formatTokens(model.totalTokens)} {formatTokenBreakdown(model.inputTokens, model.outputTokens)}
-              </text>
-            </box>
-          )}
-        </For>
+        </box>
+        <Show when={expanded()}>
+          <For each={models()}>
+            {(model) => (
+              <box flexDirection="column">
+                <text fg={props.theme.text}>
+                  {padEnd(shortModel(model.model, 26), 27)}
+                  {padStart(formatUsd(model.spend), 8)}
+                </text>
+                <text fg={props.theme.textMuted}>
+                  {"  "}
+                  {formatTokens(model.totalTokens)} {formatTokenBreakdown(model.inputTokens, model.outputTokens)}
+                </text>
+              </box>
+            )}
+          </For>
+        </Show>
       </Show>
       <Show when={models().length === 0}>
         <text fg={props.theme.textMuted}>No usage this month yet.</text>

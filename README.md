@@ -17,7 +17,7 @@ The sidebar gives a quick, at-a-glance view of your current month's Requesty usa
 - Projected month-end spend at the current run rate (`~$X EOM`), with a pace marker: ↑ over pace, → on pace, ↓ under pace
 - Daily spend trend: today · 7-day average · 30-day average
 - API key name in the header, linking to the Requesty analytics dashboard filtered by that key
-- Top models for the current month (up to `sidebar.maxModels`), each with spend, total tokens, and input (↑) / output (↓) breakdown
+- Top models for the current month (up to `sidebar.maxModels`), each with spend, total tokens, and input (↑) / output (↓) breakdown; click the header to collapse or expand the list
 
 You can disable the sidebar entirely with `"sidebar": { "enabled": false }`.
 
@@ -47,12 +47,12 @@ Data comes from the [Requesty Management API](https://docs.requesty.ai/api-refer
 
 ## Installation
 
-Add the plugin to your `tui.json` (project root or `~/.config/opencode/tui.json`):
+Add the plugin to your `tui.json` (project root or `~/.config/opencode/tui.json`). Update the version number to the latest release.
 
 ```json
 {
   $schema": "https://opencode.ai/tui.json",
-  "plugin": ["@christiangalsterer/opencode-requesty-plugin"]
+  "plugin": ["@christiangalsterer/opencode-requesty-plugin@0.6.0.0"]
 }
 ```
 
@@ -63,7 +63,7 @@ Or with options:
   $schema": "https://opencode.ai/tui.json",
   "plugin": [
     [
-      "@christiangalsterer/opencode-requesty-plugin",
+      "@christiangalsterer/opencode-requesty-plugin@0.6.0.0",
       {
         "refreshIntervalMs": 300000,
         "sidebar": {
@@ -92,6 +92,14 @@ Point at a local checkout instead:
 ```
 
 Run `bun install && bun run build` in the checkout first.
+
+## Update
+
+OpenCode does not currently support plugin updates reliably. See OpenCode PRs #35777, #32822, and #37300. To force OpenCode to download the configured plugin versions, clear its plugin cache:
+
+```shell
+rm -rf ~/.cache/opencode/packages/@christiangalsterer/opencode-requesty-plugin*
+```
 
 ## API key detection
 
@@ -171,7 +179,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 }
 ```
 
-Data is refreshed on startup, on a periodic interval, when a new session is created, and when messages are updated.
+Data is refreshed on startup, on a configurable periodic interval, when a new session is created, and when messages are updated.
 
 ## Requirements
 

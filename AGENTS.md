@@ -64,3 +64,4 @@ Use the following repositories for documentation, working code examples.
 - https://github.com/ZackarySantana/opencode-context (example plugin with context slot, keymap, and prompt slot)
 - https://github.com/aamkye/opencode-tools (example plugin with sidebar slot, keymap, and prompt slot)
 - https://github.com/njbraun/opencode-plugin-session-token-summary (example plugin with session token summary slot)
+- https://github.com/edso404/oh-my-sidebar (example plugin with sidebar slot, collapsible sidebar))
