@@ -59,6 +59,7 @@ For any library, framework, SDK, API, CLI tool, or cloud service documentation, 
 
 Use the following repositories for documentation, working code examples.
 - https://opentui.com/docs/getting-started/ (TUI plugin API)
+- https://github.com/anomalyco/opencode/blob/dev/packages/opencode/specs/tui-plugins.md (TUI plugin API spec)
 - https://www.npmjs.com/package/@opencode-ai/plugin?activeTab=code (opencode plugin API types)
 - https://github.com/streetturtle/opencode-better-sidebar/tree/main (example plugin with sidebar slot, keymap, and prompt slot)
 - https://github.com/ZackarySantana/opencode-context (example plugin with context slot, keymap, and prompt slot)
