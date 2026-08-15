@@ -11,7 +11,7 @@
  * with query params).
  */
 
-export const DEFAULT_BASE_URL = "https://api-v2.requesty.ai"
+const REQUESTY_ORIGIN = "https://api-v2.requesty.ai"
 const REQUEST_TIMEOUT_MS = 10_000
 
 export type ApiKeyInfo = {
@@ -71,8 +71,8 @@ export class RequestyApiError extends Error {
   }
 }
 
-async function request<T>(baseUrl: string, apiKey: string, path: string, init?: { params?: Record<string, string> }): Promise<T> {
-  const url = new URL(path, baseUrl.endsWith("/") ? baseUrl : baseUrl + "/")
+async function request<T>(apiKey: string, path: string, init?: { params?: Record<string, string> }): Promise<T> {
+  const url = new URL(path, REQUESTY_ORIGIN.endsWith("/") ? REQUESTY_ORIGIN : REQUESTY_ORIGIN + "/")
   for (const [key, value] of Object.entries(init?.params ?? {})) {
     url.searchParams.set(key, value)
   }
@@ -106,8 +106,8 @@ async function request<T>(baseUrl: string, apiKey: string, path: string, init?: 
 }
 
 /** Get information about the calling API key (`self`). */
-export async function getApiKeySelf(baseUrl: string, apiKey: string): Promise<ApiKeyInfo> {
-  const info = await request<ApiKeyInfo>(baseUrl, apiKey, "/v1/manage/apikey/self")
+export async function getApiKeySelf(apiKey: string): Promise<ApiKeyInfo> {
+  const info = await request<ApiKeyInfo>(apiKey, "/v1/manage/apikey/self")
   return {
     ...info,
     monthly_spend: toNumber(info.monthly_spend),
@@ -125,12 +125,12 @@ export type UsageQuery = {
 }
 
 /** Get usage statistics for the calling API key (`self`). */
-export function getUsageSelf(baseUrl: string, apiKey: string, query: UsageQuery): Promise<UsageResponse> {
+export function getUsageSelf(apiKey: string, query: UsageQuery): Promise<UsageResponse> {
   const params: Record<string, string> = { start: query.start }
   if (query.end) params.end = query.end
   if (query.groupBy && query.groupBy.length > 0) params.group_by = query.groupBy.join(",")
   if (query.resolution) params.resolution = query.resolution
-  return request<UsageResponse>(baseUrl, apiKey, "/v1/manage/apikey/self/usage", { params })
+  return request<UsageResponse>(apiKey, "/v1/manage/apikey/self/usage", { params })
 }
 
 /** Per-model aggregate over a usage response. */

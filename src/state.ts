@@ -1,6 +1,5 @@
 import { createSignal } from "solid-js"
 import {
-  DEFAULT_BASE_URL,
   aggregateByModel,
   avgSpendLastNDays,
   endOfLastMonth,
@@ -33,7 +32,6 @@ export type RequestyData = {
 
 export type RequestyStoreOptions = {
   apiKey: string
-  baseUrl?: string
   onError?: (message: string) => void
   /** Injectable fetchers (defaults to the real API client); used by tests. */
   fetchApiKey?: typeof getApiKeySelf
@@ -68,11 +66,10 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
       return inFlight
     }
     setState((previous) => (previous.status === "ready" ? previous : { status: "loading" }))
-    const baseUrl = options.baseUrl ?? DEFAULT_BASE_URL
     inFlight = (async () => {
       try {
-        const keyInfo = await fetchApiKey(baseUrl, options.apiKey)
-        const usage = await fetchUsage(baseUrl, options.apiKey, {
+        const keyInfo = await fetchApiKey(options.apiKey)
+        const usage = await fetchUsage(options.apiKey, {
           start: startOfCurrentMonth(),
           groupBy: ["model_used"],
           resolution: "day" as const,
@@ -84,7 +81,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const avg30d = avgSpendLastNDays(usage, 30)
         let lastMonthSpend = 0
         try {
-          const lastMonthUsage = await fetchUsage(baseUrl, options.apiKey, {
+          const lastMonthUsage = await fetchUsage(options.apiKey, {
             start: startOfLastMonth(),
             end: endOfLastMonth(),
             resolution: "day",

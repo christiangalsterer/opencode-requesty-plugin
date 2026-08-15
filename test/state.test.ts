@@ -29,7 +29,6 @@ function createStore(opts: {
 }) {
   return createRequestyStore({
     apiKey: "sk-test",
-    baseUrl: "https://api-v2.requesty.ai",
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
     fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE),

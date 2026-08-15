@@ -4,7 +4,6 @@ import { readSettings } from "../src/settings"
 import { DEFAULT_THRESHOLDS } from "../src/format"
 
 const DEFAULTS = {
-  baseUrl: "https://api-v2.requesty.ai",
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
   sidebar: { enabled: true, maxModels: 5 },
@@ -22,34 +21,14 @@ describe("readSettings", () => {
 
   test("valid custom values are preserved", () => {
     const settings = readSettings({
-      baseUrl: "https://eu.requesty.ai",
       refreshIntervalMs: 60000,
       sidebar: { maxModels: 10 },
       warningThreshold: 0.6,
       errorThreshold: 0.85,
     })
-    assert.equal(settings.baseUrl, "https://eu.requesty.ai")
     assert.equal(settings.refreshIntervalMs, 60000)
     assert.equal(settings.sidebar.maxModels, 10)
     assert.deepEqual(settings.thresholds, { warning: 0.6, error: 0.85 })
-  })
-
-  test("baseUrl empty string → default", () => {
-    assert.equal(readSettings({ baseUrl: "" }).baseUrl, DEFAULTS.baseUrl)
-  })
-
-  test("baseUrl missing protocol → default", () => {
-    assert.equal(readSettings({ baseUrl: "api-v2.requesty.ai" }).baseUrl, DEFAULTS.baseUrl)
-  })
-
-  test("baseUrl invalid protocol → default", () => {
-    assert.equal(readSettings({ baseUrl: "htps://api-v2.requesty.ai" }).baseUrl, DEFAULTS.baseUrl)
-    assert.equal(readSettings({ baseUrl: "ftp://api-v2.requesty.ai" }).baseUrl, DEFAULTS.baseUrl)
-  })
-
-  test("baseUrl http or https is accepted", () => {
-    assert.equal(readSettings({ baseUrl: "https://eu.requesty.ai" }).baseUrl, "https://eu.requesty.ai")
-    assert.equal(readSettings({ baseUrl: "http://localhost:8080" }).baseUrl, "http://localhost:8080")
   })
 
   test("non-number refreshIntervalMs → default", () => {

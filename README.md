@@ -126,7 +126,6 @@ If no key is found, the widget shows a short setup hint instead of failing.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `baseUrl`                 | string  | `https://api-v2.requesty.ai` | Management API base URL (e.g. for EU region) |
 | `refreshIntervalMs`       | number  | `300000` (5 min)             | Periodic refresh interval (safety net) |
 | `warningThreshold`        | number  | `0.7` (70%)                  | Budget usage ratio at which the bar turns yellow (accepts 0–1 or 0–100) |
 | `errorThreshold`          | number  | `0.9` (90%)                  | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100) |
@@ -148,7 +147,6 @@ If no key is found, the widget shows a short setup hint instead of failing.
     [
       "@christiangalsterer/opencode-requesty-plugin",
       {
-        "baseUrl": "https://api-v2.requesty.ai",
         "refreshIntervalMs": 300000,
         "sidebar": {
           "enabled": true,

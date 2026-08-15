@@ -1,4 +1,3 @@
-import { DEFAULT_BASE_URL } from "./api"
 import { resolveThresholds, type SpendThresholds } from "./format"
 
 const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000
@@ -22,7 +21,6 @@ export type PromptSettings = {
 }
 
 export type PluginSettings = {
-  baseUrl: string
   refreshIntervalMs: number
   thresholds: SpendThresholds
   sidebar: SidebarSettings
@@ -36,15 +34,6 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
   return value
 }
 
-function isValidHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value)
-    return url.protocol === "http:" || url.protocol === "https:"
-  } catch {
-    return false
-  }
-}
-
 function readSidebarSettings(raw: unknown): SidebarSettings {
   const obj = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {}
   return {
@@ -55,7 +44,6 @@ function readSidebarSettings(raw: unknown): SidebarSettings {
 
 export function readSettings(options: Record<string, unknown> | undefined): PluginSettings {
   return {
-    baseUrl: typeof options?.baseUrl === "string" && options.baseUrl.length > 0 && isValidHttpUrl(options.baseUrl) ? options.baseUrl : DEFAULT_BASE_URL,
     refreshIntervalMs: clampNumber(options?.refreshIntervalMs, MIN_REFRESH_INTERVAL_MS, MAX_REFRESH_INTERVAL_MS, DEFAULT_REFRESH_INTERVAL_MS),
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
     sidebar: readSidebarSettings(options?.sidebar),

@@ -40,7 +40,6 @@ const plugin: TuiPluginModule = {
 
     const store: RequestyStore = createRequestyStore({
       apiKey: key.apiKey,
-      baseUrl: settings.baseUrl,
       onError: (message) => {
         api.ui.toast({ variant: "error", title: "Requesty", message })
       },
