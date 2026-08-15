@@ -299,7 +299,7 @@ function TableHeader(props: { theme: TuiThemeCurrent }): JSX.Element {
     <text fg={props.theme.textMuted}>
       <strong>
         <u>
-          {padEnd("Model", 26)} {padStart("Spend", 9)} {padStart("Share", 6)} {padEnd("Tokens (↑in ↓out)", 22)}{" "}
+          {padEnd("Model", 26)} {padStart("Spend", 9)} {padStart("Share", 6)} {padEnd("Tokens (↑In ↓Out)", 22)}{" "}
           {padStart("Reqs", 6)} {padStart("Out/In", 6)}
         </u>
       </strong>
