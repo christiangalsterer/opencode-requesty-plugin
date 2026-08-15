@@ -68,7 +68,8 @@ Or with options:
         "refreshIntervalMs": 300000,
         "sidebar": {
           "enabled": true,
-          "maxModels": 5
+          "maxModels": 5,
+          "order": 50
         },
         "warningThreshold": 0.6,
         "errorThreshold": 0.85
@@ -131,10 +132,12 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `errorThreshold`          | number  | `0.9` (90%)                  | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100) |
 | `sidebar.enabled`         | boolean | `true`                       | Show the sidebar widget |
 | `sidebar.maxModels`       | number  | `5`                          | Number of models shown in the compact sidebar list |
+| `sidebar.order`           | number  | `50`                         | Slot order for the sidebar widget; lower numbers appear first |
 | `prompt.enabled`          | boolean | `true`                       | Show the prompt widget |
 | `prompt.budgetIndicator`  | boolean | `true`                       | Show spend/limit readout on the right side of the session prompt |
 | `prompt.dailySpend`       | boolean | `true`                       | Show today's spend to the left of the budget indicator in the session prompt |
 | `prompt.monthlyProjection`| boolean | `true`                       | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
+| `prompt.order`            | number  | `50`                         | Slot order for the prompt indicator; lower numbers appear first |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 
@@ -150,7 +153,8 @@ If no key is found, the widget shows a short setup hint instead of failing.
         "refreshIntervalMs": 300000,
         "sidebar": {
           "enabled": true,
-          "maxModels": 5
+          "maxModels": 5,
+          "order": 50
         },
         "warningThreshold": 0.7,
         "errorThreshold": 0.9,
@@ -158,7 +162,8 @@ If no key is found, the widget shows a short setup hint instead of failing.
           "enabled": true,
           "budgetIndicator": true,
           "dailySpend": true,
-          "monthlyProjection": true
+          "monthlyProjection": true,
+          "order": 50
         }
       }
     ]

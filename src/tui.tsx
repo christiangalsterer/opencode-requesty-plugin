@@ -48,7 +48,7 @@ const plugin: TuiPluginModule = {
     // Sidebar widget
     if (settings.sidebar.enabled) {
       api.slots.register({
-        order: 60,
+        order: settings.sidebar.order,
         slots: {
           sidebar_content(ctx, slotProps) {
             // Read host-tracked state to force sidebar slot repaints on session/message updates.
@@ -71,7 +71,7 @@ const plugin: TuiPluginModule = {
     // Prompt indicator (right side of the session prompt)
     if (settings.prompt.enabled && settings.prompt.budgetIndicator) {
       api.slots.register({
-        order: 60,
+        order: settings.prompt.order,
         slots: {
           session_prompt_right(ctx, slotProps) {
             return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} dailySpend={settings.prompt.dailySpend} monthlyProjection={settings.prompt.monthlyProjection} />

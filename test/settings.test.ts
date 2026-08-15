@@ -6,8 +6,8 @@ import { DEFAULT_THRESHOLDS } from "../src/format"
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
-  sidebar: { enabled: true, maxModels: 5 },
-  prompt: { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true },
+  sidebar: { enabled: true, maxModels: 5, order: 50 },
+  prompt: { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true, order: 50 },
 }
 
 describe("readSettings", () => {
@@ -90,6 +90,26 @@ describe("readSettings", () => {
     assert.deepEqual(readSettings({ sidebar: null }).sidebar, DEFAULTS.sidebar)
   })
 
+  test("sidebar.order defaults to 50", () => {
+    assert.equal(readSettings(undefined).sidebar.order, 50)
+    assert.equal(readSettings({}).sidebar.order, 50)
+    assert.equal(readSettings({ sidebar: {} }).sidebar.order, 50)
+  })
+
+  test("sidebar.order can be customized", () => {
+    assert.equal(readSettings({ sidebar: { order: 10 } }).sidebar.order, 10)
+    assert.equal(readSettings({ sidebar: { order: 100 } }).sidebar.order, 100)
+    assert.equal(readSettings({ sidebar: { order: -10 } }).sidebar.order, -10)
+  })
+
+  test("sidebar.order invalid numbers → default", () => {
+    assert.equal(readSettings({ sidebar: { order: "first" } }).sidebar.order, DEFAULTS.sidebar.order)
+    assert.equal(readSettings({ sidebar: { order: NaN } }).sidebar.order, DEFAULTS.sidebar.order)
+    assert.equal(readSettings({ sidebar: { order: Infinity } }).sidebar.order, DEFAULTS.sidebar.order)
+    assert.equal(readSettings({ sidebar: { order: -Infinity } }).sidebar.order, DEFAULTS.sidebar.order)
+    assert.equal(readSettings({ sidebar: { order: undefined } }).sidebar.order, DEFAULTS.sidebar.order)
+  })
+
   test("NaN refreshIntervalMs → default", () => {
     assert.equal(readSettings({ refreshIntervalMs: NaN }).refreshIntervalMs, DEFAULTS.refreshIntervalMs)
   })
@@ -104,8 +124,8 @@ describe("readSettings", () => {
   })
 
   test("prompt defaults to all enabled (monthlyProjection on)", () => {
-    assert.deepEqual(readSettings(undefined).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
-    assert.deepEqual(readSettings({}).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
+    assert.deepEqual(readSettings(undefined).prompt, DEFAULTS.prompt)
+    assert.deepEqual(readSettings({}).prompt, DEFAULTS.prompt)
   })
 
   test("prompt.enabled can be disabled", () => {
@@ -134,7 +154,27 @@ describe("readSettings", () => {
   })
 
   test("prompt non-object → defaults", () => {
-    assert.deepEqual(readSettings({ prompt: "nope" }).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
-    assert.deepEqual(readSettings({ prompt: null }).prompt, { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true })
+    assert.deepEqual(readSettings({ prompt: "nope" }).prompt, DEFAULTS.prompt)
+    assert.deepEqual(readSettings({ prompt: null }).prompt, DEFAULTS.prompt)
+  })
+
+  test("prompt.order defaults to 50", () => {
+    assert.equal(readSettings(undefined).prompt.order, 50)
+    assert.equal(readSettings({}).prompt.order, 50)
+    assert.equal(readSettings({ prompt: {} }).prompt.order, 50)
+  })
+
+  test("prompt.order can be customized", () => {
+    assert.equal(readSettings({ prompt: { order: 10 } }).prompt.order, 10)
+    assert.equal(readSettings({ prompt: { order: 100 } }).prompt.order, 100)
+    assert.equal(readSettings({ prompt: { order: -10 } }).prompt.order, -10)
+  })
+
+  test("prompt.order invalid numbers → default", () => {
+    assert.equal(readSettings({ prompt: { order: "first" } }).prompt.order, DEFAULTS.prompt.order)
+    assert.equal(readSettings({ prompt: { order: NaN } }).prompt.order, DEFAULTS.prompt.order)
+    assert.equal(readSettings({ prompt: { order: Infinity } }).prompt.order, DEFAULTS.prompt.order)
+    assert.equal(readSettings({ prompt: { order: -Infinity } }).prompt.order, DEFAULTS.prompt.order)
+    assert.equal(readSettings({ prompt: { order: undefined } }).prompt.order, DEFAULTS.prompt.order)
   })
 })
