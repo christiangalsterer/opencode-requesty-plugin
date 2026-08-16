@@ -1,0 +1,14 @@
+name: Coveralls
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '**.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  coveralls:
+    uses: christiangalsterer/github-actions/.github/workflows/bun_coveralls.yaml@main
