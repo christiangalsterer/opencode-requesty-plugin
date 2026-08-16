@@ -1,3 +1,16 @@
+[![GitHub Actions CI Status](https://github.com/christiangalsterer/opencode-requesty-plugin/actions/workflows/ci.yaml/badge.svg)](https://github.com/christiangalsterer/opencode-requesty-plugin/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/christiangalsterer/opencode-requesty-plugin/graph/badge.svg?token=Q4POJZ46LC)](https://codecov.io/gh/christiangalsterer/opencode-requesty-plugin)
+[![Coveralls](https://coveralls.io/repos/github/christiangalsterer/opencode-requesty-plugin/badge.svg?branch=main)](https://coveralls.io/github/christiangalsterer/opencode-requesty-plugin?branch=main)
+[![Known Vulnerabilities](https://snyk.io/test/github/christiangalsterer/opencode-requesty-plugin/badge.svg)](https://github.com/christiangalsterer/opencode-requesty-plugin/security/advisories)
+[![npm downloads](https://img.shields.io/npm/dt/@christiangalsterer/opencode-requesty-plugin.svg)](https://www.npmjs.com/package/@christiangalsterer/opencode-requesty-plugin)
+[![npm version](https://img.shields.io/npm/v/@christiangalsterer/opencode-requesty-plugin.svg)](https://www.npmjs.com/package/@christiangalsterer/opencode-requesty-plugin?activeTab=versions)
+[![npm license](https://img.shields.io/npm/l/@christiangalsterer/opencode-requesty-plugin.svg)](https://www.npmjs.com/package/@christiangalsterer/opencode-requesty-plugin)
+[![semver](https://img.shields.io/badge/semver-2.0.0-green)](https://semver.org)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://developer.mend.io/github/christiangalsterer/opencode-requesty-plugin)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+![github stars](https://img.shields.io/github/stars/christiangalsterer/opencode-requesty-plugin.svg)
+
 # opencode-requesty-plugin
 
 An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](https://www.requesty.ai) budget, current monthly spend, and per-model cost distribution right in the session prompt, in the session sidebar, plus a detail dialog via the `/requesty` slash command.
