@@ -1,0 +1,23 @@
+name: Snyk
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'renovate/**'
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  security-events: write
+  contents: read
+
+jobs:
+  snyk:
+    uses: christiangalsterer/github-actions/.github/workflows/bun_snyk.yaml@main
+    secrets: inherit
