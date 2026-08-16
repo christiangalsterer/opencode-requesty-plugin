@@ -65,7 +65,7 @@ Add the plugin to your `tui.json` (project root or `~/.config/opencode/tui.json`
 ```json
 {
   $schema": "https://opencode.ai/tui.json",
-  "plugin": ["@christiangalsterer/opencode-requesty-plugin@0.6.0"]
+  "plugin": ["@christiangalsterer/opencode-requesty-plugin@1.0.0"]
 }
 ```
 
@@ -76,7 +76,7 @@ Or with options:
   $schema": "https://opencode.ai/tui.json",
   "plugin": [
     [
-      "@christiangalsterer/opencode-requesty-plugin@0.6.0",
+      "@christiangalsterer/opencode-requesty-plugin@1.0.0",
       {
         "refreshIntervalMs": 300000,
         "sidebar": {
@@ -203,9 +203,9 @@ Data is refreshed on startup, on a configurable periodic interval, when a new se
 
 ```bash
 bun install
-bun run typecheck   # tsc --noEmit over src/ and test/
-bun test            # unit tests via bun:test
-bun run build       # copy src/* → dist/
+bun run typecheck
+bun test
+bun run build
 ```
 
 The project is fully typed TypeScript (`strict` mode). Sources live in `src/` (`.ts`/`.tsx`), tests in `test/`. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used.
