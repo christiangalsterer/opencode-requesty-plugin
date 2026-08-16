@@ -111,4 +111,62 @@ describe("createRequestyStore", () => {
     assert.equal(onError.mock.calls[0][0], "first")
     assert.equal(onError.mock.calls[1][0], "second")
   })
+
+  test("multi-day usage metrics compute todaySpend, avg7d, and avg30d", async () => {
+    const now = new Date()
+    const usage: UsageResponse = { usage: {} }
+    const spendByDay = new Map<string, number>()
+    for (let offset = 0; offset < 8; offset++) {
+      const day = new Date(now)
+      day.setUTCDate(day.getUTCDate() - offset)
+      const key = day.toISOString().slice(0, 10)
+      const spend = (offset + 1) * 10
+      spendByDay.set(key, spend)
+      usage.usage[key] = {
+        spend,
+        grouped_data: [
+          {
+            group_by_values: { model_used: "openai/gpt-5" },
+            spend,
+            input_tokens: 0,
+            output_tokens: 0,
+            total_tokens: 0,
+            completions_requests: 1,
+          },
+        ],
+      }
+    }
+
+    const store = createStore({
+      fetchUsage: () => Promise.resolve(usage),
+    })
+    await store.refresh()
+
+    const data = store.data()
+    assert.ok(data)
+    const todayKey = now.toISOString().slice(0, 10)
+    assert.equal(data!.todaySpend, spendByDay.get(todayKey))
+
+    let expected7d = 0
+    for (let offset = 0; offset < 7; offset++) {
+      const day = new Date(now)
+      day.setUTCDate(day.getUTCDate() - offset)
+      const key = day.toISOString().slice(0, 10)
+      expected7d += spendByDay.get(key) ?? 0
+    }
+    expected7d /= 7
+
+    let expected30d = 0
+    for (let offset = 0; offset < 30; offset++) {
+      const day = new Date(now)
+      day.setUTCDate(day.getUTCDate() - offset)
+      const key = day.toISOString().slice(0, 10)
+      expected30d += spendByDay.get(key) ?? 0
+    }
+    expected30d /= 30
+
+    assert.equal(data!.avg7d, expected7d)
+    assert.equal(data!.avg30d, expected30d)
+    assert.equal(data!.monthSpendFromUsage, [...spendByDay.values()].reduce((a, b) => a + b, 0))
+  })
 })
