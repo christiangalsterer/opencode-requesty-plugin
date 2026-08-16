@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .vscode/
+coverage/
 *.log
 .DS_Store
 TODO.md

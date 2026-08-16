@@ -4,7 +4,7 @@ opencode TUI plugin. Shows Requesty.ai monthly budget/spend in the session sideb
 
 ## Output Guidelines
 
-Do NOT include code changes, diffs of changes, or patch output in responses unless the user explicitly asks for them.
+Do NOT include code changes, diffs of changes, code examples or patch output in responses unless the user explicitly asks for them.
 
 ## Commands
 

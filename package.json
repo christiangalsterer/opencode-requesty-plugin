@@ -51,6 +51,7 @@
     "clean:deps": "rm -rf ./node_modules && bun run deps",
     "deps": "bun install",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
   }
 }
