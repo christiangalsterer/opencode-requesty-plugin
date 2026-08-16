@@ -16,8 +16,4 @@ permissions:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
-      - run: bun run ci
+    uses: christiangalsterer/github-actions/.github/workflows/bun_ci.yaml@main
