@@ -5,6 +5,7 @@ on:
       - 'main'
     paths:
       - '**.ts'
+  workflow_dispatch:    
 
 permissions:
   contents: read
