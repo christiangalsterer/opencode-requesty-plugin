@@ -12,6 +12,7 @@ const MAX_MAX_MODELS = 20
 export type SidebarSettings = {
   enabled: boolean
   maxModels: number
+  showTokens: boolean
   order: number
 }
 
@@ -50,6 +51,7 @@ function readSidebarSettings(raw: unknown): SidebarSettings {
   return {
     enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
     maxModels: typeof obj.maxModels === "number" && obj.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(obj.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
+    showTokens: typeof obj.showTokens === "boolean" ? obj.showTokens : true,
     order: parseOrder(obj.order),
   }
 }

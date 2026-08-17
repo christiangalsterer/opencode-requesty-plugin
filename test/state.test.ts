@@ -1,6 +1,7 @@
 import { describe, test, mock } from "bun:test"
 import assert from "node:assert/strict"
 import { createRequestyStore } from "../src/state"
+import { avgTokensLastNDays } from "../src/api"
 import { dailyAverage } from "../src/format"
 import type { ApiKeyInfo, UsageResponse } from "../src/api"
 
@@ -52,6 +53,14 @@ describe("createRequestyStore", () => {
     assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
     assert.equal(data!.avg7d, 0)
     assert.equal(data!.avg30d, 0)
+    assert.deepEqual(data!.todayTokens, { input: 0, output: 0, total: 0 })
+    assert.deepEqual(data!.dailyAvgTokens, {
+      input: dailyAverage(data!.models.reduce((sum, model) => sum + model.inputTokens, 0)),
+      output: dailyAverage(data!.models.reduce((sum, model) => sum + model.outputTokens, 0)),
+      total: dailyAverage(data!.models.reduce((sum, model) => sum + model.totalTokens, 0)),
+    })
+    assert.deepEqual(data!.avg7dTokens, { input: 0, output: 0, total: 0 })
+    assert.deepEqual(data!.avg30dTokens, avgTokensLastNDays(USAGE, 30))
     assert.equal(data!.lastMonthSpend, 0)
   })
 
@@ -118,21 +127,30 @@ describe("createRequestyStore", () => {
     const now = new Date()
     const usage: UsageResponse = { usage: {} }
     const spendByDay = new Map<string, number>()
+    const inputTokensByDay = new Map<string, number>()
+    const outputTokensByDay = new Map<string, number>()
+    const totalTokensByDay = new Map<string, number>()
     for (let offset = 0; offset < 8; offset++) {
       const day = new Date(now)
       day.setUTCDate(day.getUTCDate() - offset)
       const key = day.toISOString().slice(0, 10)
       const spend = (offset + 1) * 10
+      const inputTokens = (offset + 1) * 100
+      const outputTokens = (offset + 1) * 50
+      const totalTokens = (offset + 1) * 150
       spendByDay.set(key, spend)
+      inputTokensByDay.set(key, inputTokens)
+      outputTokensByDay.set(key, outputTokens)
+      totalTokensByDay.set(key, totalTokens)
       usage.usage[key] = {
         spend,
         grouped_data: [
           {
             group_by_values: { model_used: "openai/gpt-5" },
             spend,
-            input_tokens: 0,
-            output_tokens: 0,
-            total_tokens: 0,
+            input_tokens: inputTokens,
+            output_tokens: outputTokens,
+            total_tokens: totalTokens,
             completions_requests: 1,
           },
         ],
@@ -171,5 +189,37 @@ describe("createRequestyStore", () => {
     assert.equal(data!.avg7d, expected7d)
     assert.equal(data!.avg30d, expected30d)
     assert.equal(data!.monthSpendFromUsage, [...spendByDay.values()].reduce((a, b) => a + b, 0))
+
+    function avgTokensForDays(days: number) {
+      let input = 0
+      let output = 0
+      let total = 0
+      for (let offset = 0; offset < days; offset++) {
+        const day = new Date(now)
+        day.setUTCDate(day.getUTCDate() - offset)
+        const key = day.toISOString().slice(0, 10)
+        input += inputTokensByDay.get(key) ?? 0
+        output += outputTokensByDay.get(key) ?? 0
+        total += totalTokensByDay.get(key) ?? 0
+      }
+      return { input: input / days, output: output / days, total: total / days }
+    }
+
+    assert.deepEqual(data!.todayTokens, {
+      input: inputTokensByDay.get(todayKey),
+      output: outputTokensByDay.get(todayKey),
+      total: totalTokensByDay.get(todayKey),
+    })
+    assert.deepEqual(data!.avg7dTokens, avgTokensForDays(7))
+    assert.deepEqual(data!.avg30dTokens, avgTokensForDays(30))
+
+    const monthInputTokens = [...inputTokensByDay.values()].reduce((a, b) => a + b, 0)
+    const monthOutputTokens = [...outputTokensByDay.values()].reduce((a, b) => a + b, 0)
+    const monthTotalTokens = [...totalTokensByDay.values()].reduce((a, b) => a + b, 0)
+    assert.deepEqual(data!.dailyAvgTokens, {
+      input: dailyAverage(monthInputTokens),
+      output: dailyAverage(monthOutputTokens),
+      total: dailyAverage(monthTotalTokens),
+    })
   })
 })

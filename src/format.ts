@@ -28,11 +28,19 @@ export function formatPercent(ratio: number): string {
 }
 
 /**
- * Compact input/output token breakdown, e.g. "(↑1.0M ↓200k)".
+ * Compact input/output token breakdown, e.g. " (↑1.0M ↓200k)".
  * ↑ = input tokens (into the model), ↓ = output tokens (from the model).
  */
 export function formatTokenBreakdown(inputTokens: number, outputTokens: number): string {
   return `(↑${formatTokens(inputTokens)} ↓${formatTokens(outputTokens)})`
+}
+
+/**
+ * Inline input/output token breakdown without parentheses, e.g. "↑1.0M ↓200k".
+ * ↑ = input tokens (into the model), ↓ = output tokens (from the model).
+ */
+export function formatTokenInline(inputTokens: number, outputTokens: number): string {
+  return `↑${formatTokens(inputTokens)} ↓${formatTokens(outputTokens)}`
 }
 
 /**

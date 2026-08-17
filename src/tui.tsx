@@ -61,6 +61,7 @@ const plugin: TuiPluginModule = {
                 theme={ctx.theme.current}
                 maxModels={settings.sidebar.maxModels}
                 thresholds={settings.thresholds}
+                showTokens={settings.sidebar.showTokens}
               />
             )
           },

@@ -6,7 +6,7 @@ import { DEFAULT_THRESHOLDS } from "../src/format"
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
-  sidebar: { enabled: true, maxModels: 5, order: 50 },
+  sidebar: { enabled: true, maxModels: 5, showTokens: true, order: 50 },
   prompt: { enabled: true, budgetIndicator: true, todaySpend: true, dailyAvg: true, avg7d: true, avg30d: true, monthlyProjection: true, order: 50 },
 }
 
@@ -83,6 +83,22 @@ describe("readSettings", () => {
     assert.equal(readSettings({ sidebar: { enabled: "no" } }).sidebar.enabled, true)
     assert.equal(readSettings({ sidebar: { enabled: 0 } }).sidebar.enabled, true)
     assert.equal(readSettings({ sidebar: { enabled: undefined } }).sidebar.enabled, true)
+  })
+
+  test("sidebar.showTokens defaults to true", () => {
+    assert.equal(readSettings(undefined).sidebar.showTokens, true)
+    assert.equal(readSettings({}).sidebar.showTokens, true)
+    assert.equal(readSettings({ sidebar: {} }).sidebar.showTokens, true)
+  })
+
+  test("sidebar.showTokens can be disabled", () => {
+    assert.equal(readSettings({ sidebar: { showTokens: false } }).sidebar.showTokens, false)
+  })
+
+  test("sidebar.showTokens non-boolean values → default", () => {
+    assert.equal(readSettings({ sidebar: { showTokens: "no" } }).sidebar.showTokens, true)
+    assert.equal(readSettings({ sidebar: { showTokens: 0 } }).sidebar.showTokens, true)
+    assert.equal(readSettings({ sidebar: { showTokens: undefined } }).sidebar.showTokens, true)
   })
 
   test("sidebar non-object → defaults", () => {

@@ -2,15 +2,18 @@ import { createSignal } from "solid-js"
 import {
   aggregateByModel,
   avgSpendLastNDays,
+  avgTokensLastNDays,
   endOfLastMonth,
   getApiKeySelf,
   getUsageSelf,
   spendForDay,
   startOfCurrentMonth,
   startOfLastMonth,
+  tokensForDay,
   totalSpendFromUsage,
   type ApiKeyInfo,
   type ModelUsage,
+  type TokenBreakdown,
   type UsageResponse,
 } from "./api"
 import { dailyAverage } from "./format"
@@ -29,6 +32,10 @@ export type RequestyData = {
   dailyAvg: number
   avg7d: number
   avg30d: number
+  todayTokens: TokenBreakdown
+  dailyAvgTokens: TokenBreakdown
+  avg7dTokens: TokenBreakdown
+  avg30dTokens: TokenBreakdown
   lastMonthSpend: number
 }
 
@@ -78,9 +85,20 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         })
         const models = aggregateByModel(usage)
         const monthSpendFromUsage = models.reduce((total, model) => total + model.spend, 0)
+        const monthInputTokens = models.reduce((total, model) => total + model.inputTokens, 0)
+        const monthOutputTokens = models.reduce((total, model) => total + model.outputTokens, 0)
+        const monthTotalTokens = models.reduce((total, model) => total + model.totalTokens, 0)
         const todaySpend = spendForDay(usage)
         const avg7d = avgSpendLastNDays(usage, 7)
         const avg30d = avgSpendLastNDays(usage, 30)
+        const todayTokens = tokensForDay(usage)
+        const dailyAvgTokens = {
+          input: dailyAverage(monthInputTokens),
+          output: dailyAverage(monthOutputTokens),
+          total: dailyAverage(monthTotalTokens),
+        }
+        const avg7dTokens = avgTokensLastNDays(usage, 7)
+        const avg30dTokens = avgTokensLastNDays(usage, 30)
         let lastMonthSpend = 0
         try {
           const lastMonthUsage = await fetchUsage(options.apiKey, {
@@ -92,7 +110,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         } catch {
           // last month data is non-critical; continue without it
         }
-        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, dailyAvg: dailyAverage(keyInfo.monthly_spend), avg7d, avg30d, lastMonthSpend })
+        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, dailyAvg: dailyAverage(keyInfo.monthly_spend), avg7d, avg30d, todayTokens, dailyAvgTokens, avg7dTokens, avg30dTokens, lastMonthSpend })
         setState({ status: "ready", fetchedAt: new Date() })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)

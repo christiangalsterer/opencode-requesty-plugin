@@ -29,6 +29,7 @@ The sidebar gives a quick, at-a-glance view of your current month's Requesty usa
 - A color-coded progress bar that turns yellow/red at configurable thresholds
 - Projected month-end spend at the current run rate (`~$X EOM`), with a pace marker: ↑ over pace, → on pace, ↓ under pace
 - Daily spend trend: today · daily average · 7-day average · 30-day average
+- Optional input/output token breakdown for each spend metric (`sidebar.showTokens`)
 - API key name in the header, linking to the Requesty analytics dashboard filtered by that key
 - Top models for the current month (up to `sidebar.maxModels`), each with spend, total tokens, and input (↑) / output (↓) breakdown; click the header to collapse or expand the list
 
@@ -82,6 +83,7 @@ Or with options:
         "sidebar": {
           "enabled": true,
           "maxModels": 5,
+          "showTokens": true,
           "order": 50
         },
         "warningThreshold": 0.6,
@@ -153,6 +155,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `errorThreshold`          | number  | `0.9` (90%)                  | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100) |
 | `sidebar.enabled`         | boolean | `true`                       | Show the sidebar widget |
 | `sidebar.maxModels`       | number  | `5`                          | Number of models shown in the compact sidebar list |
+| `sidebar.showTokens`      | boolean | `true`                       | Show input/output token breakdown alongside spend in the sidebar averages block |
 | `sidebar.order`           | number  | `50`                         | Slot order for the sidebar widget; lower numbers appear first |
 | `prompt.enabled`          | boolean | `true`                       | Show the prompt widget |
 | `prompt.budgetIndicator`  | boolean | `true`                       | Show spend/limit readout on the right side of the session prompt |
@@ -178,6 +181,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
         "sidebar": {
           "enabled": true,
           "maxModels": 5,
+          "showTokens": true,
           "order": 50
         },
         "warningThreshold": 0.7,
@@ -204,10 +208,10 @@ Data is refreshed on startup, on a configurable periodic interval, when a new se
 
 All amounts are in USD and dates are evaluated in UTC.
 
-- **Today** — spend for the current calendar day.
-- **Daily avg** — current month's total spend divided by the number of days elapsed so far this month.
-- **7d avg** — rolling average over the last 7 calendar days, including today. Days without usage count as `$0`.
-- **30d avg** — rolling average over the last 30 calendar days, including today. Days without usage count as `$0`.
+- **Today** — spend and tokens for the current calendar day.
+- **Daily avg** — current month's total spend and tokens divided by the number of days elapsed so far this month.
+- **7d avg** — rolling spend and token average over the last 7 calendar days, including today. Days without usage count as `$0` / `0` tokens.
+- **30d avg** — rolling spend and token average over the last 30 calendar days, including today. Days without usage count as `$0` / `0` tokens.
 - **End of Month projection** — current spend projected forward at the current daily run rate through the end of the month.
 
 ## Requirements

@@ -1,7 +1,7 @@
 import { describe, test } from "bun:test"
 import assert from "node:assert/strict"
 import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
-import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatMonthDeltaParts, formatOutputInputRatio, formatProjection, formatProjectionParts, formatTimestamp, formatTokenBreakdown, formatTokens, formatUsd, isProjectionOverLimit, modelAnalyticsUrl, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
+import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatMonthDeltaParts, formatOutputInputRatio, formatProjection, formatProjectionParts, formatTimestamp, formatTokenBreakdown, formatTokenInline, formatTokens, formatUsd, isProjectionOverLimit, modelAnalyticsUrl, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
   test("aggregates grouped rows across periods and sorts by spend desc", () => {
@@ -251,6 +251,14 @@ describe("format helpers", () => {
     assert.equal(formatTokenBreakdown(500, 0), "(↑500 ↓0)")
     assert.equal(formatTokenBreakdown(0, 3_000_000_000), "(↑0 ↓3.0B)")
     assert.equal(formatTokenBreakdown(1_500, 2_500_000), "(↑1.5k ↓2.5M)")
+  })
+
+  test("formatTokenInline", () => {
+    assert.equal(formatTokenInline(1_000_000, 200_000), "↑1.0M ↓200.0k")
+    assert.equal(formatTokenInline(0, 0), "↑0 ↓0")
+    assert.equal(formatTokenInline(500, 0), "↑500 ↓0")
+    assert.equal(formatTokenInline(0, 3_000_000_000), "↑0 ↓3.0B")
+    assert.equal(formatTokenInline(1_500, 2_500_000), "↑1.5k ↓2.5M")
   })
 
   test("formatOutputInputRatio", () => {

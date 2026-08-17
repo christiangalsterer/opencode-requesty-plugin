@@ -2,7 +2,7 @@
 import { Show, For, createMemo, createSignal, type JSX } from "solid-js"
 import type { TuiPluginApi, TuiThemeCurrent } from "@opencode-ai/plugin/tui"
 import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatProjectionParts, formatTokenBreakdown, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type Pace, type SpendThresholds } from "./format"
+import { formatLimit, formatPercent, formatProjectionParts, formatTokenBreakdown, formatTokenInline, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type Pace, type SpendThresholds } from "./format"
 
 export type WidgetProps = {
   store: RequestyStore
@@ -13,6 +13,8 @@ export type WidgetProps = {
   maxModels: number
   /** Budget usage thresholds for bar coloring. */
   thresholds: SpendThresholds
+  /** Show input/output token breakdown alongside spend in the averages block. */
+  showTokens: boolean
 }
 
 export type PromptIndicatorProps = {
@@ -62,7 +64,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
             <box flexDirection="column">
               <text fg={theme().error}>Requesty: {props.store.state().status === "error" ? (props.store.state() as { message: string }).message : ""}</text>
               <Show when={snapshot().data}>
-                <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} stale />
+                <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} showTokens={props.showTokens} stale />
               </Show>
             </box>
           }
@@ -75,7 +77,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
               </text>
             }
           >
-            <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} />
+            <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} showTokens={props.showTokens} />
           </Show>
         </Show>
       </box>
@@ -88,6 +90,7 @@ type SnapshotProps = {
   theme: TuiThemeCurrent
   maxModels: number
   thresholds: SpendThresholds
+  showTokens: boolean
   stale?: boolean
 }
 
@@ -132,16 +135,40 @@ function Snapshot(props: SnapshotProps): JSX.Element {
             </box>
           </Show>
         </box>
-        <box flexDirection="column" gap={0}>
-          <box flexDirection="row" justifyContent="space-between">
-            <text fg={props.theme.textMuted}>Today {formatUsd(data().todaySpend)}</text>
-            <text fg={props.theme.textMuted}>7d {formatUsd(data().avg7d)}</text>
+        <Show
+          when={props.showTokens}
+          fallback={
+            <box flexDirection="column" gap={0}>
+              <box flexDirection="row" justifyContent="space-between">
+                <text fg={props.theme.textMuted}>Today {formatUsd(data().todaySpend)}</text>
+                <text fg={props.theme.textMuted}>7d {formatUsd(data().avg7d)}</text>
+              </box>
+              <box flexDirection="row" justifyContent="space-between">
+                <text fg={props.theme.textMuted}>Daily {formatUsd(data().dailyAvg)}</text>
+                <text fg={props.theme.textMuted}>30d {formatUsd(data().avg30d)}</text>
+              </box>
+            </box>
+          }
+        >
+          <box flexDirection="column" gap={0}>
+            <box flexDirection="row" justifyContent="space-between">
+              <text fg={props.theme.textMuted}>{padEnd("Today", 9)} {padStart(formatUsd(data().todaySpend), 10)}</text>
+              <text fg={props.theme.textMuted}>{formatTokenInline(data().todayTokens.input, data().todayTokens.output)}</text>
+            </box>
+            <box flexDirection="row" justifyContent="space-between">
+              <text fg={props.theme.textMuted}>{padEnd("Daily avg", 9)} {padStart(formatUsd(data().dailyAvg), 10)}</text>
+              <text fg={props.theme.textMuted}>{formatTokenInline(data().dailyAvgTokens.input, data().dailyAvgTokens.output)}</text>
+            </box>
+            <box flexDirection="row" justifyContent="space-between">
+              <text fg={props.theme.textMuted}>{padEnd("7d avg", 9)} {padStart(formatUsd(data().avg7d), 10)}</text>
+              <text fg={props.theme.textMuted}>{formatTokenInline(data().avg7dTokens.input, data().avg7dTokens.output)}</text>
+            </box>
+            <box flexDirection="row" justifyContent="space-between">
+              <text fg={props.theme.textMuted}>{padEnd("30d avg", 9)} {padStart(formatUsd(data().avg30d), 10)}</text>
+              <text fg={props.theme.textMuted}>{formatTokenInline(data().avg30dTokens.input, data().avg30dTokens.output)}</text>
+            </box>
           </box>
-          <box flexDirection="row" justifyContent="space-between">
-            <text fg={props.theme.textMuted}>Daily {formatUsd(data().dailyAvg)}</text>
-            <text fg={props.theme.textMuted}>30d {formatUsd(data().avg30d)}</text>
-          </box>
-        </box>
+        </Show>
       </box>
       <text> </text>
       <Show when={models().length > 0}>

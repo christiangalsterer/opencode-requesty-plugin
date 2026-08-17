@@ -219,3 +219,51 @@ export function avgSpendLastNDays(response: UsageResponse, days: number, now = n
   }
   return total / days
 }
+
+export type TokenBreakdown = {
+  input: number
+  output: number
+  total: number
+}
+
+/** Sum input/output/total tokens for a specific day. */
+export function tokensForDay(response: UsageResponse, now = new Date()): TokenBreakdown {
+  const key = dayKey(now)
+  const entry = response.usage?.[key]
+  if (!entry) return { input: 0, output: 0, total: 0 }
+  if (entry.grouped_data && entry.grouped_data.length > 0) {
+    return entry.grouped_data.reduce(
+      (acc, group) => {
+        acc.input += toNumber(group.input_tokens)
+        acc.output += toNumber(group.output_tokens)
+        acc.total += toNumber(group.total_tokens)
+        return acc
+      },
+      { input: 0, output: 0, total: 0 },
+    )
+  }
+  return {
+    input: toNumber(entry.input_tokens),
+    output: toNumber(entry.output_tokens),
+    total: toNumber(entry.total_tokens),
+  }
+}
+
+/** Average input/output/total tokens over the last `days` calendar days. */
+export function avgTokensLastNDays(response: UsageResponse, days: number, now = new Date()): TokenBreakdown {
+  if (days <= 0) return { input: 0, output: 0, total: 0 }
+  const totals: TokenBreakdown = { input: 0, output: 0, total: 0 }
+  for (let offset = 0; offset < days; offset++) {
+    const date = new Date(now)
+    date.setUTCDate(date.getUTCDate() - offset)
+    const day = tokensForDay(response, date)
+    totals.input += day.input
+    totals.output += day.output
+    totals.total += day.total
+  }
+  return {
+    input: totals.input / days,
+    output: totals.output / days,
+    total: totals.total / days,
+  }
+}
