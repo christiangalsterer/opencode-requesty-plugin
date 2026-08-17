@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/christiangalsterer/opencode-requesty-plugin/graph/badge.svg?token=Q4POJZ46LC)](https://codecov.io/gh/christiangalsterer/opencode-requesty-plugin)
 [![Coveralls](https://coveralls.io/repos/github/christiangalsterer/opencode-requesty-plugin/badge.svg?branch=main)](https://coveralls.io/github/christiangalsterer/opencode-requesty-plugin?branch=main)
 [![Known Vulnerabilities](https://snyk.io/test/github/christiangalsterer/opencode-requesty-plugin/badge.svg)](https://github.com/christiangalsterer/opencode-requesty-plugin/security/advisories)
-[![Socket Badge](https://badge.socket.dev/npm/package/@christiangalsterer/opencode-requesty-plugin/1.0.0)](https://badge.socket.dev/npm/package/@christiangalsterer/opencode-requesty-plugin/1.0.0)
+[![Socket Badge](https://badge.socket.dev/npm/package/@christiangalsterer/opencode-requesty-plugin)](https://socket.dev/npm/package/@christiangalsterer/opencode-requesty-plugin)
 [![renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://developer.mend.io/github/christiangalsterer/opencode-requesty-plugin)
 [![npm downloads](https://img.shields.io/npm/dt/@christiangalsterer/opencode-requesty-plugin.svg)](https://www.npmjs.com/package/@christiangalsterer/opencode-requesty-plugin)
 [![npm version](https://img.shields.io/npm/v/@christiangalsterer/opencode-requesty-plugin.svg)](https://www.npmjs.com/package/@christiangalsterer/opencode-requesty-plugin?activeTab=versions)
