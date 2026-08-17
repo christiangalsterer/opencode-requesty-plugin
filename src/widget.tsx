@@ -21,7 +21,10 @@ export type PromptIndicatorProps = {
   sessionID: string
   theme: TuiThemeCurrent
   thresholds: SpendThresholds
-  dailySpend: boolean
+  todaySpend: boolean
+  dailyAvg: boolean
+  avg7d: boolean
+  avg30d: boolean
   monthlyProjection: boolean
 }
 
@@ -196,8 +199,15 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     const projectionOverLimit = isProjectionOverLimit(spend, limit)
 
     const parts: { text: string; color?: unknown; href?: string }[] = []
-    if (d && props.dailySpend) {
-      parts.push({ text: `${formatUsd(d.todaySpend)} `, color: props.theme.textMuted })
+    if (d) {
+      const averages: string[] = []
+      if (props.todaySpend) averages.push(`T ${formatUsd(d.todaySpend)}`)
+      if (props.dailyAvg) averages.push(`D ${formatUsd(d.dailyAvg)}`)
+      if (props.avg7d) averages.push(`7d ${formatUsd(d.avg7d)}`)
+      if (props.avg30d) averages.push(`30d ${formatUsd(d.avg30d)}`)
+      if (averages.length > 0) {
+        parts.push({ text: `${averages.join(" · ")} `, color: props.theme.textMuted })
+      }
     }
     if (status === "loading" && !d) {
       parts.push({ text: "Requesty …", color: props.theme.textMuted })

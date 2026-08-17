@@ -74,7 +74,7 @@ const plugin: TuiPluginModule = {
         order: settings.prompt.order,
         slots: {
           session_prompt_right(ctx, slotProps) {
-            return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} dailySpend={settings.prompt.dailySpend} monthlyProjection={settings.prompt.monthlyProjection} />
+            return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} todaySpend={settings.prompt.todaySpend} dailyAvg={settings.prompt.dailyAvg} avg7d={settings.prompt.avg7d} avg30d={settings.prompt.avg30d} monthlyProjection={settings.prompt.monthlyProjection} />
           },
         },
       })

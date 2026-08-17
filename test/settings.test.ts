@@ -7,7 +7,7 @@ const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
   sidebar: { enabled: true, maxModels: 5, order: 50 },
-  prompt: { enabled: true, budgetIndicator: true, dailySpend: true, monthlyProjection: true, order: 50 },
+  prompt: { enabled: true, budgetIndicator: true, todaySpend: true, dailyAvg: true, avg7d: true, avg30d: true, monthlyProjection: true, order: 50 },
 }
 
 describe("readSettings", () => {
@@ -136,8 +136,20 @@ describe("readSettings", () => {
     assert.equal(readSettings({ prompt: { budgetIndicator: false } }).prompt.budgetIndicator, false)
   })
 
-  test("prompt.dailySpend can be disabled", () => {
-    assert.equal(readSettings({ prompt: { dailySpend: false } }).prompt.dailySpend, false)
+  test("prompt.todaySpend can be disabled", () => {
+    assert.equal(readSettings({ prompt: { todaySpend: false } }).prompt.todaySpend, false)
+  })
+
+  test("prompt.dailyAvg can be disabled", () => {
+    assert.equal(readSettings({ prompt: { dailyAvg: false } }).prompt.dailyAvg, false)
+  })
+
+  test("prompt.7dAvg can be disabled", () => {
+    assert.equal(readSettings({ prompt: { "7dAvg": false } }).prompt.avg7d, false)
+  })
+
+  test("prompt.30dAvg can be disabled", () => {
+    assert.equal(readSettings({ prompt: { "30dAvg": false } }).prompt.avg30d, false)
   })
 
   test("prompt.monthlyProjection defaults to true and can be disabled", () => {
@@ -148,7 +160,10 @@ describe("readSettings", () => {
   test("prompt non-boolean values → defaults", () => {
     assert.equal(readSettings({ prompt: { enabled: "no" } }).prompt.enabled, true)
     assert.equal(readSettings({ prompt: { budgetIndicator: 0 } }).prompt.budgetIndicator, true)
-    assert.equal(readSettings({ prompt: { dailySpend: "yes" } }).prompt.dailySpend, true)
+    assert.equal(readSettings({ prompt: { todaySpend: "yes" } }).prompt.todaySpend, true)
+    assert.equal(readSettings({ prompt: { dailyAvg: "yes" } }).prompt.dailyAvg, true)
+    assert.equal(readSettings({ prompt: { "7dAvg": "yes" } }).prompt.avg7d, true)
+    assert.equal(readSettings({ prompt: { "30dAvg": "yes" } }).prompt.avg30d, true)
     assert.equal(readSettings({ prompt: { monthlyProjection: "yes" } }).prompt.monthlyProjection, true)
     assert.equal(readSettings({ prompt: { enabled: undefined } }).prompt.enabled, true)
   })

@@ -18,7 +18,10 @@ export type SidebarSettings = {
 export type PromptSettings = {
   enabled: boolean
   budgetIndicator: boolean
-  dailySpend: boolean
+  todaySpend: boolean
+  dailyAvg: boolean
+  avg7d: boolean
+  avg30d: boolean
   monthlyProjection: boolean
   order: number
 }
@@ -65,7 +68,10 @@ function readPromptSettings(raw: unknown): PromptSettings {
   return {
     enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
     budgetIndicator: typeof obj.budgetIndicator === "boolean" ? obj.budgetIndicator : true,
-    dailySpend: typeof obj.dailySpend === "boolean" ? obj.dailySpend : true,
+    todaySpend: typeof obj.todaySpend === "boolean" ? obj.todaySpend : true,
+    dailyAvg: typeof obj.dailyAvg === "boolean" ? obj.dailyAvg : true,
+    avg7d: typeof obj["7dAvg"] === "boolean" ? obj["7dAvg"] : true,
+    avg30d: typeof obj["30dAvg"] === "boolean" ? obj["30dAvg"] : true,
     monthlyProjection: typeof obj.monthlyProjection === "boolean" ? obj.monthlyProjection : true,
     order: parseOrder(obj.order),
   }
