@@ -200,6 +200,16 @@ If no key is found, the widget shows a short setup hint instead of failing.
 
 Data is refreshed on startup, on a configurable periodic interval, when a new session is created, and when messages are updated.
 
+## Metrics
+
+All amounts are in USD and dates are evaluated in UTC.
+
+- **Today** — spend for the current calendar day.
+- **Daily avg** — current month's total spend divided by the number of days elapsed so far this month.
+- **7d avg** — rolling average over the last 7 calendar days, including today. Days without usage count as `$0`.
+- **30d avg** — rolling average over the last 30 calendar days, including today. Days without usage count as `$0`.
+- **End of Month projection** — current spend projected forward at the current daily run rate through the end of the month.
+
 ## Requirements
 
 - opencode ≥ 1.18 (TUI plugin API with slots)
