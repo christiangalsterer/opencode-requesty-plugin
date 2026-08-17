@@ -242,6 +242,7 @@ function BudgetSection(props: {
 
       <box flexDirection="row" gap={3} flexWrap="wrap">
         <Metric label="Today" value={formatUsd(data().todaySpend)} theme={props.theme} color={props.theme.text} />
+        <Metric label="Daily avg" value={formatUsd(data().dailyAvg)} theme={props.theme} color={props.theme.text} />
         <Metric label="7d avg" value={formatUsd(data().avg7d)} theme={props.theme} color={props.theme.text} />
         <Metric label="30d avg" value={formatUsd(data().avg30d)} theme={props.theme} color={props.theme.text} />
       </box>

@@ -28,7 +28,7 @@ The sidebar gives a quick, at-a-glance view of your current month's Requesty usa
 - Monthly spend and monthly limit, pulled from `GET /v1/manage/apikey/self`
 - A color-coded progress bar that turns yellow/red at configurable thresholds
 - Projected month-end spend at the current run rate (`~$X EOM`), with a pace marker: ↑ over pace, → on pace, ↓ under pace
-- Daily spend trend: today · 7-day average · 30-day average
+- Daily spend trend: today · daily average · 7-day average · 30-day average
 - API key name in the header, linking to the Requesty analytics dashboard filtered by that key
 - Top models for the current month (up to `sidebar.maxModels`), each with spend, total tokens, and input (↑) / output (↓) breakdown; click the header to collapse or expand the list
 
@@ -41,7 +41,7 @@ You can disable the sidebar entirely with `"sidebar": { "enabled": false }`.
 Open the dialog with `/requesty` or by picking *Requesty: show usage* from the command palette for the full breakdown:
 
 - KPI row: spent, limit, remaining, End of Month projection with a colored pace arrow, and last month's spend with a colored trend chevron
-- *Budget Overview* card: wide progress bar, budget-health badge, days-to-exhaustion estimate based on your 7-day average, and today/7d/30d averages
+- *Budget Overview* card: wide progress bar, budget-health badge, days-to-exhaustion estimate based on your 7-day average, and today/daily avg/7d/30d averages
 - *Model Breakdown (Current Month)* card: per-model table with spend, share of total spend, tokens, request count, and output/input ratio
 
 ### Prompt indicator

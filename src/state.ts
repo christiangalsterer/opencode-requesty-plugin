@@ -13,6 +13,7 @@ import {
   type ModelUsage,
   type UsageResponse,
 } from "./api"
+import { dailyAverage } from "./format"
 
 export type RefreshState =
   | { status: "idle" }
@@ -25,6 +26,7 @@ export type RequestyData = {
   models: ModelUsage[]
   monthSpendFromUsage: number
   todaySpend: number
+  dailyAvg: number
   avg7d: number
   avg30d: number
   lastMonthSpend: number
@@ -90,7 +92,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         } catch {
           // last month data is non-critical; continue without it
         }
-        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, avg7d, avg30d, lastMonthSpend })
+        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, dailyAvg: dailyAverage(keyInfo.monthly_spend), avg7d, avg30d, lastMonthSpend })
         setState({ status: "ready", fetchedAt: new Date() })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)

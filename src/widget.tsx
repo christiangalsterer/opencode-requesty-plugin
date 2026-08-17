@@ -112,28 +112,32 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           </box>
         </Show>
         <box flexDirection="row" justifyContent="space-between">
-          <text fg={props.theme.textMuted}>{formatUsd(spend())}</text>
-          <text fg={props.theme.textMuted}>·</text>
-          <text fg={props.theme.textMuted}>{formatLimit(limit())}</text>
-          <Show when={projectionParts()}>
-            <text fg={props.theme.textMuted}>·</text>
-            <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
-              ~{formatUsd(projectionParts()!.projected)} EOM{" "}
-              <Show when={projectionParts()!.arrow}>
-                <span style={{ fg: paceColor(projectionParts()!.pace, props.theme) }}>{projectionParts()!.arrow}</span>
+          <text fg={props.theme.textMuted}>{formatUsd(spend())} / {formatLimit(limit())}</text>
+          <Show when={projectionParts() || props.stale}>
+            <box flexDirection="row">
+              <Show when={projectionParts()}>
+                <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
+                  ~{formatUsd(projectionParts()!.projected)} EOM{" "}
+                  <Show when={projectionParts()!.arrow}>
+                    <span style={{ fg: paceColor(projectionParts()!.pace, props.theme) }}>{projectionParts()!.arrow}</span>
+                  </Show>
+                </text>
               </Show>
-            </text>
-          </Show>
-          <Show when={props.stale}>
-            <text fg={props.theme.textMuted}>(stale)</text>
+              <Show when={props.stale}>
+                <text fg={props.theme.textMuted}> (stale)</text>
+              </Show>
+            </box>
           </Show>
         </box>
-        <box flexDirection="row" justifyContent="space-between">
-          <text fg={props.theme.textMuted}>Today {formatUsd(data().todaySpend)}</text>
-          <text fg={props.theme.textMuted}>·</text>
-          <text fg={props.theme.textMuted}>7d {formatUsd(data().avg7d)}</text>
-          <text fg={props.theme.textMuted}>·</text>
-          <text fg={props.theme.textMuted}>30d {formatUsd(data().avg30d)}</text>
+        <box flexDirection="column" gap={0}>
+          <box flexDirection="row" justifyContent="space-between">
+            <text fg={props.theme.textMuted}>Today {formatUsd(data().todaySpend)}</text>
+            <text fg={props.theme.textMuted}>7d {formatUsd(data().avg7d)}</text>
+          </box>
+          <box flexDirection="row" justifyContent="space-between">
+            <text fg={props.theme.textMuted}>Daily {formatUsd(data().dailyAvg)}</text>
+            <text fg={props.theme.textMuted}>30d {formatUsd(data().avg30d)}</text>
+          </box>
         </box>
       </box>
       <text> </text>

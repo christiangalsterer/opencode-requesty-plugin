@@ -1,6 +1,7 @@
 import { describe, test, mock } from "bun:test"
 import assert from "node:assert/strict"
 import { createRequestyStore } from "../src/state"
+import { dailyAverage } from "../src/format"
 import type { ApiKeyInfo, UsageResponse } from "../src/api"
 
 const KEY_INFO: ApiKeyInfo = {
@@ -48,6 +49,7 @@ describe("createRequestyStore", () => {
     assert.equal(data!.models[0].model, "openai/gpt-5")
     assert.equal(data!.monthSpendFromUsage, 8)
     assert.equal(data!.todaySpend, 0)
+    assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
     assert.equal(data!.avg7d, 0)
     assert.equal(data!.avg30d, 0)
     assert.equal(data!.lastMonthSpend, 0)
@@ -146,6 +148,7 @@ describe("createRequestyStore", () => {
     assert.ok(data)
     const todayKey = now.toISOString().slice(0, 10)
     assert.equal(data!.todaySpend, spendByDay.get(todayKey))
+    assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
 
     let expected7d = 0
     for (let offset = 0; offset < 7; offset++) {
