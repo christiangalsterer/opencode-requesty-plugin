@@ -1,7 +1,7 @@
 /** @jsxImportSource @opentui/solid */
 import { Show, For, type JSX } from "solid-js"
 import type { TuiThemeCurrent } from "@opencode-ai/plugin/tui"
-import type { ModelUsage } from "./api"
+import type { ModelUsage, TokenBreakdown } from "./api"
 import type { RequestyStore } from "./state"
 import {
   analyticsUrl,
@@ -13,6 +13,7 @@ import {
   formatProjectionParts,
   formatTimestamp,
   formatTokenBreakdown,
+  formatTokenInline,
   formatTokens,
   formatUsd,
   isProjectionOverLimit,
@@ -158,11 +159,15 @@ function Metric(props: {
   value: string
   theme: TuiThemeCurrent
   color: TuiThemeCurrent["text"]
+  tokens?: TokenBreakdown
 }): JSX.Element {
   return (
-    <box flexDirection="column">
+    <box flexDirection="column" flexGrow={1} flexBasis={0}>
       <text fg={props.color}>
         <strong>{props.value}</strong>
+        <Show when={props.tokens}>
+          {" "}{formatTokenInline(props.tokens!.input, props.tokens!.output)}
+        </Show>
       </text>
       <text fg={props.theme.textMuted}>{props.label}</text>
     </box>
@@ -240,11 +245,15 @@ function BudgetSection(props: {
         </Show>
       </box>
 
-      <box flexDirection="row" gap={3} flexWrap="wrap">
-        <Metric label="Today" value={formatUsd(data().todaySpend)} theme={props.theme} color={props.theme.text} />
-        <Metric label="Daily avg" value={formatUsd(data().dailyAvg)} theme={props.theme} color={props.theme.text} />
-        <Metric label="7d avg" value={formatUsd(data().avg7d)} theme={props.theme} color={props.theme.text} />
-        <Metric label="30d avg" value={formatUsd(data().avg30d)} theme={props.theme} color={props.theme.text} />
+      <box flexDirection="column" gap={1}>
+        <box flexDirection="row" gap={3} flexWrap="wrap">
+          <Metric label="Today" value={formatUsd(data().todaySpend)} theme={props.theme} color={props.theme.text} tokens={data().todayTokens} />
+          <Metric label="Daily avg" value={formatUsd(data().dailyAvg)} theme={props.theme} color={props.theme.text} tokens={data().dailyAvgTokens} />
+        </box>
+        <box flexDirection="row" gap={3} flexWrap="wrap">
+          <Metric label="7d avg" value={formatUsd(data().avg7d)} theme={props.theme} color={props.theme.text} tokens={data().avg7dTokens} />
+          <Metric label="30d avg" value={formatUsd(data().avg30d)} theme={props.theme} color={props.theme.text} tokens={data().avg30dTokens} />
+        </box>
       </box>
 
     </box>
