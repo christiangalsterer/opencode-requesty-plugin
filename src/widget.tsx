@@ -27,6 +27,7 @@ export type PromptIndicatorProps = {
   dailyAvg: boolean
   avg7d: boolean
   avg30d: boolean
+  showTokens: boolean
   monthlyProjection: boolean
 }
 
@@ -228,7 +229,13 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     const parts: { text: string; color?: unknown; href?: string }[] = []
     if (d) {
       const averages: string[] = []
-      if (props.todaySpend) averages.push(`T ${formatUsd(d.todaySpend)}`)
+      if (props.todaySpend) {
+        let label = `T ${formatUsd(d.todaySpend)}`
+        if (props.showTokens) {
+          label += ` ${formatTokenInline(d.todayTokens.input, d.todayTokens.output)}`
+        }
+        averages.push(label)
+      }
       if (props.dailyAvg) averages.push(`D ${formatUsd(d.dailyAvg)}`)
       if (props.avg7d) averages.push(`7d ${formatUsd(d.avg7d)}`)
       if (props.avg30d) averages.push(`30d ${formatUsd(d.avg30d)}`)

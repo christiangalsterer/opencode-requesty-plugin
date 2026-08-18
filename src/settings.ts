@@ -23,6 +23,7 @@ export type PromptSettings = {
   dailyAvg: boolean
   avg7d: boolean
   avg30d: boolean
+  showTokens: boolean
   monthlyProjection: boolean
   order: number
 }
@@ -74,6 +75,7 @@ function readPromptSettings(raw: unknown): PromptSettings {
     dailyAvg: typeof obj.dailyAvg === "boolean" ? obj.dailyAvg : true,
     avg7d: typeof obj["7dAvg"] === "boolean" ? obj["7dAvg"] : true,
     avg30d: typeof obj["30dAvg"] === "boolean" ? obj["30dAvg"] : true,
+    showTokens: typeof obj.showTokens === "boolean" ? obj.showTokens : true,
     monthlyProjection: typeof obj.monthlyProjection === "boolean" ? obj.monthlyProjection : true,
     order: parseOrder(obj.order),
   }

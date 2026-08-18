@@ -164,6 +164,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `prompt.dailyAvg`         | boolean | `true`                       | Show the current month's daily average (`D $X`) in the prompt averages block |
 | `prompt."7dAvg"`          | boolean | `true`                       | Show the 7-day average (`7d $X`) in the prompt averages block |
 | `prompt."30dAvg"`         | boolean | `true`                       | Show the 30-day average (`30d $X`) in the prompt averages block |
+| `prompt.showTokens`       | boolean | `true`                       | Show today's input/output token breakdown (`↑X↓Y`) next to today's spend in the session prompt |
 | `prompt.monthlyProjection`| boolean | `true`                       | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
 | `prompt.order`            | number  | `50`                         | Slot order for the prompt indicator; lower numbers appear first |
 
@@ -194,6 +195,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
           "dailyAvg": true,
           "7dAvg": true,
           "30dAvg": true,
+          "showTokens": true,
           "monthlyProjection": true,
           "order": 50
         }

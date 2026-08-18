@@ -7,7 +7,7 @@ const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
   sidebar: { enabled: true, maxModels: 5, showTokens: true, order: 50 },
-  prompt: { enabled: true, budgetIndicator: true, todaySpend: true, dailyAvg: true, avg7d: true, avg30d: true, monthlyProjection: true, order: 50 },
+  prompt: { enabled: true, budgetIndicator: true, todaySpend: true, dailyAvg: true, avg7d: true, avg30d: true, showTokens: true, monthlyProjection: true, order: 50 },
 }
 
 describe("readSettings", () => {
@@ -168,6 +168,19 @@ describe("readSettings", () => {
     assert.equal(readSettings({ prompt: { "30dAvg": false } }).prompt.avg30d, false)
   })
 
+  test("prompt.showTokens defaults to true and can be disabled", () => {
+    assert.equal(readSettings(undefined).prompt.showTokens, true)
+    assert.equal(readSettings({}).prompt.showTokens, true)
+    assert.equal(readSettings({ prompt: {} }).prompt.showTokens, true)
+    assert.equal(readSettings({ prompt: { showTokens: false } }).prompt.showTokens, false)
+  })
+
+  test("prompt.showTokens non-boolean values → default", () => {
+    assert.equal(readSettings({ prompt: { showTokens: "yes" } }).prompt.showTokens, true)
+    assert.equal(readSettings({ prompt: { showTokens: 1 } }).prompt.showTokens, true)
+    assert.equal(readSettings({ prompt: { showTokens: undefined } }).prompt.showTokens, true)
+  })
+
   test("prompt.monthlyProjection defaults to true and can be disabled", () => {
     assert.equal(readSettings(undefined).prompt.monthlyProjection, true)
     assert.equal(readSettings({ prompt: { monthlyProjection: false } }).prompt.monthlyProjection, false)
@@ -180,6 +193,7 @@ describe("readSettings", () => {
     assert.equal(readSettings({ prompt: { dailyAvg: "yes" } }).prompt.dailyAvg, true)
     assert.equal(readSettings({ prompt: { "7dAvg": "yes" } }).prompt.avg7d, true)
     assert.equal(readSettings({ prompt: { "30dAvg": "yes" } }).prompt.avg30d, true)
+    assert.equal(readSettings({ prompt: { showTokens: "yes" } }).prompt.showTokens, true)
     assert.equal(readSettings({ prompt: { monthlyProjection: "yes" } }).prompt.monthlyProjection, true)
     assert.equal(readSettings({ prompt: { enabled: undefined } }).prompt.enabled, true)
   })
