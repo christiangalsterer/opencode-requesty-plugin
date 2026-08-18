@@ -188,7 +188,13 @@ describe("createRequestyStore", () => {
 
     assert.equal(data!.avg7d, expected7d)
     assert.equal(data!.avg30d, expected30d)
-    assert.equal(data!.monthSpendFromUsage, [...spendByDay.values()].reduce((a, b) => a + b, 0))
+
+    const currentMonthPrefix = todayKey.slice(0, 7)
+    const expectedMonthSpend = [...spendByDay.entries()]
+      .filter(([key]) => key.startsWith(currentMonthPrefix))
+      .reduce((sum, [, spend]) => sum + spend, 0)
+    assert.equal(data!.monthSpendFromUsage, expectedMonthSpend)
+    assert.equal(data!.models.reduce((sum, model) => sum + model.spend, 0), expectedMonthSpend)
 
     function avgTokensForDays(days: number) {
       let input = 0
@@ -213,13 +219,63 @@ describe("createRequestyStore", () => {
     assert.deepEqual(data!.avg7dTokens, avgTokensForDays(7))
     assert.deepEqual(data!.avg30dTokens, avgTokensForDays(30))
 
-    const monthInputTokens = [...inputTokensByDay.values()].reduce((a, b) => a + b, 0)
-    const monthOutputTokens = [...outputTokensByDay.values()].reduce((a, b) => a + b, 0)
-    const monthTotalTokens = [...totalTokensByDay.values()].reduce((a, b) => a + b, 0)
+    const expectedMonthInputTokens = [...inputTokensByDay.entries()]
+      .filter(([key]) => key.startsWith(currentMonthPrefix))
+      .reduce((sum, [, tokens]) => sum + tokens, 0)
+    const expectedMonthOutputTokens = [...outputTokensByDay.entries()]
+      .filter(([key]) => key.startsWith(currentMonthPrefix))
+      .reduce((sum, [, tokens]) => sum + tokens, 0)
+    const expectedMonthTotalTokens = [...totalTokensByDay.entries()]
+      .filter(([key]) => key.startsWith(currentMonthPrefix))
+      .reduce((sum, [, tokens]) => sum + tokens, 0)
     assert.deepEqual(data!.dailyAvgTokens, {
-      input: dailyAverage(monthInputTokens),
-      output: dailyAverage(monthOutputTokens),
-      total: dailyAverage(monthTotalTokens),
+      input: dailyAverage(expectedMonthInputTokens),
+      output: dailyAverage(expectedMonthOutputTokens),
+      total: dailyAverage(expectedMonthTotalTokens),
     })
+  })
+
+  test("current month metrics exclude previous month usage from rolling window", async () => {
+    const now = new Date()
+    const usage: UsageResponse = { usage: {} }
+    const spendByDay = new Map<string, number>()
+    for (let offset = 0; offset < 35; offset++) {
+      const day = new Date(now)
+      day.setUTCDate(day.getUTCDate() - offset)
+      const key = day.toISOString().slice(0, 10)
+      const spend = 10
+      spendByDay.set(key, spend)
+      usage.usage[key] = {
+        spend,
+        grouped_data: [
+          {
+            group_by_values: { model_used: "openai/gpt-5" },
+            spend,
+            input_tokens: 0,
+            output_tokens: 0,
+            total_tokens: 0,
+            completions_requests: 1,
+          },
+        ],
+      }
+    }
+
+    const store = createStore({
+      fetchUsage: () => Promise.resolve(usage),
+    })
+    await store.refresh()
+
+    const data = store.data()
+    assert.ok(data)
+
+    const currentMonthPrefix = now.toISOString().slice(0, 7)
+    const expectedMonthSpend = [...spendByDay.entries()]
+      .filter(([key]) => key.startsWith(currentMonthPrefix))
+      .reduce((sum, [, spend]) => sum + spend, 0)
+
+    assert.equal(data!.monthSpendFromUsage, expectedMonthSpend)
+    assert.equal(data!.models.reduce((sum, model) => sum + model.spend, 0), expectedMonthSpend)
+    // avg30d averages the 30 completed days before today, all $10
+    assert.equal(data!.avg30d, 10)
   })
 })

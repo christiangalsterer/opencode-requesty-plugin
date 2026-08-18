@@ -1,6 +1,6 @@
 import { describe, test } from "bun:test"
 import assert from "node:assert/strict"
-import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, totalSpendFromUsage, type UsageResponse } from "../src/api"
+import { aggregateByModel, avgSpendLastNDays, dayKey, endOfLastMonth, filterUsageByMonth, spendForDay, startOfCurrentMonth, startOfLastMonth, startOfRollingWindow, totalSpendFromUsage, type UsageResponse } from "../src/api"
 import { DEFAULT_THRESHOLDS, analyticsUrl, dailyAverage, daysRemaining, daysToExhaustion, formatLimit, formatMonthDelta, formatMonthDeltaParts, formatOutputInputRatio, formatProjection, formatProjectionParts, formatTimestamp, formatTokenBreakdown, formatTokenInline, formatTokens, formatUsd, isProjectionOverLimit, modelAnalyticsUrl, normalizeThreshold, padEnd, padStart, paceMarker, paceStatus, projectedMonthEnd, renderBar, resolveThresholds, severityColor, shortModel, spendRatio, spendSeverity } from "../src/format"
 
 describe("aggregateByModel", () => {
@@ -112,6 +112,39 @@ describe("startOfLastMonth / endOfLastMonth", () => {
     const now = new Date("2026-01-15T12:00:00Z")
     assert.equal(startOfLastMonth(now), "2025-12-01T00:00:00.000Z")
     assert.equal(endOfLastMonth(now), "2025-12-31T23:59:59.000Z")
+  })
+})
+
+describe("startOfRollingWindow", () => {
+  test("returns midnight UTC N days before the given date", () => {
+    const now = new Date("2026-08-18T15:30:00Z")
+    assert.equal(startOfRollingWindow(30, now), "2026-07-19T00:00:00.000Z")
+  })
+
+  test("returns the start of today for a 0-day window", () => {
+    const now = new Date("2026-08-18T15:30:00Z")
+    assert.equal(startOfRollingWindow(0, now), "2026-08-18T00:00:00.000Z")
+  })
+})
+
+describe("filterUsageByMonth", () => {
+  test("keeps only entries from the current calendar month", () => {
+    const response = {
+      usage: {
+        "2026-07-30": { spend: 1 },
+        "2026-07-31": { spend: 2 },
+        "2026-08-01": { spend: 3 },
+        "2026-08-15": { spend: 4 },
+        "2026-09-01": { spend: 5 },
+      },
+    } as unknown as UsageResponse
+    const filtered = filterUsageByMonth(response, new Date("2026-08-15T12:00:00Z"))
+    assert.deepEqual(Object.keys(filtered.usage).sort(), ["2026-08-01", "2026-08-15"])
+    assert.equal(totalSpendFromUsage(filtered), 7)
+  })
+
+  test("handles empty usage", () => {
+    assert.deepEqual(filterUsageByMonth({ usage: {} }, new Date("2026-08-15T12:00:00Z")), { usage: {} })
   })
 })
 

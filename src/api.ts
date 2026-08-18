@@ -189,6 +189,24 @@ export function endOfLastMonth(now = new Date()): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59)).toISOString()
 }
 
+/** RFC3339 timestamp for `days` days ago at midnight UTC. */
+export function startOfRollingWindow(days: number, now = new Date()): string {
+  const date = new Date(now)
+  date.setUTCDate(date.getUTCDate() - days)
+  date.setUTCHours(0, 0, 0, 0)
+  return date.toISOString()
+}
+
+/** Keep only usage entries that fall within the current calendar month. */
+export function filterUsageByMonth(response: UsageResponse, now = new Date()): UsageResponse {
+  const prefix = dayKey(now).slice(0, 7)
+  const filtered: Record<string, UsageEntry> = {}
+  for (const [key, entry] of Object.entries(response.usage ?? {})) {
+    if (key.startsWith(prefix)) filtered[key] = entry
+  }
+  return { usage: filtered }
+}
+
 /** Format a Date as a `YYYY-MM-DD` key matching the usage response (UTC). */
 export function dayKey(now = new Date()): string {
   return now.toISOString().slice(0, 10)

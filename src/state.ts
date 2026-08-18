@@ -4,11 +4,12 @@ import {
   avgSpendLastNDays,
   avgTokensLastNDays,
   endOfLastMonth,
+  filterUsageByMonth,
   getApiKeySelf,
   getUsageSelf,
   spendForDay,
-  startOfCurrentMonth,
   startOfLastMonth,
+  startOfRollingWindow,
   tokensForDay,
   totalSpendFromUsage,
   type ApiKeyInfo,
@@ -79,11 +80,12 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
       try {
         const keyInfo = await fetchApiKey(options.apiKey)
         const usage = await fetchUsage(options.apiKey, {
-          start: startOfCurrentMonth(),
+          start: startOfRollingWindow(30),
           groupBy: ["model_used"],
           resolution: "day" as const,
         })
-        const models = aggregateByModel(usage)
+        const currentMonthUsage = filterUsageByMonth(usage)
+        const models = aggregateByModel(currentMonthUsage)
         const monthSpendFromUsage = models.reduce((total, model) => total + model.spend, 0)
         const monthInputTokens = models.reduce((total, model) => total + model.inputTokens, 0)
         const monthOutputTokens = models.reduce((total, model) => total + model.outputTokens, 0)
