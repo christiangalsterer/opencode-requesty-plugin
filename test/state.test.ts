@@ -1,7 +1,7 @@
 import { describe, test, mock } from "bun:test"
 import assert from "node:assert/strict"
 import { createRequestyStore } from "../src/state"
-import { avgTokensLastNDays } from "../src/api"
+import { avgSpendLastNDays, avgTokensLastNDays } from "../src/api"
 import { dailyAverage } from "../src/format"
 import type { ApiKeyInfo, UsageResponse } from "../src/api"
 
@@ -51,8 +51,8 @@ describe("createRequestyStore", () => {
     assert.equal(data!.monthSpendFromUsage, 8)
     assert.equal(data!.todaySpend, 0)
     assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
-    assert.equal(data!.avg7d, 0)
-    assert.equal(data!.avg30d, 0)
+    assert.equal(data!.avg7d, avgSpendLastNDays(USAGE, 7))
+    assert.equal(data!.avg30d, avgSpendLastNDays(USAGE, 30))
     assert.deepEqual(data!.todayTokens, { input: 0, output: 0, total: 0 })
     assert.deepEqual(data!.dailyAvgTokens, {
       input: dailyAverage(data!.models.reduce((sum, model) => sum + model.inputTokens, 0)),
@@ -169,7 +169,7 @@ describe("createRequestyStore", () => {
     assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
 
     let expected7d = 0
-    for (let offset = 0; offset < 7; offset++) {
+    for (let offset = 1; offset <= 7; offset++) {
       const day = new Date(now)
       day.setUTCDate(day.getUTCDate() - offset)
       const key = day.toISOString().slice(0, 10)
@@ -178,7 +178,7 @@ describe("createRequestyStore", () => {
     expected7d /= 7
 
     let expected30d = 0
-    for (let offset = 0; offset < 30; offset++) {
+    for (let offset = 1; offset <= 30; offset++) {
       const day = new Date(now)
       day.setUTCDate(day.getUTCDate() - offset)
       const key = day.toISOString().slice(0, 10)
@@ -194,7 +194,7 @@ describe("createRequestyStore", () => {
       let input = 0
       let output = 0
       let total = 0
-      for (let offset = 0; offset < days; offset++) {
+      for (let offset = 1; offset <= days; offset++) {
         const day = new Date(now)
         day.setUTCDate(day.getUTCDate() - offset)
         const key = day.toISOString().slice(0, 10)

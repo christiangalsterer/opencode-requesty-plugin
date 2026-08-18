@@ -206,13 +206,13 @@ export function spendForDay(response: UsageResponse, now = new Date()): number {
 }
 
 /**
- * Average daily spend over the last `days` calendar days (including today).
+ * Average daily spend over the last `days` completed calendar days (excluding today).
  * Days with no usage entry count as 0. Returns 0 when `days` <= 0.
  */
 export function avgSpendLastNDays(response: UsageResponse, days: number, now = new Date()): number {
   if (days <= 0) return 0
   let total = 0
-  for (let offset = 0; offset < days; offset++) {
+  for (let offset = 1; offset <= days; offset++) {
     const date = new Date(now)
     date.setUTCDate(date.getUTCDate() - offset)
     total += spendForDay(response, date)
@@ -249,11 +249,11 @@ export function tokensForDay(response: UsageResponse, now = new Date()): TokenBr
   }
 }
 
-/** Average input/output/total tokens over the last `days` calendar days. */
+/** Average input/output/total tokens over the last `days` completed calendar days (excluding today). */
 export function avgTokensLastNDays(response: UsageResponse, days: number, now = new Date()): TokenBreakdown {
   if (days <= 0) return { input: 0, output: 0, total: 0 }
   const totals: TokenBreakdown = { input: 0, output: 0, total: 0 }
-  for (let offset = 0; offset < days; offset++) {
+  for (let offset = 1; offset <= days; offset++) {
     const date = new Date(now)
     date.setUTCDate(date.getUTCDate() - offset)
     const day = tokensForDay(response, date)

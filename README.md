@@ -211,8 +211,8 @@ All amounts are in USD and dates are evaluated in UTC.
 
 - **Today** — spend and tokens for the current calendar day.
 - **Daily avg** — current month's total spend and tokens divided by the number of days elapsed so far this month.
-- **7d avg** — rolling spend and token average over the last 7 calendar days, including today. Days without usage count as `$0` / `0` tokens.
-- **30d avg** — rolling spend and token average over the last 30 calendar days, including today. Days without usage count as `$0` / `0` tokens.
+- **7d avg** — average spend and tokens over the previous 7 completed calendar days (excluding today). Days without usage count as `$0` / `0` tokens.
+- **30d avg** — average spend and tokens over the previous 30 completed calendar days (excluding today). Days without usage count as `$0` / `0` tokens.
 - **End of Month projection** — current spend projected forward at the current daily run rate through the end of the month.
 
 ## Requirements

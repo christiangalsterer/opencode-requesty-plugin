@@ -176,14 +176,14 @@ describe("avgSpendLastNDays", () => {
   } as unknown as UsageResponse
   const now = new Date("2026-08-15T12:00:00Z")
 
-  test("averages spend over the last N days including today", () => {
-    // last 3 days: 2 + 4 + 6 = 12 / 3 = 4
-    assert.equal(avgSpendLastNDays(usage, 3, now), 4)
+  test("averages spend over the last N completed days excluding today", () => {
+    // previous 3 days: 4 + 2 + 0 = 6 / 3 = 2
+    assert.equal(avgSpendLastNDays(usage, 3, now), 2)
   })
 
   test("days with no entry count as 0", () => {
-    // last 5 days: 0 + 0 + 2 + 4 + 6 = 12 / 5 = 2.4
-    assert.equal(avgSpendLastNDays(usage, 5, now), 2.4)
+    // previous 5 days: 4 + 2 + 0 + 0 + 0 = 6 / 5 = 1.2
+    assert.equal(avgSpendLastNDays(usage, 5, now), 1.2)
   })
 
   test("returns 0 when days <= 0", () => {
