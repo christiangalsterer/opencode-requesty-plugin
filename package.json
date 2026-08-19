@@ -6,7 +6,15 @@
   },
   "license": "MIT",
   "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, in the session prompt and with a detail dialog via the /requesty command",
-  "keywords": ["opencode", "opencode-plugin", "opencode-tui", "opencode-tui-plugin", "requesty", "tui", "cost-tracking"],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "opencode-tui",
+    "opencode-tui-plugin",
+    "requesty",
+    "tui",
+    "cost-tracking"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/christiangalsterer/opencode-requesty-plugin.git"
@@ -32,7 +40,7 @@
     "@types/bun": "^1.3.14",
     "@types/node": "^26.0.0",
     "solid-js": "^1.9.14",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3 "
   },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.18.16 <2",
@@ -42,7 +50,11 @@
     "@opentui/solid": ">=0.5.3 <1",
     "solid-js": ">=1.9.14 <2"
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "ci": "bun run clean && bun install && bun run typecheck && bun test && bun run build",
     "build": "mkdir -p ./dist && cp -r src/* dist/",
