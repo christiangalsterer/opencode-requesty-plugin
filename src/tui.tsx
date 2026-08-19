@@ -54,15 +54,16 @@ const plugin: TuiPluginModule = {
             // Read host-tracked state to force sidebar slot repaints on session/message updates.
             api.state.session.messages(slotProps.session_id).length
             return (
-              <RequestySidebarWidget
-                store={store}
-                api={api}
-                sessionID={slotProps.session_id}
-                theme={ctx.theme.current}
-                maxModels={settings.sidebar.maxModels}
-                thresholds={settings.thresholds}
-                showTokens={settings.sidebar.showTokens}
-              />
+                <RequestySidebarWidget
+                  store={store}
+                  api={api}
+                  sessionID={slotProps.session_id}
+                  theme={ctx.theme.current}
+                  maxModels={settings.sidebar.maxModels}
+                  thresholds={settings.thresholds}
+                  showTokens={settings.sidebar.showTokens}
+                  showKeyName={settings.sidebar.showKeyName}
+                />
             )
           },
         },
@@ -74,9 +75,9 @@ const plugin: TuiPluginModule = {
       api.slots.register({
         order: settings.prompt.order,
         slots: {
-          session_prompt_right(ctx, slotProps) {
-            return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} todaySpend={settings.prompt.todaySpend} dailyAvg={settings.prompt.dailyAvg} avg7d={settings.prompt.avg7d} avg30d={settings.prompt.avg30d} showTokens={settings.prompt.showTokens} monthlyProjection={settings.prompt.monthlyProjection} />
-          },
+            session_prompt_right(ctx, slotProps) {
+              return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} todaySpend={settings.prompt.todaySpend} dailyAvg={settings.prompt.dailyAvg} avg7d={settings.prompt.avg7d} avg30d={settings.prompt.avg30d} showTokens={settings.prompt.showTokens} showKeyName={settings.prompt.showKeyName} monthlyProjection={settings.prompt.monthlyProjection} />
+            },
         },
       })
     }
@@ -88,6 +89,7 @@ const plugin: TuiPluginModule = {
           store={store}
           theme={api.theme.current}
           thresholds={settings.thresholds}
+          showKeyName={settings.dialog.showKeyName}
           onClose={() => api.ui.dialog.clear()}
           onRefresh={() => void store.refresh()}
         />

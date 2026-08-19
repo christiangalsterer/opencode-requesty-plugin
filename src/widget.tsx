@@ -15,6 +15,8 @@ export type WidgetProps = {
   thresholds: SpendThresholds
   /** Show input/output token breakdown alongside spend in the averages block. */
   showTokens: boolean
+  /** Show the API key nickname. */
+  showKeyName: boolean
 }
 
 export type PromptIndicatorProps = {
@@ -28,6 +30,7 @@ export type PromptIndicatorProps = {
   avg7d: boolean
   avg30d: boolean
   showTokens: boolean
+  showKeyName: boolean
   monthlyProjection: boolean
 }
 
@@ -54,7 +57,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
           fallback={<strong>Requesty</strong>}
         >
           <a href={analyticsUrl(snapshot().data!.keyInfo.name)}>
-            <strong>Requesty ({snapshot().data!.keyInfo.name})</strong>
+            <strong>Requesty{props.showKeyName ? ` (${snapshot().data!.keyInfo.name})` : ""}</strong>
           </a>
         </Show>
       </text>
@@ -251,8 +254,8 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
       parts.push({ text: "Requesty …", color: props.theme.textMuted })
     } else {
       const label = limit > 0
-        ? `${formatUsd(spend)}/${formatUsd(limit)} ${formatPercent(ratio)} (${name})`
-        : `${formatUsd(spend)}/unlimited (${name})`
+        ? `${formatUsd(spend)}/${formatUsd(limit)} ${formatPercent(ratio)}${props.showKeyName ? ` (${name})` : ""}`
+        : `${formatUsd(spend)}/unlimited${props.showKeyName ? ` (${name})` : ""}`
       parts.push({ text: label, color, href: analyticsUrl(name) })
     }
     if (props.monthlyProjection && projectionParts) {

@@ -157,6 +157,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `sidebar.enabled`         | boolean | `true`                       | Show the sidebar widget |
 | `sidebar.maxModels`       | number  | `5`                          | Number of models shown in the compact sidebar list |
 | `sidebar.showTokens`      | boolean | `true`                       | Show input/output token breakdown alongside spend in the sidebar averages block |
+| `sidebar.showKeyName`      | boolean | `true`                       | Show the API key nickname in the sidebar header |
 | `sidebar.order`           | number  | `50`                         | Slot order for the sidebar widget; lower numbers appear first |
 | `prompt.enabled`          | boolean | `true`                       | Show the prompt widget |
 | `prompt.budgetIndicator`  | boolean | `true`                       | Show spend/limit readout on the right side of the session prompt |
@@ -165,10 +166,26 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `prompt."7dAvg"`          | boolean | `false`                      | Show the 7-day average (`7d $X`) in the prompt averages block |
 | `prompt."30dAvg"`         | boolean | `false`                      | Show the 30-day average (`30d $X`) in the prompt averages block |
 | `prompt.showTokens`       | boolean | `true`                       | Show today's input/output token breakdown (`↑X↓Y`) next to today's spend in the session prompt |
+| `prompt.showKeyName`      | boolean | `true`                       | Show the API key nickname in the session prompt readout |
 | `prompt.monthlyProjection`| boolean | `true`                       | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
 | `prompt.order`            | number  | `50`                         | Slot order for the prompt indicator; lower numbers appear first |
+| `dialog.showKeyName`      | boolean | `true`                       | Show the API key nickname in the detail dialog title |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
+
+### Using Requesty with multiple API keys
+
+If you utilize different API keys for various projects, it is highly recommended to enable `showKeyName` in your configuration. This allows you to easily identify which Requesty API key is currently active in the sidebar, session prompt, and detail dialog.
+
+Example for enabling key identification:
+
+```json
+{
+  "sidebar": { "showKeyName": true },
+  "prompt": { "showKeyName": true },
+  "dialog": { "showKeyName": true }
+}
+```
 
 ### Complete configuration example
 
@@ -184,6 +201,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
           "enabled": true,
           "maxModels": 5,
           "showTokens": true,
+          "showKeyName": true,
           "order": 50
         },
         "warningThreshold": 0.7,
@@ -196,8 +214,12 @@ If no key is found, the widget shows a short setup hint instead of failing.
           "7dAvg": false,
           "30dAvg": false,
           "showTokens": true,
+          "showKeyName": true,
           "monthlyProjection": true,
           "order": 50
+        },
+        "dialog": {
+          "showKeyName": true
         }
       }
     ]

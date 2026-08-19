@@ -13,6 +13,7 @@ export type SidebarSettings = {
   enabled: boolean
   maxModels: number
   showTokens: boolean
+  showKeyName: boolean
   order: number
 }
 
@@ -24,8 +25,13 @@ export type PromptSettings = {
   avg7d: boolean
   avg30d: boolean
   showTokens: boolean
+  showKeyName: boolean
   monthlyProjection: boolean
   order: number
+}
+
+export type DialogSettings = {
+  showKeyName: boolean
 }
 
 export type PluginSettings = {
@@ -33,6 +39,7 @@ export type PluginSettings = {
   thresholds: SpendThresholds
   sidebar: SidebarSettings
   prompt: PromptSettings
+  dialog: DialogSettings
 }
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
@@ -53,6 +60,7 @@ function readSidebarSettings(raw: unknown): SidebarSettings {
     enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
     maxModels: typeof obj.maxModels === "number" && obj.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(obj.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     showTokens: typeof obj.showTokens === "boolean" ? obj.showTokens : true,
+    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : true,
     order: parseOrder(obj.order),
   }
 }
@@ -63,6 +71,14 @@ export function readSettings(options: Record<string, unknown> | undefined): Plug
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
     sidebar: readSidebarSettings(options?.sidebar),
     prompt: readPromptSettings(options?.prompt),
+    dialog: readDialogSettings(options?.dialog),
+  }
+}
+
+function readDialogSettings(raw: unknown): DialogSettings {
+  const obj = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {}
+  return {
+    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : true,
   }
 }
 
@@ -76,6 +92,7 @@ function readPromptSettings(raw: unknown): PromptSettings {
     avg7d: typeof obj["7dAvg"] === "boolean" ? obj["7dAvg"] : false,
     avg30d: typeof obj["30dAvg"] === "boolean" ? obj["30dAvg"] : false,
     showTokens: typeof obj.showTokens === "boolean" ? obj.showTokens : true,
+    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : true,
     monthlyProjection: typeof obj.monthlyProjection === "boolean" ? obj.monthlyProjection : true,
     order: parseOrder(obj.order),
   }

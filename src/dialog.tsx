@@ -33,6 +33,7 @@ export type DetailDialogProps = {
   store: RequestyStore
   theme: TuiThemeCurrent
   thresholds: SpendThresholds
+  showKeyName: boolean
   onClose: () => void
   onRefresh: () => void
 }
@@ -48,7 +49,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
 
   return (
     <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1} gap={1}>
-      <Title store={props.store} theme={theme()} />
+      <Title store={props.store} theme={theme()} showKeyName={props.showKeyName} />
 
       <Show when={state().status === "error"}>
         <CenteredMessage theme={theme()} error>
@@ -74,12 +75,12 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   )
 }
 
-function Title(props: { store: RequestyStore; theme: TuiThemeCurrent }): JSX.Element {
+function Title(props: { store: RequestyStore; theme: TuiThemeCurrent; showKeyName: boolean }): JSX.Element {
   return (
     <text fg={props.theme.text}>
       <Show when={props.store.data()} fallback={<strong>Requesty</strong>}>
         <a href={analyticsUrl(props.store.data()!.keyInfo.name)}>
-          <strong>Requesty ({props.store.data()!.keyInfo.name})</strong>
+          <strong>Requesty{props.showKeyName ? ` (${props.store.data()!.keyInfo.name})` : ""}</strong>
         </a>
       </Show>
     </text>
