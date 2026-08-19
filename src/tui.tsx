@@ -98,6 +98,14 @@ const plugin: TuiPluginModule = {
       void store.refresh()
     }
 
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined
+    const debouncedRefresh = () => {
+      clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        void store.refresh()
+      }, 2000)
+    }
+
     // Commands (command palette + slash command)
     api.keymap.registerLayer({
       commands: [
@@ -142,11 +150,12 @@ const plugin: TuiPluginModule = {
 
     const unsubMessage = api.event.on("message.updated", () => {
       store.bumpVersion()
-      void store.refresh()
+      debouncedRefresh()
     })
 
     api.lifecycle.onDispose(() => {
       clearInterval(interval)
+      clearTimeout(debounceTimer)
       unsubSessionCreated()
       unsubSessionIdle()
       unsubMessage()
