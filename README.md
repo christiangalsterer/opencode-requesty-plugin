@@ -95,6 +95,24 @@ Or with options:
 }
 ```
 
+Plugin options must be the second item in the nested plugin entry. The same format is used for local plugins; use the generated `dist/tui.tsx` file as the plugin path:
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": [
+    [
+      "/absolute/path/to/opencode-requesty-sidebar-plugin/dist/tui.tsx",
+      {
+        "sidebar": { "showKeyName": true },
+        "prompt": { "showKeyName": true },
+        "dialog": { "showKeyName": true }
+      }
+    ]
+  ]
+}
+```
+
 Restart opencode after changing the config — plugins are loaded at startup.
 
 ### Local development install
@@ -103,7 +121,17 @@ Point at a local checkout instead:
 
 ```json
 {
-  "plugin": ["file:///absolute/path/to/opencode-requesty-plugin/dist/tui.tsx"]
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": [
+    [
+      "file:///absolute/path/to/opencode-requesty-plugin/dist/tui.tsx",
+      {
+        "sidebar": { "showKeyName": true },
+        "prompt": { "showKeyName": true },
+        "dialog": { "showKeyName": true }
+      }
+    ]
+  ]
 }
 ```
 
@@ -157,7 +185,7 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `sidebar.enabled`         | boolean | `true`                       | Show the sidebar widget |
 | `sidebar.maxModels`       | number  | `5`                          | Number of models shown in the compact sidebar list |
 | `sidebar.showTokens`      | boolean | `true`                       | Show input/output token breakdown alongside spend in the sidebar averages block |
-| `sidebar.showKeyName`      | boolean | `true`                       | Show the API key nickname in the sidebar header |
+| `sidebar.showKeyName`      | boolean | `false`                      | Show the API key nickname in the sidebar header |
 | `sidebar.order`           | number  | `50`                         | Slot order for the sidebar widget; lower numbers appear first |
 | `prompt.enabled`          | boolean | `true`                       | Show the prompt widget |
 | `prompt.budgetIndicator`  | boolean | `true`                       | Show spend/limit readout on the right side of the session prompt |
@@ -166,10 +194,10 @@ If no key is found, the widget shows a short setup hint instead of failing.
 | `prompt."7dAvg"`          | boolean | `false`                      | Show the 7-day average (`7d $X`) in the prompt averages block |
 | `prompt."30dAvg"`         | boolean | `false`                      | Show the 30-day average (`30d $X`) in the prompt averages block |
 | `prompt.showTokens`       | boolean | `true`                       | Show today's input/output token breakdown (`↑X↓Y`) next to today's spend in the session prompt |
-| `prompt.showKeyName`      | boolean | `true`                       | Show the API key nickname in the session prompt readout |
+| `prompt.showKeyName`      | boolean | `false`                      | Show the API key nickname in the session prompt readout |
 | `prompt.monthlyProjection`| boolean | `true`                       | Show a month-end projection (`~$X EOM ↑`) in the session prompt, red when the estimated spend exceeds the budget |
 | `prompt.order`            | number  | `50`                         | Slot order for the prompt indicator; lower numbers appear first |
-| `dialog.showKeyName`      | boolean | `true`                       | Show the API key nickname in the detail dialog title |
+| `dialog.showKeyName`      | boolean | `false`                      | Show the API key nickname in the detail dialog title |
 
 `warningThreshold` must be lower than `errorThreshold`; if the ordering is invalid, both fall back to the defaults (70%/90%). Values above `1` are treated as percents, e.g. `80` means 80%.
 

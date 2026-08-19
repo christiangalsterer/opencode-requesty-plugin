@@ -60,7 +60,7 @@ function readSidebarSettings(raw: unknown): SidebarSettings {
     enabled: typeof obj.enabled === "boolean" ? obj.enabled : true,
     maxModels: typeof obj.maxModels === "number" && obj.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(obj.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     showTokens: typeof obj.showTokens === "boolean" ? obj.showTokens : true,
-    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : true,
+    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : false,
     order: parseOrder(obj.order),
   }
 }
@@ -78,7 +78,7 @@ export function readSettings(options: Record<string, unknown> | undefined): Plug
 function readDialogSettings(raw: unknown): DialogSettings {
   const obj = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {}
   return {
-    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : true,
+    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : false,
   }
 }
 
@@ -92,7 +92,7 @@ function readPromptSettings(raw: unknown): PromptSettings {
     avg7d: typeof obj["7dAvg"] === "boolean" ? obj["7dAvg"] : false,
     avg30d: typeof obj["30dAvg"] === "boolean" ? obj["30dAvg"] : false,
     showTokens: typeof obj.showTokens === "boolean" ? obj.showTokens : true,
-    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : true,
+    showKeyName: typeof obj.showKeyName === "boolean" ? obj.showKeyName : false,
     monthlyProjection: typeof obj.monthlyProjection === "boolean" ? obj.monthlyProjection : true,
     order: parseOrder(obj.order),
   }

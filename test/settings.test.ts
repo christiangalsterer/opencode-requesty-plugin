@@ -6,9 +6,9 @@ import { DEFAULT_THRESHOLDS } from "../src/format"
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
-  sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: true, order: 50 },
-  prompt: { enabled: true, budgetIndicator: true, todaySpend: true, dailyAvg: false, avg7d: false, avg30d: false, showTokens: true, showKeyName: true, monthlyProjection: true, order: 50 },
-  dialog: { showKeyName: true },
+  sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, order: 50 },
+  prompt: { enabled: true, budgetIndicator: true, todaySpend: true, dailyAvg: false, avg7d: false, avg30d: false, showTokens: true, showKeyName: false, monthlyProjection: true, order: 50 },
+  dialog: { showKeyName: false },
 }
 
 describe("readSettings", () => {
