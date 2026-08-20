@@ -1,0 +1,6 @@
+**/*.md
+.vscode
+coverage
+dist
+docs
+bun.lock

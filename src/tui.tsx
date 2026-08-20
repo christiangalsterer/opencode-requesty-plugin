@@ -1,14 +1,14 @@
 /** @jsxImportSource @opentui/solid */
-import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
-import { detectApiKey } from "./key"
-import { createRequestyStore, type RequestyStore } from "./state"
-import { RequestySidebarWidget, RequestyPromptIndicator } from "./widget"
-import { RequestyDetailDialog } from "./dialog"
-import { readSettings } from "./settings"
+import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
+import { detectApiKey } from './key'
+import { createRequestyStore, type RequestyStore } from './state'
+import { RequestySidebarWidget, RequestyPromptIndicator } from './widget'
+import { RequestyDetailDialog } from './dialog'
+import { readSettings } from './settings'
 
-const PLUGIN_ID = "opencode-requesty-sidebar"
-const COMMAND_OPEN = "requesty.open"
-const COMMAND_REFRESH = "requesty.refresh"
+const PLUGIN_ID = 'opencode-requesty-sidebar'
+const COMMAND_OPEN = 'requesty.open'
+const COMMAND_REFRESH = 'requesty.refresh'
 
 const plugin: TuiPluginModule = {
   id: PLUGIN_ID,
@@ -31,8 +31,8 @@ const plugin: TuiPluginModule = {
                   <text fg={ctx.theme.current.textMuted}>Add provider.requesty.options.apiKey to opencode.json.</text>
                 </box>
               )
-            },
-          },
+            }
+          }
         })
       }
       return
@@ -41,8 +41,8 @@ const plugin: TuiPluginModule = {
     const store: RequestyStore = createRequestyStore({
       apiKey: key.apiKey,
       onError: (message) => {
-        api.ui.toast({ variant: "error", title: "Requesty", message })
-      },
+        api.ui.toast({ variant: 'error', title: 'Requesty', message })
+      }
     })
 
     // Sidebar widget
@@ -54,19 +54,19 @@ const plugin: TuiPluginModule = {
             // Read host-tracked state to force sidebar slot repaints on session/message updates.
             api.state.session.messages(slotProps.session_id).length
             return (
-                <RequestySidebarWidget
-                  store={store}
-                  api={api}
-                  sessionID={slotProps.session_id}
-                  theme={ctx.theme.current}
-                  maxModels={settings.sidebar.maxModels}
-                  thresholds={settings.thresholds}
-                  showTokens={settings.sidebar.showTokens}
-                  showKeyName={settings.sidebar.showKeyName}
-                />
+              <RequestySidebarWidget
+                store={store}
+                api={api}
+                sessionID={slotProps.session_id}
+                theme={ctx.theme.current}
+                maxModels={settings.sidebar.maxModels}
+                thresholds={settings.thresholds}
+                showTokens={settings.sidebar.showTokens}
+                showKeyName={settings.sidebar.showKeyName}
+              />
             )
-          },
-        },
+          }
+        }
       })
     }
 
@@ -75,10 +75,25 @@ const plugin: TuiPluginModule = {
       api.slots.register({
         order: settings.prompt.order,
         slots: {
-            session_prompt_right(ctx, slotProps) {
-              return <RequestyPromptIndicator store={store} api={api} sessionID={slotProps.session_id} theme={ctx.theme.current} thresholds={settings.thresholds} todaySpend={settings.prompt.todaySpend} dailyAvg={settings.prompt.dailyAvg} avg7d={settings.prompt.avg7d} avg30d={settings.prompt.avg30d} showTokens={settings.prompt.showTokens} showKeyName={settings.prompt.showKeyName} monthlyProjection={settings.prompt.monthlyProjection} />
-            },
-        },
+          session_prompt_right(ctx, slotProps) {
+            return (
+              <RequestyPromptIndicator
+                store={store}
+                api={api}
+                sessionID={slotProps.session_id}
+                theme={ctx.theme.current}
+                thresholds={settings.thresholds}
+                todaySpend={settings.prompt.todaySpend}
+                dailyAvg={settings.prompt.dailyAvg}
+                avg7d={settings.prompt.avg7d}
+                avg30d={settings.prompt.avg30d}
+                showTokens={settings.prompt.showTokens}
+                showKeyName={settings.prompt.showKeyName}
+                monthlyProjection={settings.prompt.monthlyProjection}
+              />
+            )
+          }
+        }
       })
     }
 
@@ -94,7 +109,7 @@ const plugin: TuiPluginModule = {
           onRefresh={() => void store.refresh()}
         />
       ))
-      api.ui.dialog.setSize("large")
+      api.ui.dialog.setSize('large')
       void store.refresh()
     }
 
@@ -111,26 +126,26 @@ const plugin: TuiPluginModule = {
       commands: [
         {
           name: COMMAND_OPEN,
-          title: "Requesty: show usage",
-          desc: "Show Requesty.ai budget, spend and per-model costs",
-          category: "Requesty",
-          namespace: "palette",
-          slashName: "requesty",
+          title: 'Requesty: show usage',
+          desc: 'Show Requesty.ai budget, spend and per-model costs',
+          category: 'Requesty',
+          namespace: 'palette',
+          slashName: 'requesty',
           run: () => {
             openDialog()
-          },
+          }
         },
         {
           name: COMMAND_REFRESH,
-          title: "Requesty: refresh usage",
-          desc: "Refresh Requesty.ai usage data",
-          category: "Requesty",
-          namespace: "palette",
+          title: 'Requesty: refresh usage',
+          desc: 'Refresh Requesty.ai usage data',
+          category: 'Requesty',
+          namespace: 'palette',
           run: () => {
             void store.refresh()
-          },
-        },
-      ],
+          }
+        }
+      ]
     })
 
     // Refresh triggers: startup, interval safety net, session lifecycle
@@ -140,15 +155,15 @@ const plugin: TuiPluginModule = {
       void store.refresh()
     }, settings.refreshIntervalMs)
 
-    const unsubSessionCreated = api.event.on("session.created", () => {
+    const unsubSessionCreated = api.event.on('session.created', () => {
       void store.refresh()
     })
 
-    const unsubSessionIdle = api.event.on("session.idle", () => {
+    const unsubSessionIdle = api.event.on('session.idle', () => {
       void store.refresh()
     })
 
-    const unsubMessage = api.event.on("message.updated", () => {
+    const unsubMessage = api.event.on('message.updated', () => {
       store.bumpVersion()
       debouncedRefresh()
     })
@@ -160,7 +175,7 @@ const plugin: TuiPluginModule = {
       unsubSessionIdle()
       unsubMessage()
     })
-  },
+  }
 }
 
 export default plugin

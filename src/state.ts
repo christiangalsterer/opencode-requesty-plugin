@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js"
+import { createSignal } from 'solid-js'
 import {
   aggregateByModel,
   avgSpendLastNDays,
@@ -15,15 +15,11 @@ import {
   type ApiKeyInfo,
   type ModelUsage,
   type TokenBreakdown,
-  type UsageResponse,
-} from "./api"
-import { dailyAverage } from "./format"
+  type UsageResponse
+} from './api'
+import { dailyAverage } from './format'
 
-export type RefreshState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "ready"; fetchedAt: Date }
-  | { status: "error"; message: string }
+export type RefreshState = { status: 'idle' } | { status: 'loading' } | { status: 'ready'; fetchedAt: Date } | { status: 'error'; message: string }
 
 export type RequestyData = {
   keyInfo: ApiKeyInfo
@@ -60,7 +56,7 @@ export type RequestyStore = {
 }
 
 export function createRequestyStore(options: RequestyStoreOptions): RequestyStore {
-  const [state, setState] = createSignal<RefreshState>({ status: "idle" })
+  const [state, setState] = createSignal<RefreshState>({ status: 'idle' })
   const [data, setData] = createSignal<RequestyData | undefined>(undefined)
   const [version, setVersion] = createSignal(0)
 
@@ -75,52 +71,52 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
       pending = true
       return inFlight
     }
-    setState((previous) => (previous.status === "ready" ? previous : { status: "loading" }))
+    setState((previous) => (previous.status === 'ready' ? previous : { status: 'loading' }))
     inFlight = (async () => {
       try {
         const keyInfo = await fetchApiKey(options.apiKey)
         const usage = await fetchUsage(options.apiKey, {
           start: startOfRollingWindow(30),
-          groupBy: ["model_used"],
-          resolution: "day" as const,
+          groupBy: ['model_used'],
+          resolution: 'day' as const
         })
         const currentMonthUsage = filterUsageByMonth(usage)
         const aggregated = aggregateByModel(currentMonthUsage)
-        
+
         let lastMonthSpend = 0
         const [_, lastMonthUsage] = await Promise.all([
           Promise.resolve(), // Keep main flow clean
           fetchUsage(options.apiKey, {
             start: startOfLastMonth(),
             end: endOfLastMonth(),
-            resolution: "day",
-          }).catch(() => undefined),
+            resolution: 'day'
+          }).catch(() => undefined)
         ])
         if (lastMonthUsage) lastMonthSpend = totalSpendFromUsage(lastMonthUsage)
 
-        setData({ 
-          keyInfo, 
-          models: aggregated.models, 
-          monthSpendFromUsage: aggregated.spend, 
-          todaySpend: spendForDay(usage), 
-          dailyAvg: dailyAverage(keyInfo.monthly_spend), 
-          avg7d: avgSpendLastNDays(usage, 7), 
-          avg30d: avgSpendLastNDays(usage, 30), 
-          todayTokens: tokensForDay(usage), 
+        setData({
+          keyInfo,
+          models: aggregated.models,
+          monthSpendFromUsage: aggregated.spend,
+          todaySpend: spendForDay(usage),
+          dailyAvg: dailyAverage(keyInfo.monthly_spend),
+          avg7d: avgSpendLastNDays(usage, 7),
+          avg30d: avgSpendLastNDays(usage, 30),
+          todayTokens: tokensForDay(usage),
           dailyAvgTokens: {
             input: dailyAverage(aggregated.inputTokens),
             output: dailyAverage(aggregated.outputTokens),
-            total: dailyAverage(aggregated.totalTokens),
-          }, 
-          avg7dTokens: avgTokensLastNDays(usage, 7), 
-          avg30dTokens: avgTokensLastNDays(usage, 30), 
-          lastMonthSpend 
+            total: dailyAverage(aggregated.totalTokens)
+          },
+          avg7dTokens: avgTokensLastNDays(usage, 7),
+          avg30dTokens: avgTokensLastNDays(usage, 30),
+          lastMonthSpend
         })
-        setState({ status: "ready", fetchedAt: new Date() })
+        setState({ status: 'ready', fetchedAt: new Date() })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         options.onError?.(message)
-        setState({ status: "error", message })
+        setState({ status: 'error', message })
       } finally {
         inFlight = undefined
         if (pending) {
@@ -137,7 +133,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     data,
     refresh,
     version,
-    bumpVersion: () => setVersion((v) => v + 1),
+    bumpVersion: () => setVersion((v) => v + 1)
   }
 }
 

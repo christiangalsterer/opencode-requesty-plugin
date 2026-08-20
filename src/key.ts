@@ -9,9 +9,7 @@
  * Intentionally does NOT read ~/.local/share/opencode/auth.json.
  */
 
-export type KeyResult =
-  | { ok: true; apiKey: string; source: string }
-  | { ok: false; reason: string }
+export type KeyResult = { ok: true; apiKey: string; source: string } | { ok: false; reason: string }
 
 const ENV_INTERPOLATION = /^\{env:([^}]+)\}$/
 const REQUESTY_HOST = /(^|\.)requesty\.ai$/i
@@ -28,7 +26,7 @@ type SdkConfigLike = {
 }
 
 function resolveValue(raw: unknown): string | undefined {
-  if (typeof raw !== "string" || raw.trim().length === 0) return undefined
+  if (typeof raw !== 'string' || raw.trim().length === 0) return undefined
   const match = ENV_INTERPOLATION.exec(raw.trim())
   if (match) {
     const value = process.env[match[1]]
@@ -38,9 +36,9 @@ function resolveValue(raw: unknown): string | undefined {
 }
 
 function isRequestyProvider(provider: ProviderConfig, name: string): boolean {
-  if (name === "requesty") return true
+  if (name === 'requesty') return true
   const baseURL = provider.options?.baseURL
-  if (typeof baseURL !== "string") return false
+  if (typeof baseURL !== 'string') return false
   try {
     return REQUESTY_HOST.test(new URL(baseURL).hostname)
   } catch {
@@ -52,7 +50,7 @@ function fromConfig(config: SdkConfigLike | undefined): { apiKey: string; provid
   const providers = config?.provider
   if (!providers) return undefined
   // Prefer the canonical provider id, then any custom Requesty provider.
-  const names = Object.keys(providers).sort((a, b) => (a === "requesty" ? -1 : b === "requesty" ? 1 : a.localeCompare(b)))
+  const names = Object.keys(providers).sort((a, b) => (a === 'requesty' ? -1 : b === 'requesty' ? 1 : a.localeCompare(b)))
   for (const name of names) {
     const provider = providers[name]
     if (!isRequestyProvider(provider, name)) continue
@@ -70,6 +68,6 @@ export function detectApiKey(config: SdkConfigLike | undefined): KeyResult {
 
   return {
     ok: false,
-    reason: `No Requesty API key found. Add provider.requesty.options.apiKey to opencode.json.`,
+    reason: `No Requesty API key found. Add provider.requesty.options.apiKey to opencode.json.`
   }
 }

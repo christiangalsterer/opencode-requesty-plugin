@@ -1,8 +1,27 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, createMemo, createSignal, type JSX } from "solid-js"
-import type { TuiPluginApi, TuiThemeCurrent } from "@opencode-ai/plugin/tui"
-import type { RequestyStore } from "./state"
-import { formatLimit, formatPercent, formatProjectionParts, formatTokenBreakdown, formatTokenInline, formatTokens, formatUsd, analyticsUrl, isProjectionOverLimit, padEnd, padStart, renderBar, shortModel, spendRatio, spendSeverity, severityColor, type Pace, type SpendThresholds } from "./format"
+import { Show, For, createMemo, createSignal, type JSX } from 'solid-js'
+import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
+import type { RequestyStore } from './state'
+import {
+  formatLimit,
+  formatPercent,
+  formatProjectionParts,
+  formatTokenBreakdown,
+  formatTokenInline,
+  formatTokens,
+  formatUsd,
+  analyticsUrl,
+  isProjectionOverLimit,
+  padEnd,
+  padStart,
+  renderBar,
+  shortModel,
+  spendRatio,
+  spendSeverity,
+  severityColor,
+  type Pace,
+  type SpendThresholds
+} from './format'
 
 export type WidgetProps = {
   store: RequestyStore
@@ -35,8 +54,8 @@ export type PromptIndicatorProps = {
 }
 
 function paceColor(pace: Pace | undefined, theme: TuiThemeCurrent) {
-  if (pace === "over") return theme.error
-  if (pace === "under") return theme.success
+  if (pace === 'over') return theme.error
+  if (pace === 'under') return theme.success
   return theme.textMuted
 }
 
@@ -46,29 +65,35 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     // Read host-tracked state to force sidebar slot repaints on session/message updates.
     data: props.store.data(),
     messagesLength: props.api.state.session.messages(props.sessionID).length,
-    version: props.store.version(),
+    version: props.store.version()
   }))
 
   return (
     <box flexDirection="column" paddingTop={1}>
       <text fg={theme().text}>
-        <Show
-          when={snapshot().data}
-          fallback={<strong>Requesty</strong>}
-        >
+        <Show when={snapshot().data} fallback={<strong>Requesty</strong>}>
           <a href={analyticsUrl(snapshot().data!.keyInfo.name)}>
-            <strong>Requesty{props.showKeyName ? ` (${snapshot().data!.keyInfo.name})` : ""}</strong>
+            <strong>Requesty{props.showKeyName ? ` (${snapshot().data!.keyInfo.name})` : ''}</strong>
           </a>
         </Show>
       </text>
       <box flexDirection="column" paddingTop={1}>
         <Show
-          when={props.store.state().status !== "error"}
+          when={props.store.state().status !== 'error'}
           fallback={
             <box flexDirection="column">
-              <text fg={theme().error}>Requesty: {props.store.state().status === "error" ? (props.store.state() as { message: string }).message : ""}</text>
+              <text fg={theme().error}>
+                Requesty: {props.store.state().status === 'error' ? (props.store.state() as { message: string }).message : ''}
+              </text>
               <Show when={snapshot().data}>
-                <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} showTokens={props.showTokens} stale />
+                <Snapshot
+                  store={props.store}
+                  theme={theme()}
+                  maxModels={props.maxModels}
+                  thresholds={props.thresholds}
+                  showTokens={props.showTokens}
+                  stale
+                />
               </Show>
             </box>
           }
@@ -77,7 +102,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
             when={snapshot().data}
             fallback={
               <text fg={theme().textMuted}>
-                {props.store.state().status === "loading" ? "Loading Requesty usage…" : "Requesty: waiting for first refresh…"}
+                {props.store.state().status === 'loading' ? 'Loading Requesty usage…' : 'Requesty: waiting for first refresh…'}
               </text>
             }
           >
@@ -113,21 +138,19 @@ function Snapshot(props: SnapshotProps): JSX.Element {
       <box flexDirection="column" paddingRight={1}>
         <Show when={limit() > 0}>
           <box flexDirection="row" justifyContent="space-between" alignItems="center">
-            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
-              {renderBar(ratio(), 24)}
-            </text>
-            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>
-              {formatPercent(ratio())}
-            </text>
+            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>{renderBar(ratio(), 24)}</text>
+            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>{formatPercent(ratio())}</text>
           </box>
         </Show>
         <box flexDirection="row" justifyContent="space-between">
-          <text fg={props.theme.textMuted}>{formatUsd(spend())} / {formatLimit(limit())}</text>
+          <text fg={props.theme.textMuted}>
+            {formatUsd(spend())} / {formatLimit(limit())}
+          </text>
           <Show when={projectionParts() || props.stale}>
             <box flexDirection="row">
               <Show when={projectionParts()}>
                 <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
-                  ~{formatUsd(projectionParts()!.projected)} EOM{" "}
+                  ~{formatUsd(projectionParts()!.projected)} EOM{' '}
                   <Show when={projectionParts()!.arrow}>
                     <span style={{ fg: paceColor(projectionParts()!.pace, props.theme) }}>{projectionParts()!.arrow}</span>
                   </Show>
@@ -156,19 +179,27 @@ function Snapshot(props: SnapshotProps): JSX.Element {
         >
           <box flexDirection="column" gap={0}>
             <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>{padEnd("Today", 9)} {padStart(formatUsd(data().todaySpend), 10)}</text>
+              <text fg={props.theme.textMuted}>
+                {padEnd('Today', 9)} {padStart(formatUsd(data().todaySpend), 10)}
+              </text>
               <text fg={props.theme.textMuted}>{formatTokenInline(data().todayTokens.input, data().todayTokens.output)}</text>
             </box>
             <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>{padEnd("Daily avg", 9)} {padStart(formatUsd(data().dailyAvg), 10)}</text>
+              <text fg={props.theme.textMuted}>
+                {padEnd('Daily avg', 9)} {padStart(formatUsd(data().dailyAvg), 10)}
+              </text>
               <text fg={props.theme.textMuted}>{formatTokenInline(data().dailyAvgTokens.input, data().dailyAvgTokens.output)}</text>
             </box>
             <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>{padEnd("7d avg", 9)} {padStart(formatUsd(data().avg7d), 10)}</text>
+              <text fg={props.theme.textMuted}>
+                {padEnd('7d avg', 9)} {padStart(formatUsd(data().avg7d), 10)}
+              </text>
               <text fg={props.theme.textMuted}>{formatTokenInline(data().avg7dTokens.input, data().avg7dTokens.output)}</text>
             </box>
             <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>{padEnd("30d avg", 9)} {padStart(formatUsd(data().avg30d), 10)}</text>
+              <text fg={props.theme.textMuted}>
+                {padEnd('30d avg', 9)} {padStart(formatUsd(data().avg30d), 10)}
+              </text>
               <text fg={props.theme.textMuted}>{formatTokenInline(data().avg30dTokens.input, data().avg30dTokens.output)}</text>
             </box>
           </box>
@@ -184,7 +215,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           onMouseDown={() => setExpanded((e) => !e)}
         >
           <text fg={props.theme.text}>
-            <strong>{expanded() ? "▼" : "▶"} Top Models (Current Month)</strong>
+            <strong>{expanded() ? '▼' : '▶'} Top Models (Current Month)</strong>
           </text>
         </box>
         <Show when={expanded()}>
@@ -196,7 +227,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
                   {padStart(formatUsd(model.spend), 8)}
                 </text>
                 <text fg={props.theme.textMuted}>
-                  {"  "}
+                  {'  '}
                   {formatTokens(model.totalTokens)} {formatTokenBreakdown(model.inputTokens, model.outputTokens)}
                 </text>
               </box>
@@ -222,10 +253,8 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     const limit = d?.keyInfo.monthly_limit ?? 0
     const spend = d?.keyInfo.monthly_spend ?? 0
     const ratio = spendRatio(spend, limit)
-    const name = d?.keyInfo.name ?? ""
-    const color = !d || limit <= 0
-      ? props.theme.textMuted
-      : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
+    const name = d?.keyInfo.name ?? ''
+    const color = !d || limit <= 0 ? props.theme.textMuted : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
     const projectionParts = formatProjectionParts(spend, limit)
     const projectionOverLimit = isProjectionOverLimit(spend, limit)
 
@@ -243,19 +272,20 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
       if (props.avg7d) averages.push(`7d ${formatUsd(d.avg7d)}`)
       if (props.avg30d) averages.push(`30d ${formatUsd(d.avg30d)}`)
       if (averages.length > 0) {
-        parts.push({ text: `${averages.join(" · ")} `, color: props.theme.textMuted })
+        parts.push({ text: `${averages.join(' · ')} `, color: props.theme.textMuted })
       }
     }
-    if (status === "loading" && !d) {
-      parts.push({ text: "Requesty …", color: props.theme.textMuted })
-    } else if (status === "error" && !d) {
-      parts.push({ text: "Requesty !", color: props.theme.textMuted })
+    if (status === 'loading' && !d) {
+      parts.push({ text: 'Requesty …', color: props.theme.textMuted })
+    } else if (status === 'error' && !d) {
+      parts.push({ text: 'Requesty !', color: props.theme.textMuted })
     } else if (!d) {
-      parts.push({ text: "Requesty …", color: props.theme.textMuted })
+      parts.push({ text: 'Requesty …', color: props.theme.textMuted })
     } else {
-      const label = limit > 0
-        ? `${formatUsd(spend)}/${formatUsd(limit)} ${formatPercent(ratio)}${props.showKeyName ? ` (${name})` : ""}`
-        : `${formatUsd(spend)}/unlimited${props.showKeyName ? ` (${name})` : ""}`
+      const label =
+        limit > 0
+          ? `${formatUsd(spend)}/${formatUsd(limit)} ${formatPercent(ratio)}${props.showKeyName ? ` (${name})` : ''}`
+          : `${formatUsd(spend)}/unlimited${props.showKeyName ? ` (${name})` : ''}`
       parts.push({ text: label, color, href: analyticsUrl(name) })
     }
     if (props.monthlyProjection && projectionParts) {
@@ -273,7 +303,9 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
       <For each={segments().parts}>
         {(seg) => (
           <Show when={seg.href} fallback={<span style={{ fg: seg.color }}>{seg.text}</span>}>
-            <a href={seg.href!} style={{ fg: seg.color }}>{seg.text}</a>
+            <a href={seg.href!} style={{ fg: seg.color }}>
+              {seg.text}
+            </a>
           </Show>
         )}
       </For>

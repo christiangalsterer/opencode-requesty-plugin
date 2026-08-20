@@ -13,7 +13,7 @@ export function spendRatio(spend: number, limit: number): number {
 
 /** Human-readable limit label: formatted amount, or "unlimited" when limit <= 0. */
 export function formatLimit(limit: number): string {
-  return limit > 0 ? formatUsd(limit) : "unlimited"
+  return limit > 0 ? formatUsd(limit) : 'unlimited'
 }
 
 export function formatTokens(count: number): string {
@@ -48,13 +48,13 @@ export function formatTokenInline(inputTokens: number, outputTokens: number): st
  * Returns "—" when input is 0 (avoids division by zero).
  */
 export function formatOutputInputRatio(inputTokens: number, outputTokens: number): string {
-  if (inputTokens <= 0) return "—"
+  if (inputTokens <= 0) return '—'
   return (outputTokens / inputTokens).toFixed(2)
 }
 
 const BAR_WIDTH = 16
-const BAR_FILLED = "▓"
-const BAR_EMPTY = "░"
+const BAR_FILLED = '▓'
+const BAR_EMPTY = '░'
 
 export function renderBar(ratio: number, width = BAR_WIDTH): string {
   const clamped = Math.max(0, Math.min(1, ratio))
@@ -64,25 +64,25 @@ export function renderBar(ratio: number, width = BAR_WIDTH): string {
 
 /** Shorten a model id for compact display: keep the part after the provider. */
 export function shortModel(model: string, maxLength: number): string {
-  const slash = model.indexOf("/")
+  const slash = model.indexOf('/')
   const short = slash >= 0 && slash < model.length - 1 ? model.slice(slash + 1) : model
   if (short.length <= maxLength) return short
-  return short.slice(0, Math.max(1, maxLength - 1)) + "…"
+  return short.slice(0, Math.max(1, maxLength - 1)) + '…'
 }
 
 /** Format a Date as a compact locale string for the "Updated" footer. */
 export function formatTimestamp(date: Date): string {
   return date
-    .toLocaleString("sv-SE", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
+    .toLocaleString('sv-SE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
     })
-    .replace("T", " ")
+    .replace('T', ' ')
 }
 
 /** Number of days in the month of `date` (UTC). */
@@ -137,7 +137,7 @@ export function daysToExhaustion(spend: number, limit: number, avgDailySpend: nu
   return Math.floor((limit - spend) / avgDailySpend)
 }
 
-export type Pace = "under" | "on" | "over"
+export type Pace = 'under' | 'on' | 'over'
 
 /** Spend-ratio vs time-elapsed ratio within this many percentage points is "on pace". */
 export const PACE_TOLERANCE = 0.05
@@ -151,17 +151,17 @@ export function paceStatus(spend: number, limit: number, date = new Date()): Pac
   if (limit <= 0) return undefined
   const timeRatio = monthElapsedRatio(date)
   const spendRatio = spend / limit
-  if (spendRatio - timeRatio > PACE_TOLERANCE) return "over"
-  if (timeRatio - spendRatio > PACE_TOLERANCE) return "under"
-  return "on"
+  if (spendRatio - timeRatio > PACE_TOLERANCE) return 'over'
+  if (timeRatio - spendRatio > PACE_TOLERANCE) return 'under'
+  return 'on'
 }
 
 /** Direction glyph for a pace: ↑ over, → on, ↓ under, "" when unlimited. */
 export function paceMarker(pace: Pace | undefined): string {
-  if (pace === "over") return "↑"
-  if (pace === "under") return "↓"
-  if (pace === "on") return "→"
-  return ""
+  if (pace === 'over') return '↑'
+  if (pace === 'under') return '↓'
+  if (pace === 'on') return '→'
+  return ''
 }
 
 export type ProjectionParts = {
@@ -189,10 +189,8 @@ export function formatProjectionParts(spend: number, limit: number, date = new D
  */
 export function formatProjection(spend: number, limit: number, date = new Date()): string {
   const parts = formatProjectionParts(spend, limit, date)
-  if (!parts) return ""
-  return parts.arrow
-    ? `~${formatUsd(parts.projected)} EOM ${parts.arrow}`
-    : `~${formatUsd(parts.projected)} EOM`
+  if (!parts) return ''
+  return parts.arrow ? `~${formatUsd(parts.projected)} EOM ${parts.arrow}` : `~${formatUsd(parts.projected)} EOM`
 }
 
 export type MonthDeltaParts = {
@@ -210,8 +208,8 @@ export function formatMonthDeltaParts(currentSpend: number, lastMonthSpend: numb
   if (lastMonthSpend <= 0 || currentSpend <= 0) return undefined
   const projected = projectedMonthEnd(currentSpend, date)
   const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100)
-  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "→"
-  const sign = pct > 0 ? "+" : ""
+  const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '→'
+  const sign = pct > 0 ? '+' : ''
   return { arrow, sign, pct }
 }
 
@@ -222,7 +220,7 @@ export function formatMonthDeltaParts(currentSpend: number, lastMonthSpend: numb
  */
 export function formatMonthDelta(currentSpend: number, lastMonthSpend: number, date = new Date()): string {
   const parts = formatMonthDeltaParts(currentSpend, lastMonthSpend, date)
-  if (!parts) return ""
+  if (!parts) return ''
   return `${parts.arrow} ${parts.sign}${parts.pct}% (${formatUsd(lastMonthSpend)} last month)`
 }
 
@@ -237,7 +235,7 @@ export function modelAnalyticsUrl(keyName: string, modelName: string): string {
 }
 
 /** Severity of budget usage, used to color the progress bar. */
-export type SpendSeverity = "ok" | "warning" | "critical"
+export type SpendSeverity = 'ok' | 'warning' | 'critical'
 
 /** Spend/limit ratios at which the bar turns yellow (warning) and red (error). */
 export type SpendThresholds = {
@@ -254,14 +252,14 @@ export const DEFAULT_THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
  *   else                 → ok (green)
  */
 export function spendSeverity(ratio: number, thresholds: SpendThresholds = DEFAULT_THRESHOLDS): SpendSeverity {
-  if (ratio >= thresholds.error) return "critical"
-  if (ratio >= thresholds.warning) return "warning"
-  return "ok"
+  if (ratio >= thresholds.error) return 'critical'
+  if (ratio >= thresholds.warning) return 'warning'
+  return 'ok'
 }
 
 /** Normalize a user-provided threshold (0–1 ratio or 0–100 percent) to a ratio. */
 export function normalizeThreshold(value: unknown): number | undefined {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return undefined
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return undefined
   return value > 1 ? value / 100 : value
 }
 
@@ -272,7 +270,7 @@ export function normalizeThreshold(value: unknown): number | undefined {
 export function resolveThresholds(warning: unknown, error: unknown): SpendThresholds {
   const thresholds: SpendThresholds = {
     warning: normalizeThreshold(warning) ?? DEFAULT_THRESHOLDS.warning,
-    error: normalizeThreshold(error) ?? DEFAULT_THRESHOLDS.error,
+    error: normalizeThreshold(error) ?? DEFAULT_THRESHOLDS.error
   }
   if (thresholds.warning >= thresholds.error) return { ...DEFAULT_THRESHOLDS }
   return thresholds
@@ -280,12 +278,12 @@ export function resolveThresholds(warning: unknown, error: unknown): SpendThresh
 
 /** Right-pad a string to `width` with spaces; no-op when already long enough. */
 export function padEnd(value: string, width: number): string {
-  return value.length >= width ? value : value + " ".repeat(width - value.length)
+  return value.length >= width ? value : value + ' '.repeat(width - value.length)
 }
 
 /** Left-pad a string to `width` with spaces; no-op when already long enough. */
 export function padStart(value: string, width: number): string {
-  return value.length >= width ? value : " ".repeat(width - value.length) + value
+  return value.length >= width ? value : ' '.repeat(width - value.length) + value
 }
 
 /** Theme subset used to map a severity to a color. Structural type keeps format.ts free of plugin SDK imports. */
@@ -296,8 +294,8 @@ export type SeverityTheme = {
 }
 
 /** Map a spend severity to the matching theme color. Preserves the theme's color type. */
-export function severityColor<T extends SeverityTheme>(severity: SpendSeverity, theme: T): T["error"] {
-  if (severity === "critical") return theme.error
-  if (severity === "warning") return theme.warning as T["error"]
-  return theme.success as T["error"]
+export function severityColor<T extends SeverityTheme>(severity: SpendSeverity, theme: T): T['error'] {
+  if (severity === 'critical') return theme.error
+  if (severity === 'warning') return theme.warning as T['error']
+  return theme.success as T['error']
 }
