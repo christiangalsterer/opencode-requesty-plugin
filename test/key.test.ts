@@ -48,13 +48,13 @@ describe("detectApiKey", () => {
     assert.ok(result.source.includes("requesty-export"))
   })
 
-  test("ignores providers whose baseURL is not Requesty", () => {
+  test("isRequestyProvider handles malformed baseURL (catch block)", () => {
     const result = detectApiKey({
       provider: {
-        openai: {
+        bad: {
           options: {
-            baseURL: "https://api.openai.com/v1",
-            apiKey: "sk-openai",
+            baseURL: "not a valid url",
+            apiKey: "sk-bad",
           },
         },
       },
