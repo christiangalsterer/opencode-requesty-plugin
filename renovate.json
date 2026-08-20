@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:js-lib", "schedule:nonOfficeHours", "schedule:automergeNonOfficeHours"],
+  "addLabels": ["renovate"],
+  "timezone": "Europe/Berlin",
+  "npm": {
+    "minimumReleaseAge": "14 days",
+    "internalChecksFilter": "strict",
+    "prCreation": "not-pending",
+    "postUpdateOptions": ["npmInstallTwice"]
+  },
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true,
+    "vulnerabilityFixStrategy": "highest"
+  },
+  "packageRules": [
+    {
+      "groupName": "All dev dependencies",
+      "groupSlug": "all-dev-non-major",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch", "pin"],
+      "prConcurrentLimit": 1,
+      "automerge": true,
+      "automergeType": "branch"
+    }
+  ]
+}
