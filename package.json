@@ -56,14 +56,14 @@
     "LICENSE"
   ],
   "scripts": {
-    "ci": "bun run clean && bun install && bun run typecheck && bun test && bun run build",
-    "build": "mkdir -p ./dist && cp -r src/* dist/",
+    "ci": "bun run clean && bun install && bun test && bun run build",
+    "build": "bun run typecheck && mkdir -p ./dist && cp -r src/* dist/",
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && mkdir -p ./dist",
     "clean:deps": "rm -rf ./node_modules && bun run deps",
     "deps": "bun install",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "test:coverage": "bun test --coverage"
+    "test": "bun run typecheck && bun test",
+    "test:coverage": "bun run typecheck && bun test --coverage"
   }
 }

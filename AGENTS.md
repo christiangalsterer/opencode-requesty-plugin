@@ -14,7 +14,8 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 
 - `bun test` — bun:test test runner.
 - Run one test file: `bun test test/logic.test.ts`
-- Verify changes: `bun run clean && bun run deps && bun run typecheck && bun test && bun run build` (no lint/format config exists). Pipe each command to `/dev/null` (`bun run clean >/dev/null 2>&1 && bun run deps >/dev/null 2>&1 && bun run typecheck >/dev/null 2>&1 && bun test >/dev/null 2>&1 && bun run build >/dev/null 2>&1`); on non-zero exit rerun without the redirect.
+- Verify changes: `bun run clean && bun run deps && bun test && bun run build`.
+  *Note: `typecheck` is now a mandatory prerequisite included in all build and test scripts.*
 - `bun run build` — copies `src/*` → `dist/`. `package.json` exposes `dist/tui.tsx` via `exports["./tui"]`, which is the entry point the opencode TUI loader resolves. The opencode host transforms TSX at load time via `@opentui/solid/preload` (Bun); no bundler is used. `dist/` is the published/loaded artifact; always rebuild after source changes.
 
 

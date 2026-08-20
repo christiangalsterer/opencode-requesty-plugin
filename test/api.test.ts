@@ -87,7 +87,8 @@ describe("api client data coercion", () => {
       resolution: "day",
     })
 
-    const url = fetchMock.mock.calls[0][0] as URL
+    const calls = fetchMock.mock.calls
+    const url = new URL((calls as any)[calls.length - 1][0] as any)
     assert.equal(url.searchParams.get("start"), "2026-08-01")
     assert.equal(url.searchParams.get("end"), "2026-08-31")
     assert.equal(url.searchParams.get("group_by"), "model,key")
@@ -100,7 +101,8 @@ describe("api client data coercion", () => {
     )
     await getUsageSelf("sk-test", { start: "2026-08-01" })
 
-    const url = fetchMock.mock.calls[0][0] as URL
+    const calls = fetchMock.mock.calls
+    const url = new URL((calls as any)[calls.length - 1][0] as any)
     assert.equal(url.searchParams.get("start"), "2026-08-01")
     assert.equal(url.searchParams.has("end"), false)
     assert.equal(url.searchParams.has("group_by"), false)
