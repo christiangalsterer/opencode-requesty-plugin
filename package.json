@@ -64,7 +64,7 @@
     "clean:deps": "rm -rf ./node_modules && bun run deps",
     "deps": "bun install",
     "format": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "format_fix": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test": "bun run typecheck && bun test",
     "test:coverage": "bun run typecheck && bun test --coverage",

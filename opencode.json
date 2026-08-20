@@ -3,10 +3,13 @@
   "permission": {
     "bash": {
       "*": "ask",
+      "bun run ci": "allow",
       "bun run typecheck *": "allow",
       "bun run clean *": "allow",
       "bun run deps *": "allow",
-      "bun test *": "allow",
+      "bun run format *": "allow",
+      "bun run format_fix *": "allow",
+      "bun run test *": "allow",
       "bun run build *": "allow"
     }
   }

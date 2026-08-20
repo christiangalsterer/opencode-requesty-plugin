@@ -8,14 +8,24 @@ Do NOT include code changes, diffs of changes, code examples or patch output in 
 
 ## Commands
 
-Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. If the exit code is non-zero, rerun the command **without** the redirect so the failure output is visible. Example: run `bun test >/dev/null 2>&1`; on failure rerun `bun test`.
+Run every command with `>/dev/null 2>&1` for a quiet pass. If the exit code is non-zero, rerun the command **without** the redirect so the failure output is visible. Example: run `bun run test >/dev/null 2>&1`; on failure rerun `bun run test`.
 
 ## Development Instructions
 
-- Install deps: `bun install`
-- Run tests: `bun run format:fix && bun run test`
+- Install dependencies: `bun install`
+- Format code: `bun run format_fix`
+- Run type-checking: `bun run typecheck`
+- Run tests: `bun run test`
 - Build plugin: `bun run build`
-- Verify changes: `bun run format:fix && bun run ci`
+- Verify all: `bun run format_fix && bun run typecheck && bun run test && bun run build`
+
+## Verification Procedure
+
+Before marking any task as `completed`, the following command chain must be executed successfully:
+
+`bun run format_fix >/dev/null 2>&1 && bun run typecheck >/dev/null 2>&1 && bun run test >/dev/null 2>&1 && bun run build >/dev/null 2>&1`
+
+(If the exit code is non-zero, rerun the command chain without the redirects to diagnose the failure. Example: `bun run format_fix && bun run typecheck && bun run test && bun run build`)
 
 ## Project Structure
 
