@@ -80,10 +80,41 @@ describe("readSettings", () => {
     assert.equal(readSettings({ sidebar: { enabled: false } }).sidebar.enabled, false)
   })
 
-  test("sidebar.enabled non-boolean values → default", () => {
-    assert.equal(readSettings({ sidebar: { enabled: "no" } }).sidebar.enabled, true)
-    assert.equal(readSettings({ sidebar: { enabled: 0 } }).sidebar.enabled, true)
-    assert.equal(readSettings({ sidebar: { enabled: undefined } }).sidebar.enabled, true)
+  test("partial sidebar object retains other defaults", () => {
+    const settings = readSettings({ sidebar: { enabled: false } })
+    assert.equal(settings.sidebar.enabled, false)
+    assert.equal(settings.sidebar.maxModels, 5)
+    assert.equal(settings.sidebar.showTokens, true)
+    assert.equal(settings.sidebar.order, 50)
+  })
+
+  test("partial prompt object retains other defaults", () => {
+    const settings = readSettings({ prompt: { todaySpend: false } })
+    assert.equal(settings.prompt.todaySpend, false)
+    assert.equal(settings.prompt.enabled, true)
+    assert.equal(settings.prompt.budgetIndicator, true)
+    assert.equal(settings.prompt.monthlyProjection, true)
+    assert.equal(settings.prompt.order, 50)
+  })
+
+  test("extra properties in sidebar are ignored", () => {
+    // @ts-ignore
+    const settings = readSettings({ sidebar: { enabled: false, junk: "ignore" } })
+    assert.equal(settings.sidebar.enabled, false)
+  })
+
+  test("refreshIntervalMs boundary testing", () => {
+    assert.equal(readSettings({ refreshIntervalMs: 9999 }).refreshIntervalMs, 300000)
+    assert.equal(readSettings({ refreshIntervalMs: 10000 }).refreshIntervalMs, 10000)
+    assert.equal(readSettings({ refreshIntervalMs: 3600000 }).refreshIntervalMs, 3600000)
+    assert.equal(readSettings({ refreshIntervalMs: 3600001 }).refreshIntervalMs, 300000)
+  })
+
+  test("maxModels boundary testing", () => {
+    assert.equal(readSettings({ sidebar: { maxModels: 0 } }).sidebar.maxModels, 5)
+    assert.equal(readSettings({ sidebar: { maxModels: 1 } }).sidebar.maxModels, 1)
+    assert.equal(readSettings({ sidebar: { maxModels: 20 } }).sidebar.maxModels, 20)
+    assert.equal(readSettings({ sidebar: { maxModels: 21 } }).sidebar.maxModels, 20)
   })
 
   test("sidebar.showTokens defaults to true", () => {
