@@ -64,6 +64,9 @@
     "deps": "bun install",
     "typecheck": "tsc --noEmit",
     "test": "bun run typecheck && bun test",
-    "test:coverage": "bun run typecheck && bun test --coverage"
+    "test:coverage": "bun run typecheck && bun test --coverage",
+    "release:prepare": "bun run clean && bun install && bun test",
+    "publish-npm": "bun run ci && bun publish --access=public",
+    "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run"
   }
 }
