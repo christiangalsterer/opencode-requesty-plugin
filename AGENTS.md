@@ -13,9 +13,9 @@ Run every command with stdout and stderr piped to `/dev/null` for a quiet pass. 
 ## Development Instructions
 
 - Install deps: `bun install`
-- Run tests: `bun run test`
+- Run tests: `bun run format:fix && bun run test`
 - Build plugin: `bun run build`
-- Verify changes: `bun run clean && bun run deps && bun test && bun run build`
+- Verify changes: `bun run format:fix && bun run ci`
 
 ## Project Structure
 
