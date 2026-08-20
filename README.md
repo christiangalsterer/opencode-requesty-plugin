@@ -276,8 +276,9 @@ All amounts are in USD and dates are evaluated in UTC.
 
 ```bash
 bun install
+bun run format:fix
 bun run typecheck
-bun test
+bun run test
 bun run build
 ```
 
