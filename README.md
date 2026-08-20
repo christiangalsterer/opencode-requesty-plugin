@@ -81,14 +81,14 @@ Or with options:
       "@christiangalsterer/opencode-requesty-plugin@1.0.0",
       {
         "refreshIntervalMs": 300000,
+        "warningThreshold": 0.6,
+        "errorThreshold": 0.85
         "sidebar": {
           "enabled": true,
           "maxModels": 5,
           "showTokens": true,
           "order": 50
-        },
-        "warningThreshold": 0.6,
-        "errorThreshold": 0.85
+        }
       }
     ]
   ]
