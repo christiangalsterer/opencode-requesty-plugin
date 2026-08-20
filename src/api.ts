@@ -1,26 +1,18 @@
-/**
- * Requesty Management API client.
- *
- * Docs: https://docs.requesty.ai/api-reference/management-apis
- * Base URL: https://api-v2.requesty.ai (global)
- *
- * Note: the usage endpoint is documented as `GET /v1/manage/apikey/{id}/usage`
- * with a JSON request body. Node/undici fetch refuses to send a body with GET,
- * and the server does not accept POST on this route (404). Query parameters
- * carry the same fields instead (verified: authentication reaches the handler
- * with query params).
- */
+/** Requesty Management API client. */
 
 const REQUESTY_ORIGIN = "https://api-v2.requesty.ai"
 const REQUEST_TIMEOUT_MS = 10_000
+
+// Injected by opencode host; keeping definition minimal to avoid import dependency.
+const logger = {
+  warn: (message: string) => console.warn(`[Requesty] ${message}`),
+}
 
 export type ApiKeyInfo = {
   id: string
   name: string
   logging: boolean
-  /** Amount spent this month in USD. The API returns decimals as strings; coerced to number. */
   monthly_spend: number
-  /** Monthly spending limit in USD. 0 means unlimited. Coerced to number. */
   monthly_limit: number
   permissions: {
     manage: "none" | "read" | "write"
@@ -30,12 +22,13 @@ export type ApiKeyInfo = {
 }
 
 /** The API serializes decimal fields as strings — coerce them to numbers. */
-function toNumber(value: unknown): number {
+function toNumber(value: unknown, field?: string): number {
   if (typeof value === "number") return value
   if (typeof value === "string") {
     const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : 0
+    if (Number.isFinite(parsed)) return parsed
   }
+  if (field) logger.warn(`Failed to coerce field "${field}" to number: ${JSON.stringify(value)}`)
   return 0
 }
 
@@ -94,11 +87,12 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
   }
   if (!response.ok) {
     let message = `HTTP ${response.status}`
+    const raw = await response.text()
     try {
-      const body = (await response.json()) as { error?: { message?: string } }
+      const body = JSON.parse(raw) as { error?: { message?: string } }
       if (body?.error?.message) message = body.error.message
     } catch {
-      // keep generic message
+      logger.warn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, 200)}`)
     }
     throw new RequestyApiError(response.status, message)
   }
@@ -110,8 +104,8 @@ export async function getApiKeySelf(apiKey: string): Promise<ApiKeyInfo> {
   const info = await request<ApiKeyInfo>(apiKey, "/v1/manage/apikey/self")
   return {
     ...info,
-    monthly_spend: toNumber(info.monthly_spend),
-    monthly_limit: toNumber(info.monthly_limit),
+    monthly_spend: toNumber(info.monthly_spend, "monthly_spend"),
+    monthly_limit: toNumber(info.monthly_limit, "monthly_limit"),
   }
 }
 
@@ -143,33 +137,59 @@ export type ModelUsage = {
   requests: number
 }
 
+/** Aggregated totals from a usage response. */
+export type AggregatedUsage = {
+  models: ModelUsage[]
+  spend: number
+  inputTokens: number
+  outputTokens: number
+  totalTokens: number
+}
+
 /**
- * Flatten a usage response into per-model aggregates. When the response
- * contains no grouped rows (e.g. no traffic), an empty array is returned.
+ * Flatten a usage response into per-model aggregates and compute grand totals.
+ * When the response contains no grouped rows (e.g. no traffic), returns zeros.
  */
-export function aggregateByModel(response: UsageResponse): ModelUsage[] {
+export function aggregateByModel(response: UsageResponse): AggregatedUsage {
   const byModel = new Map<string, ModelUsage>()
+  const totals = { spend: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+
   for (const entry of Object.values(response.usage ?? {})) {
     for (const group of entry.grouped_data ?? []) {
       const raw = group.group_by_values?.model_used ?? group.group_by_values?.model_requested ?? "unknown"
       const model = typeof raw === "string" && raw.length > 0 ? raw : "unknown"
+      
+      const s = toNumber(group.spend, "spend")
+      const i = toNumber(group.input_tokens, "input_tokens")
+      const o = toNumber(group.output_tokens, "output_tokens")
+      const t = toNumber(group.total_tokens, "total_tokens")
+      const r = toNumber(group.completions_requests, "completions_requests")
+
       const current = byModel.get(model) ?? { model, spend: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 }
-      current.spend += toNumber(group.spend)
-      current.inputTokens += toNumber(group.input_tokens)
-      current.outputTokens += toNumber(group.output_tokens)
-      current.totalTokens += toNumber(group.total_tokens)
-      current.requests += toNumber(group.completions_requests)
+      current.spend += s
+      current.inputTokens += i
+      current.outputTokens += o
+      current.totalTokens += t
+      current.requests += r
       byModel.set(model, current)
+
+      totals.spend += s
+      totals.inputTokens += i
+      totals.outputTokens += o
+      totals.totalTokens += t
     }
   }
-  return [...byModel.values()].sort((a, b) => b.spend - a.spend)
+  return { 
+    models: [...byModel.values()].sort((a, b) => b.spend - a.spend),
+    ...totals 
+  }
 }
 
 /** Sum all spend across every entry in a usage response. */
 export function totalSpendFromUsage(response: UsageResponse): number {
   let total = 0
   for (const entry of Object.values(response.usage ?? {})) {
-    total += toNumber(entry.spend)
+    total += toNumber(entry.spend, "spend")
   }
   return total
 }
@@ -220,7 +240,7 @@ export function spendForDay(response: UsageResponse, now = new Date()): number {
   const key = dayKey(now)
   const entry = response.usage?.[key]
   if (!entry) return 0
-  return toNumber(entry.spend)
+  return toNumber(entry.spend, "spend")
 }
 
 /**
@@ -252,18 +272,18 @@ export function tokensForDay(response: UsageResponse, now = new Date()): TokenBr
   if (entry.grouped_data && entry.grouped_data.length > 0) {
     return entry.grouped_data.reduce(
       (acc, group) => {
-        acc.input += toNumber(group.input_tokens)
-        acc.output += toNumber(group.output_tokens)
-        acc.total += toNumber(group.total_tokens)
+        acc.input += toNumber(group.input_tokens, "input_tokens")
+        acc.output += toNumber(group.output_tokens, "output_tokens")
+        acc.total += toNumber(group.total_tokens, "total_tokens")
         return acc
       },
       { input: 0, output: 0, total: 0 },
     )
   }
   return {
-    input: toNumber(entry.input_tokens),
-    output: toNumber(entry.output_tokens),
-    total: toNumber(entry.total_tokens),
+    input: toNumber(entry.input_tokens, "input_tokens"),
+    output: toNumber(entry.output_tokens, "output_tokens"),
+    total: toNumber(entry.total_tokens, "total_tokens"),
   }
 }
 

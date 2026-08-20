@@ -85,34 +85,37 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           resolution: "day" as const,
         })
         const currentMonthUsage = filterUsageByMonth(usage)
-        const models = aggregateByModel(currentMonthUsage)
-        const monthSpendFromUsage = models.reduce((total, model) => total + model.spend, 0)
-        const monthInputTokens = models.reduce((total, model) => total + model.inputTokens, 0)
-        const monthOutputTokens = models.reduce((total, model) => total + model.outputTokens, 0)
-        const monthTotalTokens = models.reduce((total, model) => total + model.totalTokens, 0)
-        const todaySpend = spendForDay(usage)
-        const avg7d = avgSpendLastNDays(usage, 7)
-        const avg30d = avgSpendLastNDays(usage, 30)
-        const todayTokens = tokensForDay(usage)
-        const dailyAvgTokens = {
-          input: dailyAverage(monthInputTokens),
-          output: dailyAverage(monthOutputTokens),
-          total: dailyAverage(monthTotalTokens),
-        }
-        const avg7dTokens = avgTokensLastNDays(usage, 7)
-        const avg30dTokens = avgTokensLastNDays(usage, 30)
+        const aggregated = aggregateByModel(currentMonthUsage)
+        
         let lastMonthSpend = 0
-        try {
-          const lastMonthUsage = await fetchUsage(options.apiKey, {
+        const [_, lastMonthUsage] = await Promise.all([
+          Promise.resolve(), // Keep main flow clean
+          fetchUsage(options.apiKey, {
             start: startOfLastMonth(),
             end: endOfLastMonth(),
             resolution: "day",
-          })
-          lastMonthSpend = totalSpendFromUsage(lastMonthUsage)
-        } catch {
-          // last month data is non-critical; continue without it
-        }
-        setData({ keyInfo, models, monthSpendFromUsage, todaySpend, dailyAvg: dailyAverage(keyInfo.monthly_spend), avg7d, avg30d, todayTokens, dailyAvgTokens, avg7dTokens, avg30dTokens, lastMonthSpend })
+          }).catch(() => undefined),
+        ])
+        if (lastMonthUsage) lastMonthSpend = totalSpendFromUsage(lastMonthUsage)
+
+        setData({ 
+          keyInfo, 
+          models: aggregated.models, 
+          monthSpendFromUsage: aggregated.spend, 
+          todaySpend: spendForDay(usage), 
+          dailyAvg: dailyAverage(keyInfo.monthly_spend), 
+          avg7d: avgSpendLastNDays(usage, 7), 
+          avg30d: avgSpendLastNDays(usage, 30), 
+          todayTokens: tokensForDay(usage), 
+          dailyAvgTokens: {
+            input: dailyAverage(aggregated.inputTokens),
+            output: dailyAverage(aggregated.outputTokens),
+            total: dailyAverage(aggregated.totalTokens),
+          }, 
+          avg7dTokens: avgTokensLastNDays(usage, 7), 
+          avg30dTokens: avgTokensLastNDays(usage, 30), 
+          lastMonthSpend 
+        })
         setState({ status: "ready", fetchedAt: new Date() })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)

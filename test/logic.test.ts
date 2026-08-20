@@ -22,7 +22,8 @@ describe("aggregateByModel", () => {
         },
       },
     }
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     assert.equal(models.length, 2)
     assert.equal(models[0].model, "openai/gpt-5")
     assert.equal(models[0].spend, 7)
@@ -38,7 +39,8 @@ describe("aggregateByModel", () => {
         "2026-08-02": { grouped_data: [{ group_by_values: {}, spend: 1 }] },
       },
     }
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     assert.equal(models.length, 1)
     assert.equal(models[0].model, "unknown")
   })
@@ -53,7 +55,8 @@ describe("aggregateByModel", () => {
         },
       },
     }
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     assert.equal(models.length, 1)
     assert.equal(models[0].model, "openai/gpt-5")
   })
@@ -68,7 +71,8 @@ describe("aggregateByModel", () => {
         },
       },
     }
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     assert.equal(models.length, 1)
     assert.equal(models[0].model, "openai/gpt-5")
   })
@@ -83,7 +87,8 @@ describe("aggregateByModel", () => {
         },
       },
     } as unknown as UsageResponse
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     assert.equal(models[0].spend, 2.5)
     assert.equal(models[0].totalTokens, 150)
     assert.equal(models[0].requests, 4)
@@ -99,7 +104,8 @@ describe("aggregateByModel", () => {
         },
       },
     } as unknown as UsageResponse
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     // Spend should be 0 because toNumber returns 0 for non-numeric strings
     assert.equal(models[0].spend, 0)
   })
@@ -110,7 +116,8 @@ describe("aggregateByModel", () => {
         "2026-08-01": { spend: 5, grouped_data: [] },
       },
     }
-    const models = aggregateByModel(response)
+    const aggregated = aggregateByModel(response)
+    const models = aggregated.models
     assert.equal(models.length, 0)
   })
 })
