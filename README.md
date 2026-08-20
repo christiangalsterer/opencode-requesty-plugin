@@ -225,6 +225,8 @@ Example for enabling key identification:
       "@christiangalsterer/opencode-requesty-plugin",
       {
         "refreshIntervalMs": 300000,
+        "warningThreshold": 0.7,
+        "errorThreshold": 0.9,
         "sidebar": {
           "enabled": true,
           "maxModels": 5,
@@ -232,8 +234,6 @@ Example for enabling key identification:
           "showKeyName": true,
           "order": 50
         },
-        "warningThreshold": 0.7,
-        "errorThreshold": 0.9,
         "prompt": {
           "enabled": true,
           "budgetIndicator": true,
