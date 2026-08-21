@@ -45,7 +45,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   const fetchedAt = () => (state().status === 'ready' ? formatTimestamp((state() as { fetchedAt: Date }).fetchedAt) : '—')
 
   return (
-    <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1} gap={1}>
+    <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1}>
       <Title store={props.store} theme={theme()} showKeyName={props.showKeyName} />
 
       <Show when={state().status === 'error'}>
@@ -255,12 +255,21 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
       title="Model Breakdown (Current Month)"
       titleColor={props.theme.textMuted}
       flexDirection="column"
-      padding={1}
-      gap={1}
+      paddingLeft={1}
+      paddingRight={1}
+      paddingTop={1}
+      paddingBottom={0}
+      gap={0}
     >
       <Show when={models().length > 0} fallback={<text fg={props.theme.textMuted}>No model usage recorded this month.</text>}>
-        <TableHeader theme={props.theme} />
-        <For each={models()}>{(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}</For>
+        <box paddingBottom={0.5}>
+          <TableHeader theme={props.theme} />
+        </box>
+        <box flexDirection="column">
+          <For each={models()}>
+            {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
+          </For>
+        </box>
         <text fg={props.theme.textMuted}>
           Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? '' : 's'}
         </text>
