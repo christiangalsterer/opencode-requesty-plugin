@@ -13,19 +13,19 @@ Run every command with `>/dev/null 2>&1` for a quiet pass. If the exit code is n
 ## Development Instructions
 
 - Install dependencies: `bun install`
-- Format code: `bun run format_fix`
+- Format code: `bun run format:fix`
 - Run type-checking: `bun run typecheck`
 - Run tests: `bun run test`
 - Build plugin: `bun run build`
-- Verify all: `bun run format_fix && bun run typecheck && bun run test && bun run build`
+- Verify all: `bun run format:fix && bun run typecheck && bun run test && bun run build`
 
 ## Verification Procedure
 
 Before marking any task as `completed`, the following command chain must be executed successfully:
 
-`bun run format_fix >/dev/null 2>&1 && bun run typecheck >/dev/null 2>&1 && bun run test >/dev/null 2>&1 && bun run build >/dev/null 2>&1`
+`bun run format:fix >/dev/null 2>&1 && bun run typecheck >/dev/null 2>&1 && bun run test >/dev/null 2>&1 && bun run build >/dev/null 2>&1`
 
-(If the exit code is non-zero, rerun the command chain without the redirects to diagnose the failure. Example: `bun run format_fix && bun run typecheck && bun run test && bun run build`)
+(If the exit code is non-zero, rerun the command chain without the redirects to diagnose the failure. Example: `bun run format:fix && bun run typecheck && bun run test && bun run build`)
 
 ## Project Structure
 

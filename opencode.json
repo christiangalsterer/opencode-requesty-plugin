@@ -8,7 +8,7 @@
       "bun run clean *": "allow",
       "bun run deps *": "allow",
       "bun run format *": "allow",
-      "bun run format_fix *": "allow",
+      "bun run format:fix *": "allow",
       "bun run test *": "allow",
       "bun run build *": "allow"
     }
