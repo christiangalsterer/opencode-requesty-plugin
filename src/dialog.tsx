@@ -200,7 +200,10 @@ function BudgetSection(props: { store: RequestyStore; theme: TuiThemeCurrent; th
       title="Budget Overview"
       titleColor={props.theme.textMuted}
       flexDirection="column"
-      padding={1}
+      paddingLeft={1}
+      paddingRight={1}
+      paddingTop={1}
+      paddingBottom={0}
       gap={1}
     >
       <Show when={limit() > 0}>
