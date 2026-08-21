@@ -45,23 +45,27 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   const fetchedAt = () => (state().status === 'ready' ? formatTimestamp((state() as { fetchedAt: Date }).fetchedAt) : '—')
 
   return (
-    <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1}>
-      <Title store={props.store} theme={theme()} showKeyName={props.showKeyName} />
+    <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1} flexGrow={1}>
+      <box flexGrow={1}>
+        <box flexDirection="column">
+          <Title store={props.store} theme={theme()} showKeyName={props.showKeyName} />
 
-      <Show when={state().status === 'error'}>
-        <CenteredMessage theme={theme()} error>
-          {(state() as { message: string }).message}
-        </CenteredMessage>
-      </Show>
+          <Show when={state().status === 'error'}>
+            <CenteredMessage theme={theme()} error>
+              {(state() as { message: string }).message}
+            </CenteredMessage>
+          </Show>
 
-      <Show
-        when={data()}
-        fallback={<CenteredMessage theme={theme()}>{state().status === 'loading' ? 'Loading Requesty usage…' : 'No data yet.'}</CenteredMessage>}
-      >
-        <KpiRow store={props.store} theme={theme()} thresholds={props.thresholds} />
-        <BudgetSection store={props.store} theme={theme()} thresholds={props.thresholds} />
-        <ModelSection store={props.store} theme={theme()} />
-      </Show>
+          <Show
+            when={data()}
+            fallback={<CenteredMessage theme={theme()}>{state().status === 'loading' ? 'Loading Requesty usage…' : 'No data yet.'}</CenteredMessage>}
+          >
+            <KpiRow store={props.store} theme={theme()} thresholds={props.thresholds} />
+            <BudgetSection store={props.store} theme={theme()} thresholds={props.thresholds} />
+            <ModelSection store={props.store} theme={theme()} />
+          </Show>
+        </box>
+      </box>
 
       <Footer fetchedAt={fetchedAt()} theme={theme()} />
     </box>
@@ -262,17 +266,21 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
       gap={0}
     >
       <Show when={models().length > 0} fallback={<text fg={props.theme.textMuted}>No model usage recorded this month.</text>}>
-        <box paddingBottom={0.5}>
-          <TableHeader theme={props.theme} />
+        <box flexDirection="column" gap={0}>
+          <box paddingBottom={0.5}>
+            <TableHeader theme={props.theme} />
+          </box>
+          <box flexDirection="column">
+            <For each={models()}>
+              {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
+            </For>
+          </box>
+          <box paddingTop={1}>
+            <text fg={props.theme.textMuted}>
+              Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? '' : 's'}
+            </text>
+          </box>
         </box>
-        <box flexDirection="column">
-          <For each={models()}>
-            {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
-          </For>
-        </box>
-        <text fg={props.theme.textMuted}>
-          Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? '' : 's'}
-        </text>
       </Show>
     </box>
   )
