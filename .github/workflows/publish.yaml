@@ -1,0 +1,13 @@
+name: NPM Publish
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write # Required for OIDC
+
+jobs:
+  npm-publish:
+    uses: christiangalsterer/github-actions/.github/workflows/bun_npm_publish.yaml@main
+    secrets: inherit
