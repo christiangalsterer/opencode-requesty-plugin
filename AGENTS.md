@@ -27,6 +27,11 @@ Before marking any task as `completed`, the following command chain must be exec
 
 (If the exit code is non-zero, rerun the command chain without the redirects to diagnose the failure. Example: `bun run format:fix && bun run typecheck && bun run test && bun run build`)
 
+## Architecture
+
+- This is a TUI plugin for the opencode.
+- It uses Solid.js for reactive rendering.
+
 ## Project Structure
 
 - `src/tui.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`, `session_prompt_right`), keymap commands, refresh timers.
