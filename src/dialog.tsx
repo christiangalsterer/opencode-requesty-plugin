@@ -273,11 +273,33 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
           <box paddingBottom={0.5}>
             <TableHeader theme={props.theme} />
           </box>
-          <box flexDirection="column">
-            <For each={models()}>
-              {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
-            </For>
-          </box>
+          <Show
+            when={models().length > 5}
+            fallback={
+              <box flexDirection="column" gap={0}>
+                <For each={models()}>
+                  {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
+                </For>
+              </box>
+            }
+          >
+            <scrollbox
+              height={5}
+              gap={0}
+              style={{
+                scrollbarOptions: {
+                  trackOptions: {
+                    foregroundColor: props.theme.primary,
+                    backgroundColor: props.theme.background
+                  }
+                }
+              }}
+            >
+              <For each={models()}>
+                {(model) => <ModelRow model={model} totalSpend={totalSpend()} keyName={data().keyInfo.name} theme={props.theme} />}
+              </For>
+            </scrollbox>
+          </Show>
           <box paddingTop={1}>
             <text fg={props.theme.textMuted}>
               Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? '' : 's'}
@@ -294,7 +316,7 @@ function TableHeader(props: { theme: TuiThemeCurrent }): JSX.Element {
     <text fg={props.theme.textMuted}>
       <strong>
         <u>
-          {padEnd('Model', 26)} {padStart('Spend', 9)} {padStart('Share', 6)} {padEnd('Tokens (↑In ↓Out)', 22)} {padStart('Reqs', 6)}{' '}
+          {padEnd('Model', 24)} {padStart('Spend', 9)} {padStart('Share', 6)} {padEnd('Tokens (↑In ↓Out)', 22)} {padStart('Reqs', 6)}{' '}
           {padStart('Out/In', 6)}
         </u>
       </strong>
@@ -306,7 +328,7 @@ function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: strin
   const share = props.totalSpend > 0 ? formatPercent(props.model.spend / props.totalSpend) : '—'
   return (
     <text fg={props.theme.text}>
-      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>{padEnd(shortModel(props.model.model, 25), 26)}</a>{' '}
+      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>{padEnd(shortModel(props.model.model, 23), 24)}</a>{' '}
       {padStart(formatUsd(props.model.spend), 9)} {padStart(share, 6)}{' '}
       {padEnd(`${formatTokens(props.model.totalTokens)} ${formatTokenBreakdown(props.model.inputTokens, props.model.outputTokens)}`, 22)}{' '}
       {padStart(formatTokens(props.model.requests), 6)} {padStart(formatOutputInputRatio(props.model.inputTokens, props.model.outputTokens), 6)}
