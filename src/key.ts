@@ -36,7 +36,6 @@ function resolveValue(raw: unknown): string | undefined {
 }
 
 function isRequestyProvider(provider: ProviderConfig, name: string): boolean {
-  if (name === 'requesty') return true
   const baseURL = provider.options?.baseURL
   if (typeof baseURL !== 'string') return false
   try {
