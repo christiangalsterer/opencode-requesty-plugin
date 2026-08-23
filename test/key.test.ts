@@ -23,7 +23,7 @@ describe('detectApiKey', () => {
 
   test('detects canonical provider.requesty.options.apiKey', () => {
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: 'sk-test' } } }
+      provider: { requesty: { options: { apiKey: 'sk-test', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, true)
     if (!result.ok) return
@@ -64,7 +64,7 @@ describe('detectApiKey', () => {
 
   test('trims whitespace from a plain API key', () => {
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: '  sk-padded  ' } } }
+      provider: { requesty: { options: { apiKey: '  sk-padded  ', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, true)
     if (!result.ok) return
@@ -74,7 +74,7 @@ describe('detectApiKey', () => {
   test('resolves {env:VAR} and trims whitespace', () => {
     process.env.REQUESTY_TEST_KEY = '  sk-from-env\n'
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: '{env:REQUESTY_TEST_KEY}' } } }
+      provider: { requesty: { options: { apiKey: '{env:REQUESTY_TEST_KEY}', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, true)
     if (!result.ok) return
@@ -83,14 +83,14 @@ describe('detectApiKey', () => {
 
   test('empty string API key is rejected', () => {
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: '' } } }
+      provider: { requesty: { options: { apiKey: '', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, false)
   })
 
   test('whitespace-only API key is rejected', () => {
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: '   ' } } }
+      provider: { requesty: { options: { apiKey: '   ', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, false)
   })
@@ -98,7 +98,7 @@ describe('detectApiKey', () => {
   test('empty env var is rejected', () => {
     process.env.REQUESTY_EMPTY_KEY = ''
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: '{env:REQUESTY_EMPTY_KEY}' } } }
+      provider: { requesty: { options: { apiKey: '{env:REQUESTY_EMPTY_KEY}', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, false)
   })
@@ -106,7 +106,7 @@ describe('detectApiKey', () => {
   test('whitespace-only env var is rejected', () => {
     process.env.REQUESTY_WHITESPACE_KEY = '  \n  '
     const result = detectApiKey({
-      provider: { requesty: { options: { apiKey: '{env:REQUESTY_WHITESPACE_KEY}' } } }
+      provider: { requesty: { options: { apiKey: '{env:REQUESTY_WHITESPACE_KEY}', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, false)
   })
@@ -118,7 +118,7 @@ describe('detectApiKey', () => {
           options: { baseURL: 'https://api-v2.requesty.ai', apiKey: 'sk-custom' }
         },
         requesty: {
-          options: { apiKey: 'sk-canonical' }
+          options: { apiKey: 'sk-canonical', baseURL: 'https://api.requesty.ai' }
         }
       }
     })
