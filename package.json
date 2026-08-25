@@ -32,13 +32,13 @@
     "access": "public"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "1.18.21",
-    "@opencode-ai/sdk": "1.18.21",
-    "@opentui/core": "0.5.7",
-    "@opentui/keymap": "0.5.7",
-    "@opentui/solid": "0.5.7",
+    "@opencode-ai/plugin": "1.18.23",
+    "@opencode-ai/sdk": "1.18.23",
+    "@opentui/core": "0.5.8",
+    "@opentui/keymap": "0.5.8",
+    "@opentui/solid": "0.5.8",
     "@types/bun": "1.4.0",
-    "@types/node": "26.2.0",
+    "@types/node": "26.3.0",
     "prettier": "3.9.6",
     "solid-js": "1.9.15",
     "typescript": "7.0.2"
