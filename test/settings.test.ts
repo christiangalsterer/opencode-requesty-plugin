@@ -6,7 +6,7 @@ import { DEFAULT_THRESHOLDS } from '../src/format'
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
-  sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, order: 50 },
+  sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, showSessionCost: true, order: 50 },
   prompt: {
     enabled: true,
     budgetIndicator: true,
@@ -142,6 +142,19 @@ describe('readSettings', () => {
     assert.equal(readSettings({ sidebar: { showTokens: 'no' } }).sidebar.showTokens, true)
     assert.equal(readSettings({ sidebar: { showTokens: 0 } }).sidebar.showTokens, true)
     assert.equal(readSettings({ sidebar: { showTokens: undefined } }).sidebar.showTokens, true)
+  })
+
+  test('sidebar.showSessionCost non-boolean values → default', () => {
+    assert.equal(readSettings({ sidebar: { showSessionCost: 'yes' } }).sidebar.showSessionCost, true)
+    assert.equal(readSettings({ sidebar: { showSessionCost: 0 } }).sidebar.showSessionCost, true)
+    assert.equal(readSettings({ sidebar: { showSessionCost: undefined } }).sidebar.showSessionCost, true)
+  })
+
+  test('sidebar.showSessionCost defaults to true and can be disabled', () => {
+    assert.equal(readSettings(undefined).sidebar.showSessionCost, true)
+    assert.equal(readSettings({}).sidebar.showSessionCost, true)
+    assert.equal(readSettings({ sidebar: {} }).sidebar.showSessionCost, true)
+    assert.equal(readSettings({ sidebar: { showSessionCost: false } }).sidebar.showSessionCost, false)
   })
 
   test('sidebar non-object → defaults', () => {

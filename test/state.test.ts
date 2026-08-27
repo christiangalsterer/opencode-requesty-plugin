@@ -31,12 +31,18 @@ const USAGE: UsageResponse = {
   }
 }
 
-function createStore(opts: { fetchApiKey?: () => Promise<ApiKeyInfo>; fetchUsage?: () => Promise<UsageResponse>; onError?: (msg: string) => void }) {
+function createStore(opts: {
+  fetchApiKey?: () => Promise<ApiKeyInfo>
+  fetchUsage?: () => Promise<UsageResponse>
+  onError?: (msg: string) => void
+  activeSession?: (id: string) => { id: string; created: number | undefined } | undefined
+}) {
   return createRequestyStore({
     apiKey: 'sk-test',
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
-    fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE)
+    fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE),
+    activeSession: opts.activeSession
   })
 }
 
@@ -65,6 +71,14 @@ describe('createRequestyStore', () => {
     assert.deepEqual(data!.avg7dTokens, { input: 0, output: 0, total: 0 })
     assert.deepEqual(data!.avg30dTokens, avgTokensLastNDays(USAGE, 30))
     assert.equal(data!.lastMonthSpend, 0)
+    // No session id → session metrics are all zero with no start label.
+    assert.equal(data!.sessionTodaySpend, 0)
+    assert.equal(data!.sessionTotalSpend, 0)
+    assert.equal(data!.sessionTodayRequests, 0)
+    assert.equal(data!.sessionTotalRequests, 0)
+    assert.deepEqual(data!.sessionTodayTokens, { input: 0, output: 0, total: 0 })
+    assert.deepEqual(data!.sessionTotalTokens, { input: 0, output: 0, total: 0 })
+    assert.equal(data!.sessionStartLabel, undefined)
   })
 
   test('error sets state to error and calls onError', async () => {
@@ -286,5 +300,147 @@ describe('createRequestyStore', () => {
     )
     // avg30d averages the 30 completed days before today, all $10
     assert.equal(data!.avg30d, 10)
+  })
+
+  test('populates session cost metrics from a session-created start', async () => {
+    const sessionId = 'ses_test'
+    const sessionUsage = {
+      usage: {
+        '2026-08-26': {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionId },
+              spend: '1.00',
+              completions_requests: 5,
+              input_tokens: 100,
+              output_tokens: 50
+            }
+          ]
+        },
+        '2026-08-27': {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionId },
+              spend: '2.50',
+              completions_requests: 7,
+              input_tokens: 200,
+              output_tokens: 100
+            },
+            { group_by_values: { 'extra.X-Session-Affinity': 'other' }, spend: '9.00', completions_requests: 1, input_tokens: 10, output_tokens: 10 }
+          ]
+        }
+      }
+    } as unknown as UsageResponse
+    const created = Date.parse('2026-08-26T12:00:00Z')
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created }),
+      fetchUsage: () => Promise.resolve(sessionUsage)
+    })
+    store.setSessionID(sessionId)
+    await store.refresh()
+
+    const data = store.data()
+    assert.ok(data)
+    assert.equal(data!.sessionStartLabel, '2026-08-26')
+    assert.equal(data!.sessionTodaySpend, 2.5)
+    assert.equal(data!.sessionTodayRequests, 7)
+    assert.deepEqual(data!.sessionTodayTokens, { input: 200, output: 100, total: 300 })
+    assert.equal(data!.sessionTotalSpend, 3.5)
+    assert.equal(data!.sessionTotalRequests, 12)
+    assert.deepEqual(data!.sessionTotalTokens, { input: 300, output: 150, total: 450 })
+  })
+
+  test('falls back to a rolling 90-day window when the session has no created timestamp', async () => {
+    const sessionId = 'ses_test'
+    const sessionUsage = {
+      usage: {
+        '2026-08-27': {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionId },
+              spend: '0.75',
+              completions_requests: 3,
+              input_tokens: 50,
+              output_tokens: 25
+            }
+          ]
+        }
+      }
+    } as unknown as UsageResponse
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created: undefined }),
+      fetchUsage: () => Promise.resolve(sessionUsage)
+    })
+    store.setSessionID(sessionId)
+    await store.refresh()
+
+    const data = store.data()
+    assert.ok(data)
+    assert.ok(data!.sessionStartLabel)
+    assert.equal(data!.sessionStartLabel!.length, 10)
+    assert.equal(data!.sessionTodaySpend, 0.75)
+    assert.equal(data!.sessionTotalSpend, 0.75)
+  })
+
+  test('session metrics stay zero when no session id is set', async () => {
+    const store = createStore({
+      activeSession: () => ({ id: 'ses_test', created: undefined })
+    })
+    await store.refresh()
+    const data = store.data()
+    assert.ok(data)
+    assert.equal(data!.sessionStartLabel, undefined)
+    assert.equal(data!.sessionTotalSpend, 0)
+    assert.equal(data!.sessionTodayRequests, 0)
+  })
+
+  test('setSessionID triggers a refresh that populates session metrics', async () => {
+    const sessionId = 'ses_test'
+    const sessionUsage = {
+      usage: {
+        '2026-08-27': {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionId },
+              spend: '1.20',
+              completions_requests: 4,
+              input_tokens: 40,
+              output_tokens: 20
+            }
+          ]
+        }
+      }
+    } as unknown as UsageResponse
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created: Date.parse('2026-08-27T08:00:00Z') }),
+      fetchUsage: () => Promise.resolve(sessionUsage)
+    })
+    // No session id at startup → session section remains hidden.
+    await store.refresh()
+    assert.equal(store.data()!.sessionStartLabel, undefined)
+
+    // Setting the id triggers an automatic refresh that populates it.
+    store.setSessionID(sessionId)
+    await store.refresh()
+    const data = store.data()
+    assert.ok(data)
+    assert.equal(data!.sessionStartLabel, '2026-08-27')
+    assert.equal(data!.sessionTodaySpend, 1.2)
+    assert.equal(data!.sessionTotalSpend, 1.2)
+  })
+
+  test('setSessionID with the same id does not bump version or schedule work', async () => {
+    const sessionId = 'ses_test'
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created: undefined })
+    })
+    const initial = store.version()
+    store.setSessionID(sessionId)
+    const afterChange = store.version()
+    assert.ok(afterChange > initial)
+    // Repeated identical ids are no-ops — version does not change again.
+    store.setSessionID(sessionId)
+    store.setSessionID(sessionId)
+    assert.equal(store.version(), afterChange)
   })
 })

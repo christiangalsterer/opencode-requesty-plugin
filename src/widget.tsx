@@ -36,6 +36,8 @@ export type WidgetProps = {
   showTokens: boolean
   /** Show the API key nickname. */
   showKeyName: boolean
+  /** Show the per-session cost collapsible section. */
+  showSessionCost: boolean
 }
 
 export type PromptIndicatorProps = {
@@ -92,6 +94,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
                   maxModels={props.maxModels}
                   thresholds={props.thresholds}
                   showTokens={props.showTokens}
+                  showSessionCost={props.showSessionCost}
                   stale
                 />
               </Show>
@@ -106,7 +109,14 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
               </text>
             }
           >
-            <Snapshot store={props.store} theme={theme()} maxModels={props.maxModels} thresholds={props.thresholds} showTokens={props.showTokens} />
+            <Snapshot
+              store={props.store}
+              theme={theme()}
+              maxModels={props.maxModels}
+              thresholds={props.thresholds}
+              showTokens={props.showTokens}
+              showSessionCost={props.showSessionCost}
+            />
           </Show>
         </Show>
       </box>
@@ -120,6 +130,7 @@ type SnapshotProps = {
   maxModels: number
   thresholds: SpendThresholds
   showTokens: boolean
+  showSessionCost: boolean
   stale?: boolean
 }
 
@@ -132,6 +143,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
   const projectionParts = () => formatProjectionParts(spend(), limit())
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
   const [expanded, setExpanded] = createSignal(true)
+  const [sessionExpanded, setSessionExpanded] = createSignal(true)
 
   return (
     <box flexDirection="column">
@@ -206,6 +218,42 @@ function Snapshot(props: SnapshotProps): JSX.Element {
         </Show>
       </box>
       <text> </text>
+      <Show when={props.showSessionCost && data().sessionStartLabel}>
+        <box
+          flexDirection="row"
+          gap={1}
+          // @ts-expect-error selectable is a runtime Renderable property not yet in BoxProps
+          selectable={true}
+          onMouseDown={() => setSessionExpanded((e) => !e)}
+        >
+          <text fg={props.theme.text}>
+            <strong>{sessionExpanded() ? '▼' : '▶'} Session Cost</strong>
+          </text>
+        </box>
+        <Show when={sessionExpanded()}>
+          <box flexDirection="column">
+            <text fg={props.theme.text}>
+              {padEnd('Today', 20)}
+              {padStart(formatUsd(data().sessionTodaySpend), 8)}
+            </text>
+            <text fg={props.theme.textMuted}>
+              {'  '}
+              {formatTokens(data().sessionTodayRequests)} reqs{' '}
+              {formatTokenBreakdown(data().sessionTodayTokens.input, data().sessionTodayTokens.output)}
+            </text>
+            <text fg={props.theme.text}>
+              {padEnd(`Since ${data().sessionStartLabel}`, 20)}
+              {padStart(formatUsd(data().sessionTotalSpend), 8)}
+            </text>
+            <text fg={props.theme.textMuted}>
+              {'  '}
+              {formatTokens(data().sessionTotalRequests)} reqs{' '}
+              {formatTokenBreakdown(data().sessionTotalTokens.input, data().sessionTotalTokens.output)}
+            </text>
+          </box>
+        </Show>
+        <text> </text>
+      </Show>
       <Show when={models().length > 0}>
         <box
           flexDirection="row"

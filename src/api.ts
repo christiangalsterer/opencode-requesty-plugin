@@ -305,3 +305,59 @@ export function avgTokensLastNDays(response: UsageResponse, days: number, now = 
     total: totals.total / days
   }
 }
+
+/** The metadata key under which Requesty records the session-affinity id. */
+export const SESSION_AFFINITY_KEY = 'extra.X-Session-Affinity'
+
+/** Aggregate cost/tokens/requests for a single Requesty session over a usage response. */
+export type SessionSpend = {
+  spend: number
+  requests: number
+  inputTokens: number
+  outputTokens: number
+}
+
+function sessionGroupValue(group: UsageGroupedEntry, sessionId: string): boolean {
+  return group.group_by_values?.[SESSION_AFFINITY_KEY] === sessionId
+}
+
+/**
+ * Sum spend/tokens/requests for a session across every day in a usage response,
+ * matching rows whose `group_by_values[SESSION_AFFINITY_KEY]` equals `sessionId`.
+ * Returns zeros when the session has no rows.
+ */
+export function sessionSpendFromResponse(response: UsageResponse, sessionId: string): SessionSpend {
+  const total: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
+  for (const entry of Object.values(response.usage ?? {})) {
+    for (const group of entry.grouped_data ?? []) {
+      if (!sessionGroupValue(group, sessionId)) continue
+      total.spend += toNumber(group.spend, 'spend')
+      total.requests += toNumber(group.completions_requests, 'completions_requests')
+      total.inputTokens += toNumber(group.input_tokens, 'input_tokens')
+      total.outputTokens += toNumber(group.output_tokens, 'output_tokens')
+    }
+  }
+  return total
+}
+
+/**
+ * Sum spend/tokens/requests for a session on the day matching `dayKey(now)`
+ * (defaults to today, UTC). Returns zeros when the session has no row that day.
+ */
+export function sessionSpendForDay(response: UsageResponse, sessionId: string, now = new Date()): SessionSpend {
+  const key = dayKey(now)
+  const entry = response.usage?.[key]
+  if (!entry) return { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
+  let spend = 0
+  let requests = 0
+  let inputTokens = 0
+  let outputTokens = 0
+  for (const group of entry.grouped_data ?? []) {
+    if (!sessionGroupValue(group, sessionId)) continue
+    spend += toNumber(group.spend, 'spend')
+    requests += toNumber(group.completions_requests, 'completions_requests')
+    inputTokens += toNumber(group.input_tokens, 'input_tokens')
+    outputTokens += toNumber(group.output_tokens, 'output_tokens')
+  }
+  return { spend, requests, inputTokens, outputTokens }
+}

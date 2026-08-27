@@ -42,6 +42,11 @@ const plugin: TuiPluginModule = {
       apiKey: key.apiKey,
       onError: (message) => {
         api.ui.toast({ variant: 'error', title: 'Requesty', message })
+      },
+      activeSession: (sessionID) => {
+        const session = api.state.session.get(sessionID)
+        if (!session) return { id: sessionID, created: undefined }
+        return { id: sessionID, created: session.time?.created }
       }
     })
 
@@ -53,6 +58,7 @@ const plugin: TuiPluginModule = {
           sidebar_content(ctx, slotProps) {
             // Read host-tracked state to force sidebar slot repaints on session/message updates.
             api.state.session.messages(slotProps.session_id).length
+            store.setSessionID(slotProps.session_id)
             return (
               <RequestySidebarWidget
                 store={store}
@@ -63,6 +69,7 @@ const plugin: TuiPluginModule = {
                 thresholds={settings.thresholds}
                 showTokens={settings.sidebar.showTokens}
                 showKeyName={settings.sidebar.showKeyName}
+                showSessionCost={settings.sidebar.showSessionCost}
               />
             )
           }

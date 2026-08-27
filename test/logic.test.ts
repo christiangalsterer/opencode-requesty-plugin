@@ -6,11 +6,14 @@ import {
   dayKey,
   endOfLastMonth,
   filterUsageByMonth,
+  sessionSpendForDay,
+  sessionSpendFromResponse,
   spendForDay,
   startOfCurrentMonth,
   startOfLastMonth,
   startOfRollingWindow,
   totalSpendFromUsage,
+  SESSION_AFFINITY_KEY,
   type UsageResponse
 } from '../src/api'
 import {
@@ -25,6 +28,7 @@ import {
   formatOutputInputRatio,
   formatProjection,
   formatProjectionParts,
+  formatSessionStart,
   formatTimestamp,
   formatTokenBreakdown,
   formatTokenInline,
@@ -631,5 +635,85 @@ describe('severityColor', () => {
 
   test('critical → error color', () => {
     assert.equal(severityColor('critical', theme), 'red')
+  })
+})
+
+describe('sessionSpendFromResponse', () => {
+  const sessionId = 'ses_abc'
+  const usage = {
+    usage: {
+      '2026-08-26': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '1.00', completions_requests: 5, input_tokens: 100, output_tokens: 50 }
+        ]
+      },
+      '2026-08-27': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '2.50', completions_requests: 7, input_tokens: 200, output_tokens: 100 },
+          { group_by_values: { [SESSION_AFFINITY_KEY]: 'ses_other' }, spend: '9.00', completions_requests: 1, input_tokens: 10, output_tokens: 10 }
+        ]
+      }
+    }
+  } as unknown as UsageResponse
+
+  test('aggregates matching rows across all days, ignoring other sessions', () => {
+    const result = sessionSpendFromResponse(usage, sessionId)
+    assert.equal(result.spend, 3.5)
+    assert.equal(result.requests, 12)
+    assert.equal(result.inputTokens, 300)
+    assert.equal(result.outputTokens, 150)
+  })
+
+  test('coerces string decimals', () => {
+    assert.equal(sessionSpendFromResponse(usage, sessionId).spend, 3.5)
+  })
+
+  test('returns zeros when no row matches', () => {
+    assert.deepEqual(sessionSpendFromResponse(usage, 'ses_missing'), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
+  })
+
+  test('returns zeros for empty usage', () => {
+    assert.deepEqual(sessionSpendFromResponse({ usage: {} }, sessionId), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
+  })
+})
+
+describe('sessionSpendForDay', () => {
+  const sessionId = 'ses_abc'
+  const now = new Date('2026-08-27T12:00:00Z')
+  const usage = {
+    usage: {
+      '2026-08-27': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '2.50', completions_requests: 7, input_tokens: 200, output_tokens: 100 },
+          { group_by_values: { [SESSION_AFFINITY_KEY]: 'ses_other' }, spend: '9.00', completions_requests: 1, input_tokens: 10, output_tokens: 10 }
+        ]
+      },
+      '2026-08-26': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '1.00', completions_requests: 5, input_tokens: 100, output_tokens: 50 }
+        ]
+      }
+    }
+  } as unknown as UsageResponse
+
+  test('sums only the matching session rows for the given day', () => {
+    const result = sessionSpendForDay(usage, sessionId, now)
+    assert.deepEqual(result, { spend: 2.5, requests: 7, inputTokens: 200, outputTokens: 100 })
+  })
+
+  test('returns zeros when the session has no rows that day', () => {
+    const result = sessionSpendForDay(usage, sessionId, new Date('2026-08-25T12:00:00Z'))
+    assert.deepEqual(result, { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
+  })
+
+  test('returns zeros when the day has no entry', () => {
+    assert.deepEqual(sessionSpendForDay({ usage: {} }, sessionId, now), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
+  })
+})
+
+describe('formatSessionStart', () => {
+  test('slices the YYYY-MM-DD from an RFC3339 timestamp', () => {
+    assert.equal(formatSessionStart('2026-08-27T14:55:19.000Z'), '2026-08-27')
+    assert.equal(formatSessionStart('2026-12-01T00:00:00Z'), '2026-12-01')
   })
 })

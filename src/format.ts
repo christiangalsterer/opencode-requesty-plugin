@@ -85,6 +85,11 @@ export function formatTimestamp(date: Date): string {
     .replace('T', ' ')
 }
 
+/** Format an RFC3339 timestamp as a `YYYY-MM-DD` label (UTC), e.g. "2026-08-27". */
+export function formatSessionStart(startIso: string): string {
+  return startIso.slice(0, 10)
+}
+
 /** Number of days in the month of `date` (UTC). */
 export function daysInMonth(date = new Date()): number {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate()

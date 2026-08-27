@@ -14,6 +14,7 @@ export type SidebarSettings = {
   maxModels: number
   showTokens: boolean
   showKeyName: boolean
+  showSessionCost: boolean
   order: number
 }
 
@@ -62,6 +63,7 @@ function readSidebarSettings(raw: unknown): SidebarSettings {
       typeof obj.maxModels === 'number' && obj.maxModels >= MIN_MAX_MODELS ? Math.min(Math.floor(obj.maxModels), MAX_MAX_MODELS) : DEFAULT_MAX_MODELS,
     showTokens: typeof obj.showTokens === 'boolean' ? obj.showTokens : true,
     showKeyName: typeof obj.showKeyName === 'boolean' ? obj.showKeyName : false,
+    showSessionCost: typeof obj.showSessionCost === 'boolean' ? obj.showSessionCost : true,
     order: parseOrder(obj.order)
   }
 }
