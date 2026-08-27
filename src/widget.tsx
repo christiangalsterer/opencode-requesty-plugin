@@ -236,7 +236,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           <Show when={sessionLoaded()} fallback={<text fg={props.theme.textMuted}> Session cost loading…</text>}>
             <box flexDirection="column">
               <text fg={props.theme.text}>
-                {padEnd('Today', 20)}
+                {padEnd('Today', 27)}
                 {padStart(formatUsd(data().sessionTodaySpend), 8)}
               </text>
               <text fg={props.theme.textMuted}>
@@ -245,7 +245,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
                 {formatTokenBreakdown(data().sessionTodayTokens.input, data().sessionTodayTokens.output)}
               </text>
               <text fg={props.theme.text}>
-                {padEnd(`Since ${data().sessionStartLabel ?? '…'}`, 20)}
+                {padEnd(`Since ${data().sessionStartLabel ?? '…'}`, 27)}
                 {padStart(formatUsd(data().sessionTotalSpend), 8)}
               </text>
               <text fg={props.theme.textMuted}>
