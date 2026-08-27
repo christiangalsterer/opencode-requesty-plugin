@@ -46,6 +46,8 @@ export type RequestyData = {
   sessionTotalTokens: TokenBreakdown
   /** Label for the session's start (e.g. "2026-08-27"); undefined when unavailable. */
   sessionStartLabel: string | undefined
+  /** Id of the session the session-cost fields belong to; undefined when none. */
+  sessionId: string | undefined
 }
 
 /** The active session to attribute cost to. `created` is an epoch-ms timestamp. */
@@ -59,6 +61,8 @@ export type RequestyStoreOptions = {
   fetchUsage?: typeof getUsageSelf
   /** Injectable active-session resolver: given a session id, return it with its created timestamp (epoch ms). */
   activeSession?: (sessionID: string) => ActiveSession | undefined
+  /** Called after fresh data is written, so the caller can force a host repaint. */
+  onRender?: () => void
 }
 
 export type RequestyStore = {
@@ -72,13 +76,15 @@ export type RequestyStore = {
   bumpVersion: () => void
   /** Set the active session id; refreshes session cost on the next refresh. */
   setSessionID: (sessionID: string | undefined) => void
+  /** Reactive accessor for the currently-active session id (undefined when none). */
+  activeSessionID: () => string | undefined
 }
 
 export function createRequestyStore(options: RequestyStoreOptions): RequestyStore {
   const [state, setState] = createSignal<RefreshState>({ status: 'idle' })
   const [data, setData] = createSignal<RequestyData | undefined>(undefined)
   const [version, setVersion] = createSignal(0)
-  const [sessionID, setSessionID] = createSignal<string | undefined>(undefined)
+  const [session, setSession] = createSignal<ActiveSession | undefined>(undefined)
 
   const fetchApiKey = options.fetchApiKey ?? getApiKeySelf
   const fetchUsage = options.fetchUsage ?? getUsageSelf
@@ -86,10 +92,12 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   let inFlight: Promise<void> | undefined
   let pending = false
 
-  function currentActiveSession(): { id: string; created: number | undefined } | undefined {
-    const id = sessionID()
-    if (!id) return undefined
-    return options.activeSession?.(id) ?? { id, created: undefined }
+  function setActiveSession(id: string | undefined): void {
+    const next = id ? (options.activeSession?.(id) ?? { id, created: undefined }) : undefined
+    if (next?.id === session()?.id) return
+    setSession(next)
+    setVersion((v) => v + 1)
+    void refresh()
   }
 
   async function refresh(): Promise<void> {
@@ -123,7 +131,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         let sessionToday: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
         let sessionTotal: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
         let sessionStartLabel: string | undefined
-        const active = currentActiveSession()
+        const active = session()
         if (active) {
           const startIso =
             active.created !== undefined && Number.isFinite(active.created) ? new Date(active.created).toISOString() : startOfRollingWindow(90)
@@ -168,8 +176,11 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
             output: sessionTotal.outputTokens,
             total: sessionTotal.inputTokens + sessionTotal.outputTokens
           },
-          sessionStartLabel
+          sessionStartLabel,
+          sessionId: active?.id
         })
+        setVersion((v) => v + 1)
+        options.onRender?.()
         setState({ status: 'ready', fetchedAt: new Date() })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -192,12 +203,8 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     refresh,
     version,
     bumpVersion: () => setVersion((v) => v + 1),
-    setSessionID: (id) => {
-      if (id === sessionID()) return
-      setSessionID(id)
-      setVersion((v) => v + 1)
-      void refresh()
-    }
+    setSessionID: setActiveSession,
+    activeSessionID: () => session()?.id
   }
 }
 

@@ -144,6 +144,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
   const [expanded, setExpanded] = createSignal(true)
   const [sessionExpanded, setSessionExpanded] = createSignal(true)
+  const activeSessionId = () => props.store.activeSessionID()
+  const sessionLoaded = () => activeSessionId() !== undefined && data().sessionId === activeSessionId()
 
   return (
     <box flexDirection="column">
@@ -218,7 +220,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
         </Show>
       </box>
       <text> </text>
-      <Show when={props.showSessionCost && data().sessionStartLabel}>
+      <Show when={props.showSessionCost && activeSessionId()}>
         <box
           flexDirection="row"
           gap={1}
@@ -227,30 +229,32 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           onMouseDown={() => setSessionExpanded((e) => !e)}
         >
           <text fg={props.theme.text}>
-            <strong>{sessionExpanded() ? '▼' : '▶'} Session Cost</strong>
+            <strong>{sessionExpanded() ? '▼' : '▶'} Session</strong>
           </text>
         </box>
         <Show when={sessionExpanded()}>
-          <box flexDirection="column">
-            <text fg={props.theme.text}>
-              {padEnd('Today', 20)}
-              {padStart(formatUsd(data().sessionTodaySpend), 8)}
-            </text>
-            <text fg={props.theme.textMuted}>
-              {'  '}
-              {formatTokens(data().sessionTodayRequests)} reqs{' '}
-              {formatTokenBreakdown(data().sessionTodayTokens.input, data().sessionTodayTokens.output)}
-            </text>
-            <text fg={props.theme.text}>
-              {padEnd(`Since ${data().sessionStartLabel}`, 20)}
-              {padStart(formatUsd(data().sessionTotalSpend), 8)}
-            </text>
-            <text fg={props.theme.textMuted}>
-              {'  '}
-              {formatTokens(data().sessionTotalRequests)} reqs{' '}
-              {formatTokenBreakdown(data().sessionTotalTokens.input, data().sessionTotalTokens.output)}
-            </text>
-          </box>
+          <Show when={sessionLoaded()} fallback={<text fg={props.theme.textMuted}> Session cost loading…</text>}>
+            <box flexDirection="column">
+              <text fg={props.theme.text}>
+                {padEnd('Today', 20)}
+                {padStart(formatUsd(data().sessionTodaySpend), 8)}
+              </text>
+              <text fg={props.theme.textMuted}>
+                {'  '}
+                {formatTokens(data().sessionTodayRequests)} reqs{' '}
+                {formatTokenBreakdown(data().sessionTodayTokens.input, data().sessionTodayTokens.output)}
+              </text>
+              <text fg={props.theme.text}>
+                {padEnd(`Since ${data().sessionStartLabel ?? '…'}`, 20)}
+                {padStart(formatUsd(data().sessionTotalSpend), 8)}
+              </text>
+              <text fg={props.theme.textMuted}>
+                {'  '}
+                {formatTokens(data().sessionTotalRequests)} reqs{' '}
+                {formatTokenBreakdown(data().sessionTotalTokens.input, data().sessionTotalTokens.output)}
+              </text>
+            </box>
+          </Show>
         </Show>
         <text> </text>
       </Show>

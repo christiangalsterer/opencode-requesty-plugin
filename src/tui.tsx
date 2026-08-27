@@ -47,7 +47,8 @@ const plugin: TuiPluginModule = {
         const session = api.state.session.get(sessionID)
         if (!session) return { id: sessionID, created: undefined }
         return { id: sessionID, created: session.time?.created }
-      }
+      },
+      onRender: () => api.renderer.requestRender()
     })
 
     // Sidebar widget
@@ -166,6 +167,10 @@ const plugin: TuiPluginModule = {
       void store.refresh()
     })
 
+    const unsubSessionUpdated = api.event.on('session.updated', (evt) => {
+      store.setSessionID(evt.properties.info.id)
+    })
+
     const unsubSessionIdle = api.event.on('session.idle', () => {
       void store.refresh()
     })
@@ -179,6 +184,7 @@ const plugin: TuiPluginModule = {
       clearInterval(interval)
       clearTimeout(debounceTimer)
       unsubSessionCreated()
+      unsubSessionUpdated()
       unsubSessionIdle()
       unsubMessage()
     })

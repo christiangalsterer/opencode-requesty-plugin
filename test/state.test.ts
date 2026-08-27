@@ -36,22 +36,26 @@ function createStore(opts: {
   fetchUsage?: () => Promise<UsageResponse>
   onError?: (msg: string) => void
   activeSession?: (id: string) => { id: string; created: number | undefined } | undefined
+  onRender?: () => void
 }) {
   return createRequestyStore({
     apiKey: 'sk-test',
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
     fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE),
-    activeSession: opts.activeSession
+    activeSession: opts.activeSession,
+    onRender: opts.onRender
   })
 }
 
 describe('createRequestyStore', () => {
   test('refresh populates data and sets state to ready', async () => {
-    const store = createStore({})
+    const onRender = mock(() => {})
+    const store = createStore({ onRender })
     assert.equal(store.state().status, 'idle')
     await store.refresh()
     assert.equal(store.state().status, 'ready')
+    assert.equal(onRender.mock.calls.length, 1)
     const data = store.data()
     assert.ok(data)
     assert.equal(data!.keyInfo.name, 'test-key')
@@ -79,6 +83,8 @@ describe('createRequestyStore', () => {
     assert.deepEqual(data!.sessionTodayTokens, { input: 0, output: 0, total: 0 })
     assert.deepEqual(data!.sessionTotalTokens, { input: 0, output: 0, total: 0 })
     assert.equal(data!.sessionStartLabel, undefined)
+    assert.equal(data!.sessionId, undefined)
+    assert.equal(store.activeSessionID(), undefined)
   })
 
   test('error sets state to error and calls onError', async () => {
@@ -348,6 +354,8 @@ describe('createRequestyStore', () => {
     assert.equal(data!.sessionTotalSpend, 3.5)
     assert.equal(data!.sessionTotalRequests, 12)
     assert.deepEqual(data!.sessionTotalTokens, { input: 300, output: 150, total: 450 })
+    assert.equal(data!.sessionId, sessionId)
+    assert.equal(store.activeSessionID(), sessionId)
   })
 
   test('falls back to a rolling 90-day window when the session has no created timestamp', async () => {
