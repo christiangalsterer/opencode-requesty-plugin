@@ -69,6 +69,8 @@ Before marking any task as `completed`, the following command chain must be exec
 
 ## References
 
+For **source code** information, use GitHub. If the URL is not known, ask the user — never guess. The opencode source code can be found at https://github.com/anomalyco/opencode
+
 For any library, framework, SDK, API, CLI tool, or cloud service documentation, **consult the Context7 MCP server first** (`resolve-library-id` → `query-docs`) to fetch current docs, even for well-known packages — training data may be stale. Only fall back to the URLs below if Context7 lacks the package or returns insufficient detail.
 
 Use the following repositories for documentation, working code examples.
