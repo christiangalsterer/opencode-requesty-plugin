@@ -70,7 +70,7 @@ const plugin: TuiPluginModule = {
                 thresholds={settings.thresholds}
                 showTokens={settings.sidebar.showTokens}
                 showKeyName={settings.sidebar.showKeyName}
-                showSessionCost={settings.sidebar.showSessionCost}
+                showSessionInfo={settings.sidebar.showSessionInfo}
               />
             )
           }

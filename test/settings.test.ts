@@ -6,7 +6,7 @@ import { DEFAULT_THRESHOLDS } from '../src/format'
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
-  sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, showSessionCost: true, order: 50 },
+  sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, showSessionInfo: true, order: 50 },
   prompt: {
     enabled: true,
     budgetIndicator: true,
@@ -144,17 +144,17 @@ describe('readSettings', () => {
     assert.equal(readSettings({ sidebar: { showTokens: undefined } }).sidebar.showTokens, true)
   })
 
-  test('sidebar.showSessionCost non-boolean values → default', () => {
-    assert.equal(readSettings({ sidebar: { showSessionCost: 'yes' } }).sidebar.showSessionCost, true)
-    assert.equal(readSettings({ sidebar: { showSessionCost: 0 } }).sidebar.showSessionCost, true)
-    assert.equal(readSettings({ sidebar: { showSessionCost: undefined } }).sidebar.showSessionCost, true)
+  test('sidebar.showSessionInfo non-boolean values → default', () => {
+    assert.equal(readSettings({ sidebar: { showSessionInfo: 'yes' } }).sidebar.showSessionInfo, true)
+    assert.equal(readSettings({ sidebar: { showSessionInfo: 0 } }).sidebar.showSessionInfo, true)
+    assert.equal(readSettings({ sidebar: { showSessionInfo: undefined } }).sidebar.showSessionInfo, true)
   })
 
-  test('sidebar.showSessionCost defaults to true and can be disabled', () => {
-    assert.equal(readSettings(undefined).sidebar.showSessionCost, true)
-    assert.equal(readSettings({}).sidebar.showSessionCost, true)
-    assert.equal(readSettings({ sidebar: {} }).sidebar.showSessionCost, true)
-    assert.equal(readSettings({ sidebar: { showSessionCost: false } }).sidebar.showSessionCost, false)
+  test('sidebar.showSessionInfo defaults to true and can be disabled', () => {
+    assert.equal(readSettings(undefined).sidebar.showSessionInfo, true)
+    assert.equal(readSettings({}).sidebar.showSessionInfo, true)
+    assert.equal(readSettings({ sidebar: {} }).sidebar.showSessionInfo, true)
+    assert.equal(readSettings({ sidebar: { showSessionInfo: false } }).sidebar.showSessionInfo, false)
   })
 
   test('sidebar non-object → defaults', () => {

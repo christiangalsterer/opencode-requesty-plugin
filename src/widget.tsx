@@ -37,7 +37,7 @@ export type WidgetProps = {
   /** Show the API key nickname. */
   showKeyName: boolean
   /** Show the per-session cost collapsible section. */
-  showSessionCost: boolean
+  showSessionInfo: boolean
 }
 
 export type PromptIndicatorProps = {
@@ -94,7 +94,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
                   maxModels={props.maxModels}
                   thresholds={props.thresholds}
                   showTokens={props.showTokens}
-                  showSessionCost={props.showSessionCost}
+                  showSessionInfo={props.showSessionInfo}
                   stale
                 />
               </Show>
@@ -115,7 +115,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
               maxModels={props.maxModels}
               thresholds={props.thresholds}
               showTokens={props.showTokens}
-              showSessionCost={props.showSessionCost}
+              showSessionInfo={props.showSessionInfo}
             />
           </Show>
         </Show>
@@ -130,7 +130,7 @@ type SnapshotProps = {
   maxModels: number
   thresholds: SpendThresholds
   showTokens: boolean
-  showSessionCost: boolean
+  showSessionInfo: boolean
   stale?: boolean
 }
 
@@ -220,7 +220,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
         </Show>
       </box>
       <text> </text>
-      <Show when={props.showSessionCost && activeSessionId()}>
+      <Show when={props.showSessionInfo && activeSessionId()}>
         <box
           flexDirection="row"
           gap={1}
