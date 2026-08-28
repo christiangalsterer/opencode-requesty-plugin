@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.0](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.1.0...v1.2.0) (2026-08-28)
+
+
+### Features
+
+* show per-session cost in the sidebar ([031a95c](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/031a95ca4059d9857b36d44615ba1388212600f4))
+* show per-session cost in the sidebar ([16a66c3](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/16a66c38be90ce392b1d684f02a5d2b400b1eb3a))
+* show per-session cost in the sidebar ([39bb772](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/39bb7723da3b2730e0ef4f9cebbb5b6476daedb9))
+* show per-session cost in the sidebar ([9de7ee5](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/9de7ee5579e68eeb4647754a8eab74020fce1d93))
+
+
+### Bug Fixes
+
+* Make the session cost tests use dates derived from the current day so they no longer break when the calendar advances. ([bf5aabe](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/bf5aabe7b818c7593e5d5c29c4c7e926e602ed25))
+* remove hardcoded requesty provider check ([8ff781e](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/8ff781ee10c53b258d5aa6266b5818e39624c81f))
+* remove hardcoded requesty provider check ([dc5b5a2](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/dc5b5a256461135bb10349acc37006567260b03a))
+
 ## [1.1.0](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.0.0...v1.1.0) (2026-08-22)
 
 
