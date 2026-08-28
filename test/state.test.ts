@@ -310,9 +310,13 @@ describe('createRequestyStore', () => {
 
   test('populates session cost metrics from a session-created start', async () => {
     const sessionId = 'ses_test'
+    const now = new Date()
+    const todayKey = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString().slice(0, 10)
+    const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1))
+    const yesterdayKey = yesterday.toISOString().slice(0, 10)
     const sessionUsage = {
       usage: {
-        '2026-08-26': {
+        [yesterdayKey]: {
           grouped_data: [
             {
               group_by_values: { 'extra.X-Session-Affinity': sessionId },
@@ -323,7 +327,7 @@ describe('createRequestyStore', () => {
             }
           ]
         },
-        '2026-08-27': {
+        [todayKey]: {
           grouped_data: [
             {
               group_by_values: { 'extra.X-Session-Affinity': sessionId },
@@ -337,7 +341,7 @@ describe('createRequestyStore', () => {
         }
       }
     } as unknown as UsageResponse
-    const created = Date.parse('2026-08-26T12:00:00Z')
+    const created = yesterday.getTime() + 12 * 3600 * 1000
     const store = createStore({
       activeSession: () => ({ id: sessionId, created }),
       fetchUsage: () => Promise.resolve(sessionUsage)
@@ -347,7 +351,7 @@ describe('createRequestyStore', () => {
 
     const data = store.data()
     assert.ok(data)
-    assert.equal(data!.sessionStartLabel, '2026-08-26')
+    assert.equal(data!.sessionStartLabel, yesterdayKey)
     assert.equal(data!.sessionTodaySpend, 2.5)
     assert.equal(data!.sessionTodayRequests, 7)
     assert.deepEqual(data!.sessionTodayTokens, { input: 200, output: 100, total: 300 })
@@ -360,9 +364,11 @@ describe('createRequestyStore', () => {
 
   test('falls back to a rolling 90-day window when the session has no created timestamp', async () => {
     const sessionId = 'ses_test'
+    const now = new Date()
+    const todayKey = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString().slice(0, 10)
     const sessionUsage = {
       usage: {
-        '2026-08-27': {
+        [todayKey]: {
           grouped_data: [
             {
               group_by_values: { 'extra.X-Session-Affinity': sessionId },
@@ -404,9 +410,12 @@ describe('createRequestyStore', () => {
 
   test('setSessionID triggers a refresh that populates session metrics', async () => {
     const sessionId = 'ses_test'
+    const now = new Date()
+    const created = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12)
+    const todayKey = new Date(created).toISOString().slice(0, 10)
     const sessionUsage = {
       usage: {
-        '2026-08-27': {
+        [todayKey]: {
           grouped_data: [
             {
               group_by_values: { 'extra.X-Session-Affinity': sessionId },
@@ -420,7 +429,7 @@ describe('createRequestyStore', () => {
       }
     } as unknown as UsageResponse
     const store = createStore({
-      activeSession: () => ({ id: sessionId, created: Date.parse('2026-08-27T08:00:00Z') }),
+      activeSession: () => ({ id: sessionId, created }),
       fetchUsage: () => Promise.resolve(sessionUsage)
     })
     // No session id at startup → session section remains hidden.
@@ -432,7 +441,7 @@ describe('createRequestyStore', () => {
     await store.refresh()
     const data = store.data()
     assert.ok(data)
-    assert.equal(data!.sessionStartLabel, '2026-08-27')
+    assert.equal(data!.sessionStartLabel, todayKey)
     assert.equal(data!.sessionTodaySpend, 1.2)
     assert.equal(data!.sessionTotalSpend, 1.2)
   })
