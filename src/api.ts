@@ -317,20 +317,21 @@ export type SessionSpend = {
   outputTokens: number
 }
 
-function sessionGroupValue(group: UsageGroupedEntry, sessionId: string): boolean {
-  return group.group_by_values?.[SESSION_AFFINITY_KEY] === sessionId
+function sessionGroupValue(group: UsageGroupedEntry, sessionIds: ReadonlySet<string>): boolean {
+  return sessionIds.has(group.group_by_values?.[SESSION_AFFINITY_KEY] as string)
 }
 
 /**
- * Sum spend/tokens/requests for a session across every day in a usage response,
- * matching rows whose `group_by_values[SESSION_AFFINITY_KEY]` equals `sessionId`.
- * Returns zeros when the session has no rows.
+ * Sum spend/tokens/requests for a set of session-affinity ids across every day
+ * in a usage response, matching rows whose
+ * `group_by_values[SESSION_AFFINITY_KEY]` is in `sessionIds`. A single session
+ * id can be passed as `new Set([id])`. Returns zeros when no rows match.
  */
-export function sessionSpendFromResponse(response: UsageResponse, sessionId: string): SessionSpend {
+export function sessionSpendForSessionIds(response: UsageResponse, sessionIds: ReadonlySet<string>): SessionSpend {
   const total: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
   for (const entry of Object.values(response.usage ?? {})) {
     for (const group of entry.grouped_data ?? []) {
-      if (!sessionGroupValue(group, sessionId)) continue
+      if (!sessionGroupValue(group, sessionIds)) continue
       total.spend += toNumber(group.spend, 'spend')
       total.requests += toNumber(group.completions_requests, 'completions_requests')
       total.inputTokens += toNumber(group.input_tokens, 'input_tokens')
@@ -341,10 +342,11 @@ export function sessionSpendFromResponse(response: UsageResponse, sessionId: str
 }
 
 /**
- * Sum spend/tokens/requests for a session on the day matching `dayKey(now)`
- * (defaults to today, UTC). Returns zeros when the session has no row that day.
+ * Sum spend/tokens/requests for a set of session-affinity ids on the day
+ * matching `dayKey(now)` (defaults to today, UTC). Returns zeros when the set
+ * has no row that day.
  */
-export function sessionSpendForDay(response: UsageResponse, sessionId: string, now = new Date()): SessionSpend {
+export function sessionSpendForSessionIdsForDay(response: UsageResponse, sessionIds: ReadonlySet<string>, now = new Date()): SessionSpend {
   const key = dayKey(now)
   const entry = response.usage?.[key]
   if (!entry) return { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
@@ -353,11 +355,28 @@ export function sessionSpendForDay(response: UsageResponse, sessionId: string, n
   let inputTokens = 0
   let outputTokens = 0
   for (const group of entry.grouped_data ?? []) {
-    if (!sessionGroupValue(group, sessionId)) continue
+    if (!sessionGroupValue(group, sessionIds)) continue
     spend += toNumber(group.spend, 'spend')
     requests += toNumber(group.completions_requests, 'completions_requests')
     inputTokens += toNumber(group.input_tokens, 'input_tokens')
     outputTokens += toNumber(group.output_tokens, 'output_tokens')
   }
   return { spend, requests, inputTokens, outputTokens }
+}
+
+/**
+ * Sum spend/tokens/requests for a session across every day in a usage response,
+ * matching rows whose `group_by_values[SESSION_AFFINITY_KEY]` equals `sessionId`.
+ * Returns zeros when the session has no rows.
+ */
+export function sessionSpendFromResponse(response: UsageResponse, sessionId: string): SessionSpend {
+  return sessionSpendForSessionIds(response, new Set([sessionId]))
+}
+
+/**
+ * Sum spend/tokens/requests for a session on the day matching `dayKey(now)`
+ * (defaults to today, UTC). Returns zeros when the session has no row that day.
+ */
+export function sessionSpendForDay(response: UsageResponse, sessionId: string, now = new Date()): SessionSpend {
+  return sessionSpendForSessionIdsForDay(response, new Set([sessionId]), now)
 }

@@ -1,0 +1,3 @@
+{
+  "plugin": ["@streetturtle/opencode-session-tokens", "opencode-context-usage"]
+}

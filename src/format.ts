@@ -291,6 +291,75 @@ export function padStart(value: string, width: number): string {
   return value.length >= width ? value : ' '.repeat(width - value.length) + value
 }
 
+/**
+ * Structural subset of an assistant message's live-mutating fields. Kept local
+ * so format.ts stays free of plugin SDK imports; structurally compatible with
+ * the host's `Message` type. These mutations are what signal a repaint.
+ */
+export type MessageRepaintFields = {
+  cost?: number
+  time?: {
+    created?: number
+    completed?: number
+  }
+  tokens?: {
+    input?: number
+    output?: number
+    reasoning?: number
+    cache?: {
+      read?: number
+      write?: number
+    }
+  }
+}
+
+const HASH_PRIME = 31
+const HASH_MOD = 2 ** 53
+
+function hashMix(seed: number, value: number): number {
+  return (seed * HASH_PRIME + value) % HASH_MOD
+}
+
+/**
+ * Fold a single message's mutable fields into a running hash seed.
+ * A "canonical" message must contribute the same bits regardless of whether
+ * the object uses plain numbers or string-serialized decimals.
+ */
+function foldMessageValue(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value !== '') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return 0
+}
+
+/**
+ * Derive a scalar repaint key from a session's messages. The key changes
+ * whenever an assistant message's content changes in place (cost, tokens,
+ * completion time) even when the array length stays constant — mirroring how
+ * `message.updated` mutates message data without resizing the messages array.
+ *
+ * Reading this key (via `api.state.session.messages(...)`) inside a
+ * `createMemo` makes the host slot repaint on every `message.updated`, not
+ * just on session start. Returns 0 when there is no repaint-relevant content.
+ */
+export function sessionRepaintKey(messages: readonly MessageRepaintFields[]): number {
+  let seed = 0
+  for (const message of messages) {
+    seed = hashMix(seed, foldMessageValue(message.cost))
+    seed = hashMix(seed, foldMessageValue(message.time?.completed ?? message.time?.created))
+    const tokens = message.tokens
+    if (!tokens) continue
+    seed = hashMix(seed, foldMessageValue(tokens.input))
+    seed = hashMix(seed, foldMessageValue(tokens.output))
+    seed = hashMix(seed, foldMessageValue(tokens.reasoning))
+    seed = hashMix(seed, foldMessageValue(tokens.cache?.read))
+    seed = hashMix(seed, foldMessageValue(tokens.cache?.write))
+  }
+  return seed
+}
+
 /** Theme subset used to map a severity to a color. Structural type keeps format.ts free of plugin SDK imports. */
 export type SeverityTheme = {
   error: unknown

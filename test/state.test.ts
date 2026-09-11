@@ -1,7 +1,7 @@
 import { describe, test, mock } from 'bun:test'
 import assert from 'node:assert/strict'
 import { createRequestyStore } from '../src/state'
-import { avgSpendLastNDays, avgTokensLastNDays } from '../src/api'
+import { avgSpendLastNDays, avgTokensLastNDays, sessionSpendForSessionIds, sessionSpendForSessionIdsForDay } from '../src/api'
 import { dailyAverage } from '../src/format'
 import type { ApiKeyInfo, UsageResponse } from '../src/api'
 
@@ -36,6 +36,7 @@ function createStore(opts: {
   fetchUsage?: () => Promise<UsageResponse>
   onError?: (msg: string) => void
   activeSession?: (id: string) => { id: string; created: number | undefined } | undefined
+  fetchSessionChildren?: (id: string) => Promise<string[]>
   onRender?: () => void
 }) {
   return createRequestyStore({
@@ -44,6 +45,7 @@ function createStore(opts: {
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
     fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE),
     activeSession: opts.activeSession,
+    fetchSessionChildren: opts.fetchSessionChildren,
     onRender: opts.onRender
   })
 }
@@ -459,5 +461,87 @@ describe('createRequestyStore', () => {
     store.setSessionID(sessionId)
     store.setSessionID(sessionId)
     assert.equal(store.version(), afterChange)
+  })
+
+  test('folds descendant sub-agent cost into the session totals', async () => {
+    const sessionId = 'ses_test'
+    const childId = 'ses_child'
+    const now = new Date()
+    const created = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12)
+    const todayKey = new Date(created).toISOString().slice(0, 10)
+    const sessionUsage = {
+      usage: {
+        [todayKey]: {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionId },
+              spend: '1.00',
+              completions_requests: 2,
+              input_tokens: 40,
+              output_tokens: 20
+            },
+            {
+              group_by_values: { 'extra.X-Session-Affinity': childId },
+              spend: '2.50',
+              completions_requests: 3,
+              input_tokens: 60,
+              output_tokens: 30
+            },
+            { group_by_values: { 'extra.X-Session-Affinity': 'other' }, spend: '9.00', completions_requests: 1, input_tokens: 10, output_tokens: 10 }
+          ]
+        }
+      }
+    } as unknown as UsageResponse
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created }),
+      fetchSessionChildren: () => Promise.resolve([childId]),
+      fetchUsage: () => Promise.resolve(sessionUsage)
+    })
+    store.setSessionID(sessionId)
+    await store.refresh()
+
+    const data = store.data()
+    assert.ok(data)
+    // Parent + child combined; the unrelated row is excluded.
+    assert.equal(data!.subagentCount, 1)
+    assert.equal(data!.sessionTodaySpend, 3.5)
+    assert.equal(data!.sessionTodayRequests, 5)
+    assert.deepEqual(data!.sessionTodayTokens, { input: 100, output: 50, total: 150 })
+    assert.equal(data!.sessionTotalSpend, 3.5)
+  })
+
+  test('a rejected fetchSessionChildren resolves zero subagents without failing the refresh', async () => {
+    const sessionId = 'ses_test'
+    const now = new Date()
+    const created = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12)
+    const todayKey = new Date(created).toISOString().slice(0, 10)
+    const sessionUsage = {
+      usage: {
+        [todayKey]: {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionId },
+              spend: '1.00',
+              completions_requests: 1,
+              input_tokens: 10,
+              output_tokens: 5
+            }
+          ]
+        }
+      }
+    } as unknown as UsageResponse
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created }),
+      fetchSessionChildren: () => Promise.reject(new Error('nope')),
+      fetchUsage: () => Promise.resolve(sessionUsage)
+    })
+    store.setSessionID(sessionId)
+    await store.refresh()
+
+    const data = store.data()
+    assert.ok(data)
+    assert.equal(store.state().status, 'ready')
+    assert.equal(data!.subagentCount, 0)
+    assert.equal(data!.sessionTodaySpend, 1.0)
   })
 })

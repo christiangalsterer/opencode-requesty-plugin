@@ -19,6 +19,7 @@ import {
   spendRatio,
   spendSeverity,
   severityColor,
+  sessionRepaintKey,
   type Pace,
   type SpendThresholds
 } from './format'
@@ -65,8 +66,11 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   const theme = () => props.theme
   const snapshot = createMemo(() => ({
     // Read host-tracked state to force sidebar slot repaints on session/message updates.
+    // Reading the message *content* (not just length) makes the slot repaint on
+    // every message.updated — content mutates in place while the array length
+    // stays constant, so a length-only hook would only fire on session start.
     data: props.store.data(),
-    messagesLength: props.api.state.session.messages(props.sessionID).length,
+    repaintKey: sessionRepaintKey(props.api.state.session.messages(props.sessionID)),
     version: props.store.version()
   }))
 
@@ -230,6 +234,12 @@ function Snapshot(props: SnapshotProps): JSX.Element {
         >
           <text fg={props.theme.text}>
             <strong>{sessionExpanded() ? '▼' : '▶'} Session</strong>
+            <Show when={data().subagentCount > 0}>
+              {' '}
+              <span style={{ fg: props.theme.textMuted }}>
+                · {data().subagentCount} subagent{data().subagentCount === 1 ? '' : 's'}
+              </span>
+            </Show>
           </text>
         </box>
         <Show when={sessionExpanded()}>
@@ -297,8 +307,11 @@ function Snapshot(props: SnapshotProps): JSX.Element {
 export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Element {
   const segments = createMemo(() => {
     // Read host-tracked reactive state to force slot repaints on message updates.
+    // Reading the message *content* (not just length) makes the slot repaint on
+    // every message.updated — content mutates in place while the array length
+    // stays constant, so a length-only hook would only fire on session start.
     props.store.version()
-    props.api.state.session.messages(props.sessionID).length
+    sessionRepaintKey(props.api.state.session.messages(props.sessionID))
 
     const d = props.store.data()
     const status = props.store.state().status

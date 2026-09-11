@@ -7,8 +7,8 @@ import {
   filterUsageByMonth,
   getApiKeySelf,
   getUsageSelf,
-  sessionSpendForDay,
-  sessionSpendFromResponse,
+  sessionSpendForSessionIds,
+  sessionSpendForSessionIdsForDay,
   spendForDay,
   startOfLastMonth,
   startOfRollingWindow,
@@ -48,6 +48,8 @@ export type RequestyData = {
   sessionStartLabel: string | undefined
   /** Id of the session the session-cost fields belong to; undefined when none. */
   sessionId: string | undefined
+  /** Number of descendant (sub-agent) sessions folded into the session totals. */
+  subagentCount: number
 }
 
 /** The active session to attribute cost to. `created` is an epoch-ms timestamp. */
@@ -61,6 +63,12 @@ export type RequestyStoreOptions = {
   fetchUsage?: typeof getUsageSelf
   /** Injectable active-session resolver: given a session id, return it with its created timestamp (epoch ms). */
   activeSession?: (sessionID: string) => ActiveSession | undefined
+  /**
+   * Injectable resolver for a session's descendant (sub-agent) session ids,
+   * used to fold sub-agent spend into the parent session totals. Defaults to
+   * resolving no children. Best-effort: a rejected promise yields no children.
+   */
+  fetchSessionChildren?: (sessionID: string) => Promise<string[]>
   /** Called after fresh data is written, so the caller can force a host repaint. */
   onRender?: () => void
 }
@@ -131,8 +139,13 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         let sessionToday: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
         let sessionTotal: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
         let sessionStartLabel: string | undefined
+        let subagentCount = 0
         const active = session()
         if (active) {
+          const head = options.fetchSessionChildren?.(active.id) ?? Promise.resolve([])
+          const children = await head.catch(() => [])
+          subagentCount = children.length
+          const sessionIds = new Set<string>([active.id, ...children])
           const startIso =
             active.created !== undefined && Number.isFinite(active.created) ? new Date(active.created).toISOString() : startOfRollingWindow(90)
           sessionStartLabel = formatSessionStart(startIso)
@@ -141,8 +154,8 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
             groupBy: [SESSION_AFFINITY_KEY],
             resolution: 'day'
           })
-          sessionToday = sessionSpendForDay(sessionUsage, active.id)
-          sessionTotal = sessionSpendFromResponse(sessionUsage, active.id)
+          sessionToday = sessionSpendForSessionIdsForDay(sessionUsage, sessionIds)
+          sessionTotal = sessionSpendForSessionIds(sessionUsage, sessionIds)
         }
 
         setData({
@@ -177,7 +190,8 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
             total: sessionTotal.inputTokens + sessionTotal.outputTokens
           },
           sessionStartLabel,
-          sessionId: active?.id
+          sessionId: active?.id,
+          subagentCount
         })
         setVersion((v) => v + 1)
         options.onRender?.()

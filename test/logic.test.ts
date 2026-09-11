@@ -7,6 +7,8 @@ import {
   endOfLastMonth,
   filterUsageByMonth,
   sessionSpendForDay,
+  sessionSpendForSessionIds,
+  sessionSpendForSessionIdsForDay,
   sessionSpendFromResponse,
   spendForDay,
   startOfCurrentMonth,
@@ -45,6 +47,7 @@ import {
   renderBar,
   resolveThresholds,
   severityColor,
+  sessionRepaintKey,
   shortModel,
   spendRatio,
   spendSeverity
@@ -711,9 +714,144 @@ describe('sessionSpendForDay', () => {
   })
 })
 
+describe('sessionSpendForSessionIds', () => {
+  const parent = 'ses_parent'
+  const child = 'ses_child'
+  const usage = {
+    usage: {
+      '2026-08-27': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: parent }, spend: '1.00', completions_requests: 2, input_tokens: 40, output_tokens: 20 },
+          { group_by_values: { [SESSION_AFFINITY_KEY]: child }, spend: '2.50', completions_requests: 3, input_tokens: 60, output_tokens: 30 },
+          {
+            group_by_values: { [SESSION_AFFINITY_KEY]: 'ses_unrelated' },
+            spend: '9.00',
+            completions_requests: 1,
+            input_tokens: 10,
+            output_tokens: 10
+          }
+        ]
+      },
+      '2026-08-26': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: child }, spend: '1.50', completions_requests: 4, input_tokens: 50, output_tokens: 25 }
+        ]
+      }
+    }
+  } as unknown as UsageResponse
+
+  test('sums parent and child rows together, excluding unrelated sessions', () => {
+    const result = sessionSpendForSessionIds(usage, new Set([parent, child]))
+    assert.deepEqual(result, { spend: 5.0, requests: 9, inputTokens: 150, outputTokens: 75 })
+  })
+
+  test('matches only the single id in a one-element set', () => {
+    const result = sessionSpendForSessionIds(usage, new Set([child]))
+    assert.deepEqual(result, { spend: 4.0, requests: 7, inputTokens: 110, outputTokens: 55 })
+  })
+
+  test('returns zeros when no id matches', () => {
+    assert.deepEqual(sessionSpendForSessionIds(usage, new Set(['ses_none'])), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
+  })
+})
+
+describe('sessionSpendForSessionIdsForDay', () => {
+  const parent = 'ses_parent'
+  const child = 'ses_child'
+  const now = new Date('2026-08-27T12:00:00Z')
+  const usage = {
+    usage: {
+      '2026-08-27': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: parent }, spend: '1.00', completions_requests: 2, input_tokens: 40, output_tokens: 20 },
+          { group_by_values: { [SESSION_AFFINITY_KEY]: child }, spend: '2.50', completions_requests: 3, input_tokens: 60, output_tokens: 30 },
+          {
+            group_by_values: { [SESSION_AFFINITY_KEY]: 'ses_unrelated' },
+            spend: '9.00',
+            completions_requests: 1,
+            input_tokens: 10,
+            output_tokens: 10
+          }
+        ]
+      },
+      '2026-08-26': {
+        grouped_data: [
+          { group_by_values: { [SESSION_AFFINITY_KEY]: child }, spend: '1.50', completions_requests: 4, input_tokens: 50, output_tokens: 25 }
+        ]
+      }
+    }
+  } as unknown as UsageResponse
+
+  test('sums parent and child rows on the given day, excluding unrelated sessions', () => {
+    const result = sessionSpendForSessionIdsForDay(usage, new Set([parent, child]), now)
+    assert.deepEqual(result, { spend: 3.5, requests: 5, inputTokens: 100, outputTokens: 50 })
+  })
+
+  test('returns zeros on a day with no matching rows', () => {
+    assert.deepEqual(sessionSpendForSessionIdsForDay(usage, new Set([parent, child]), new Date('2026-08-25T12:00:00Z')), {
+      spend: 0,
+      requests: 0,
+      inputTokens: 0,
+      outputTokens: 0
+    })
+  })
+})
+
 describe('formatSessionStart', () => {
   test('slices the YYYY-MM-DD from an RFC3339 timestamp', () => {
     assert.equal(formatSessionStart('2026-08-27T14:55:19.000Z'), '2026-08-27')
     assert.equal(formatSessionStart('2026-12-01T00:00:00Z'), '2026-12-01')
+  })
+})
+
+describe('sessionRepaintKey', () => {
+  const assistant = (overrides: Record<string, unknown> = {}) => ({
+    cost: 1.5,
+    time: { created: 1000, completed: 2000 },
+    tokens: { input: 100, output: 50, reasoning: 10, cache: { read: 5, write: 2 } },
+    ...overrides
+  })
+
+  test('is zero for an empty messages array', () => {
+    assert.equal(sessionRepaintKey([]), 0)
+  })
+
+  test('is deterministic for identical messages', () => {
+    const a = sessionRepaintKey([assistant()])
+    const b = sessionRepaintKey([assistant()])
+    const c = sessionRepaintKey([assistant(), assistant({ cost: 3, time: { created: 5000, completed: 9000 } })])
+    assert.equal(a, b)
+    assert.equal(c, sessionRepaintKey([assistant(), assistant({ cost: 3, time: { created: 5000, completed: 9000 } })]))
+  })
+
+  test('changes when tokens mutate in place with a constant array length', () => {
+    const before = assistant()
+    const after = assistant({ tokens: { input: 100, output: 250, reasoning: 10, cache: { read: 5, write: 2 } } })
+    assert.equal(before.tokens!.output, 50)
+    assert.notEqual(sessionRepaintKey([before]), sessionRepaintKey([after]))
+  })
+
+  test('changes when cost mutates in place with a constant array length', () => {
+    assert.notEqual(sessionRepaintKey([assistant({ cost: 1.5 })]), sessionRepaintKey([assistant({ cost: 7.75 })]))
+  })
+
+  test('changes when completion time arrives with a constant array length', () => {
+    assert.notEqual(
+      sessionRepaintKey([assistant({ time: { created: 1000 } })]),
+      sessionRepaintKey([assistant({ time: { created: 1000, completed: 2000 } })])
+    )
+  })
+
+  test('changes when a message is added or removed', () => {
+    const one = [assistant()]
+    const two = [assistant(), assistant({ cost: 2 })]
+    assert.notEqual(sessionRepaintKey(one), sessionRepaintKey(two))
+    assert.notEqual(sessionRepaintKey(two), sessionRepaintKey([assistant({ cost: 2 })]))
+  })
+
+  test('folds string-serialized decimals identically to numbers (API decimals are strings)', () => {
+    const numeric = assistant({ cost: 1.5 })
+    const stringy = assistant({ cost: '1.5' })
+    assert.equal(sessionRepaintKey([numeric]), sessionRepaintKey([stringy]))
   })
 })
