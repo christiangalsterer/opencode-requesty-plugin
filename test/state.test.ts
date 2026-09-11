@@ -14,9 +14,14 @@ const KEY_INFO: ApiKeyInfo = {
   permissions: { manage: 'none', completions: 'write' }
 }
 
+const TODAY_KEY = new Date().toISOString().slice(0, 10)
+
+const EMPTY_USAGE: UsageResponse = { usage: {} }
+
 const USAGE: UsageResponse = {
   usage: {
-    '2026-08-01': {
+    [TODAY_KEY]: {
+      spend: 8,
       grouped_data: [
         {
           group_by_values: { model_used: 'openai/gpt-5' },
@@ -43,7 +48,7 @@ function createStore(opts: {
     apiKey: 'sk-test',
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
-    fetchUsage: () => opts.fetchUsage?.() ?? Promise.resolve(USAGE),
+    fetchUsage: (key, _query) => opts.fetchUsage?.() ?? Promise.resolve(_query?.end ? EMPTY_USAGE : USAGE),
     activeSession: opts.activeSession,
     fetchSessionChildren: opts.fetchSessionChildren,
     onRender: opts.onRender
@@ -64,11 +69,12 @@ describe('createRequestyStore', () => {
     assert.equal(data!.models.length, 1)
     assert.equal(data!.models[0].model, 'openai/gpt-5')
     assert.equal(data!.monthSpendFromUsage, 8)
-    assert.equal(data!.todaySpend, 0)
+    assert.equal(data!.todaySpend, 8)
     assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
+    // avg7d/avg30d and the 7d token window exclude today.
     assert.equal(data!.avg7d, avgSpendLastNDays(USAGE, 7))
     assert.equal(data!.avg30d, avgSpendLastNDays(USAGE, 30))
-    assert.deepEqual(data!.todayTokens, { input: 0, output: 0, total: 0 })
+    assert.deepEqual(data!.todayTokens, { input: 100, output: 50, total: 150 })
     assert.deepEqual(data!.dailyAvgTokens, {
       input: dailyAverage(data!.models.reduce((sum, model) => sum + model.inputTokens, 0)),
       output: dailyAverage(data!.models.reduce((sum, model) => sum + model.outputTokens, 0)),
