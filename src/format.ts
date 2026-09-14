@@ -1,9 +1,8 @@
 /** Shared formatting helpers for the Requesty widget and dialog. */
 
-/** Format a USD amount truncated (not rounded) to 2 decimal places. */
+/** Format a USD amount rounded to 2 decimal places. */
 export function formatUsd(amount: number): string {
-  const truncated = Math.trunc(amount * 100) / 100
-  return `$${truncated.toFixed(2)}`
+  return `$${amount.toFixed(2)}`
 }
 
 /** Spend/limit ratio; 0 when there is no limit (limit <= 0 means unlimited). */

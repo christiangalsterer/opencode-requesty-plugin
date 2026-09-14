@@ -323,14 +323,13 @@ describe('avgSpendLastNDays', () => {
 })
 
 describe('format helpers', () => {
-  test('formatUsd truncates to 2 digits', () => {
-    assert.equal(formatUsd(123.456), '$123.45')
-    assert.equal(formatUsd(12.345), '$12.34') // truncated, not rounded
-    assert.equal(formatUsd(12.349), '$12.34')
+  test('formatUsd rounds to 2 digits', () => {
+    assert.equal(formatUsd(123.456), '$123.46')
+    assert.equal(formatUsd(12.345), '$12.35') // rounded, not truncated
     assert.equal(formatUsd(0.5), '$0.50')
     assert.equal(formatUsd(0.001), '$0.00')
     assert.equal(formatUsd(8), '$8.00')
-    assert.equal(formatUsd(18.21894606), '$18.21')
+    assert.equal(formatUsd(18.21894606), '$18.22')
   })
 
   test('formatTimestamp renders a locale string with spaces', () => {
@@ -361,7 +360,7 @@ describe('format helpers', () => {
     assert.equal(formatLimit(0), 'unlimited')
     assert.equal(formatLimit(-5), 'unlimited')
     assert.equal(formatLimit(100), '$100.00')
-    assert.equal(formatLimit(18.21894606), '$18.21') // truncated like formatUsd
+    assert.equal(formatLimit(18.21894606), '$18.22') // rounded like formatUsd
   })
 
   test('renderBar', () => {
@@ -507,7 +506,7 @@ describe('month projection', () => {
   test('formatProjection renders `~$X EOM <marker>`', () => {
     // limit 100, spend 60 → over pace; (60/15)*31 = 124.0
     assert.equal(formatProjection(60, 100, aug15), `~${formatUsd((60 / 15) * 31)} EOM ↑`)
-    // limit 100, spend 10 → under pace; (10/15)*31 = 20.6666… → truncated to $20.66
+    // limit 100, spend 10 → under pace; (10/15)*31 = 20.6666… → rounds to $20.67
     assert.equal(formatProjection(10, 100, aug15), `~${formatUsd((10 / 15) * 31)} EOM ↓`)
   })
 
@@ -520,10 +519,10 @@ describe('month projection', () => {
     assert.equal(formatProjection(0, 100, aug15), '')
   })
 
-  test('formatProjection truncates (not rounds) to 2 decimals', () => {
-    // spend 7, day 15, days 31 → (7/15)*31 = 14.4666…
+  test('formatProjection rounds (not truncates) to 2 decimals', () => {
+    // spend 7, day 15, days 31 → (7/15)*31 = 14.4666… → rounds to $14.47
     const result = formatProjection(7, 0, aug15)
-    assert.ok(result.startsWith('~$14.46 EOM'), `expected ~$14.46 EOM…, got ${result}`)
+    assert.ok(result.startsWith('~$14.47 EOM'), `expected ~$14.47 EOM…, got ${result}`)
   })
 
   test('formatProjectionParts returns projected amount and pace arrow', () => {
