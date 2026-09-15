@@ -4,14 +4,14 @@
       "type": "stdio",
       "command": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
       "args": [
-        "/Users/cgalsterer/.vscode/extensions/altimateai.vscode-altimate-mcp-server-0.8.12-darwin-arm64/dist/datamate-cli.js",
+        "/Users/cgalsterer/.vscode/extensions/altimateai.vscode-altimate-mcp-server-0.9.1-darwin-arm64/dist/datamate-cli.js",
         "start-stdio"
       ],
       "env": {
-        "ALTIMATE_EXTENSION_RPC": "/var/folders/r7/pgytq9rj3bs0gsn35qt6svdc0000gn/T/altimate-mcp-68060.sock",
+        "ALTIMATE_EXTENSION_RPC": "/var/folders/r7/pgytq9rj3bs0gsn35qt6svdc0000gn/T/altimate-mcp-61540.sock",
         "ELECTRON_RUN_AS_NODE": "1"
       },
-      "updatedAt": "2026-08-27T16:49:30.950Z"
+      "updatedAt": "2026-09-15T13:18:01.875Z"
     }
   }
 }

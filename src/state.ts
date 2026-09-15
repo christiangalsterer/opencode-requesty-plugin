@@ -55,6 +55,27 @@ export type RequestyData = {
 /** The active session to attribute cost to. `created` is an epoch-ms timestamp. */
 export type ActiveSession = { id: string; created: number | undefined }
 
+/**
+ * The session-specific slice of `RequestyData`, cached per session id so a
+ * revisited session can render its figures immediately (the sidebar cannot
+ * repaint on a plugin-owned refresh completion).
+ */
+type SessionSnapshot = Pick<
+  RequestyData,
+  | 'sessionTodaySpend'
+  | 'sessionTotalSpend'
+  | 'sessionTodayRequests'
+  | 'sessionTotalRequests'
+  | 'sessionTodayTokens'
+  | 'sessionTotalTokens'
+  | 'sessionStartLabel'
+  | 'sessionId'
+  | 'subagentCount'
+>
+
+/** Maximum number of per-session snapshots retained (oldest evicted first). */
+const SESSION_CACHE_LIMIT = 50
+
 export type RequestyStoreOptions = {
   apiKey: string
   onError?: (message: string) => void
@@ -100,11 +121,31 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   let inFlight: Promise<void> | undefined
   let pending = false
 
+  /** Per-session snapshots, keyed by session id; refreshed on every session-aware refresh. */
+  const sessionCache = new Map<string, SessionSnapshot>()
+
+  function cacheSessionSnapshot(snapshot: SessionSnapshot): void {
+    if (!snapshot.sessionId) return
+    sessionCache.delete(snapshot.sessionId)
+    sessionCache.set(snapshot.sessionId, snapshot)
+    while (sessionCache.size > SESSION_CACHE_LIMIT) {
+      const oldest = sessionCache.keys().next().value
+      if (oldest === undefined) break
+      sessionCache.delete(oldest)
+    }
+  }
+
   function setActiveSession(id: string | undefined): void {
     const next = id ? (options.activeSession?.(id) ?? { id, created: undefined }) : undefined
     if (next?.id === session()?.id) return
     setSession(next)
     setVersion((v) => v + 1)
+    // Publish any cached figures for this session synchronously so the current
+    // slot invocation can render them instead of the loading placeholder.
+    const cached = next ? sessionCache.get(next.id) : undefined
+    if (cached) {
+      setData((previous) => (previous ? { ...previous, ...cached } : previous))
+    }
     void refresh()
   }
 
@@ -158,23 +199,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           sessionTotal = sessionSpendForSessionIds(sessionUsage, sessionIds)
         }
 
-        setData({
-          keyInfo,
-          models: aggregated.models,
-          monthSpendFromUsage: aggregated.spend,
-          todaySpend: spendForDay(usage),
-          dailyAvg: dailyAverage(keyInfo.monthly_spend),
-          avg7d: avgSpendLastNDays(usage, 7),
-          avg30d: avgSpendLastNDays(usage, 30),
-          todayTokens: tokensForDay(usage),
-          dailyAvgTokens: {
-            input: dailyAverage(aggregated.inputTokens),
-            output: dailyAverage(aggregated.outputTokens),
-            total: dailyAverage(aggregated.totalTokens)
-          },
-          avg7dTokens: avgTokensLastNDays(usage, 7),
-          avg30dTokens: avgTokensLastNDays(usage, 30),
-          lastMonthSpend,
+        const snapshot: SessionSnapshot = {
           sessionTodaySpend: sessionToday.spend,
           sessionTotalSpend: sessionTotal.spend,
           sessionTodayRequests: sessionToday.requests,
@@ -192,6 +217,27 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           sessionStartLabel,
           sessionId: active?.id,
           subagentCount
+        }
+        cacheSessionSnapshot(snapshot)
+
+        setData({
+          keyInfo,
+          models: aggregated.models,
+          monthSpendFromUsage: aggregated.spend,
+          todaySpend: spendForDay(usage),
+          dailyAvg: dailyAverage(keyInfo.monthly_spend),
+          avg7d: avgSpendLastNDays(usage, 7),
+          avg30d: avgSpendLastNDays(usage, 30),
+          todayTokens: tokensForDay(usage),
+          dailyAvgTokens: {
+            input: dailyAverage(aggregated.inputTokens),
+            output: dailyAverage(aggregated.outputTokens),
+            total: dailyAverage(aggregated.totalTokens)
+          },
+          avg7dTokens: avgTokensLastNDays(usage, 7),
+          avg30dTokens: avgTokensLastNDays(usage, 30),
+          lastMonthSpend,
+          ...snapshot
         })
         setVersion((v) => v + 1)
         options.onRender?.()

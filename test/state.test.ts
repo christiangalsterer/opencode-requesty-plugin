@@ -469,6 +469,66 @@ describe('createRequestyStore', () => {
     assert.equal(store.version(), afterChange)
   })
 
+  test('setSessionID publishes cached session figures immediately on revisit', async () => {
+    const sessionA = 'ses_a'
+    const sessionB = 'ses_b'
+    const now = new Date()
+    const created = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12)
+    const todayKey = new Date(created).toISOString().slice(0, 10)
+    const sessionUsage = {
+      usage: {
+        [todayKey]: {
+          grouped_data: [
+            {
+              group_by_values: { 'extra.X-Session-Affinity': sessionA },
+              spend: '1.20',
+              completions_requests: 4,
+              input_tokens: 40,
+              output_tokens: 20
+            }
+          ]
+        }
+      }
+    } as unknown as UsageResponse
+    const store = createStore({
+      activeSession: (id) => ({ id, created }),
+      fetchUsage: () => Promise.resolve(sessionUsage)
+    })
+
+    // Load session A so its snapshot lands in the cache.
+    store.setSessionID(sessionA)
+    await store.refresh()
+    assert.equal(store.data()!.sessionId, sessionA)
+    assert.equal(store.data()!.sessionTotalSpend, 1.2)
+
+    // Switch to an uncached session B → stale id, still loading.
+    store.setSessionID(sessionB)
+    assert.equal(store.data()!.sessionId, sessionA)
+
+    // Revisit A → cached figures published synchronously, before any refresh resolves.
+    store.setSessionID(sessionA)
+    assert.equal(store.data()!.sessionId, sessionA)
+    assert.equal(store.data()!.sessionTotalSpend, 1.2)
+  })
+
+  test('an uncached session keeps the stale session id until its refresh resolves', async () => {
+    const sessionA = 'ses_a'
+    const sessionB = 'ses_b'
+    const store = createStore({
+      activeSession: (id) => ({ id, created: undefined })
+    })
+    await store.refresh()
+    store.setSessionID(sessionA)
+    await store.refresh()
+    assert.equal(store.data()!.sessionId, sessionA)
+
+    // B has never been fetched → no cached snapshot, so the id stays stale.
+    store.setSessionID(sessionB)
+    assert.equal(store.data()!.sessionId, sessionA)
+    await store.refresh()
+    assert.equal(store.data()!.sessionId, sessionB)
+  })
+
   test('folds descendant sub-agent cost into the session totals', async () => {
     const sessionId = 'ses_test'
     const childId = 'ses_child'
