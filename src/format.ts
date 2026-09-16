@@ -31,7 +31,7 @@ export function formatPercent(ratio: number): string {
  * ↑ = input tokens (into the model), ↓ = output tokens (from the model).
  */
 export function formatTokenBreakdown(inputTokens: number, outputTokens: number): string {
-  return `(↑${formatTokens(inputTokens)} ↓${formatTokens(outputTokens)})`
+  return `(${formatTokenInline(inputTokens, outputTokens)})`
 }
 
 /**
@@ -168,6 +168,20 @@ export function paceMarker(pace: Pace | undefined): string {
   return ''
 }
 
+/** Theme subset used to map a pace to a color. Structural type keeps format.ts free of plugin SDK imports. */
+export type PaceTheme = {
+  error: unknown
+  success: unknown
+  textMuted: unknown
+}
+
+/** Map a pace to the matching theme color: over → error, under → success, else muted. */
+export function paceColor<T extends PaceTheme>(pace: Pace | undefined, theme: T): T['error'] {
+  if (pace === 'over') return theme.error
+  if (pace === 'under') return theme.success as T['error']
+  return theme.textMuted as T['error']
+}
+
 export type ProjectionParts = {
   projected: number
   arrow: string
@@ -184,17 +198,6 @@ export function formatProjectionParts(spend: number, limit: number, date = new D
   const projected = projectedMonthEnd(spend, date)
   const pace = paceStatus(spend, limit, date)
   return { projected, arrow: paceMarker(pace), pace }
-}
-
-/**
- * One-line projection for the sidebar, e.g. "~$42.80 EOM ↑".
- * Empty string when there is no spend to project from (spend <= 0).
- * The pace marker is omitted when the limit is unlimited.
- */
-export function formatProjection(spend: number, limit: number, date = new Date()): string {
-  const parts = formatProjectionParts(spend, limit, date)
-  if (!parts) return ''
-  return parts.arrow ? `~${formatUsd(parts.projected)} EOM ${parts.arrow}` : `~${formatUsd(parts.projected)} EOM`
 }
 
 export type MonthDeltaParts = {
@@ -215,17 +218,6 @@ export function formatMonthDeltaParts(currentSpend: number, lastMonthSpend: numb
   const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '→'
   const sign = pct > 0 ? '+' : ''
   return { arrow, sign, pct }
-}
-
-/**
- * Format a month-over-month delta, e.g. "▲ +42% ($8.80 last month)".
- * Compares projected month-end spend to last month's total.
- * Returns empty string when last month had no spend or no current spend to project from.
- */
-export function formatMonthDelta(currentSpend: number, lastMonthSpend: number, date = new Date()): string {
-  const parts = formatMonthDeltaParts(currentSpend, lastMonthSpend, date)
-  if (!parts) return ''
-  return `${parts.arrow} ${parts.sign}${parts.pct}% (${formatUsd(lastMonthSpend)} last month)`
 }
 
 /** Requesty.ai analytics dashboard URL filtered to a specific API key name. */

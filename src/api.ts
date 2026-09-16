@@ -159,24 +159,24 @@ export function aggregateByModel(response: UsageResponse): AggregatedUsage {
       const raw = group.group_by_values?.model_used ?? group.group_by_values?.model_requested ?? 'unknown'
       const model = typeof raw === 'string' && raw.length > 0 ? raw : 'unknown'
 
-      const s = toNumber(group.spend, 'spend')
-      const i = toNumber(group.input_tokens, 'input_tokens')
-      const o = toNumber(group.output_tokens, 'output_tokens')
-      const t = toNumber(group.total_tokens, 'total_tokens')
-      const r = toNumber(group.completions_requests, 'completions_requests')
+      const spend = toNumber(group.spend, 'spend')
+      const input = toNumber(group.input_tokens, 'input_tokens')
+      const output = toNumber(group.output_tokens, 'output_tokens')
+      const total = toNumber(group.total_tokens, 'total_tokens')
+      const requests = toNumber(group.completions_requests, 'completions_requests')
 
       const current = byModel.get(model) ?? { model, spend: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0, requests: 0 }
-      current.spend += s
-      current.inputTokens += i
-      current.outputTokens += o
-      current.totalTokens += t
-      current.requests += r
+      current.spend += spend
+      current.inputTokens += input
+      current.outputTokens += output
+      current.totalTokens += total
+      current.requests += requests
       byModel.set(model, current)
 
-      totals.spend += s
-      totals.inputTokens += i
-      totals.outputTokens += o
-      totals.totalTokens += t
+      totals.spend += spend
+      totals.inputTokens += input
+      totals.outputTokens += output
+      totals.totalTokens += total
     }
   }
   return {
@@ -192,11 +192,6 @@ export function totalSpendFromUsage(response: UsageResponse): number {
     total += toNumber(entry.spend, 'spend')
   }
   return total
-}
-
-/** RFC3339 timestamp for the start of the current calendar month (UTC). */
-export function startOfCurrentMonth(now = new Date()): string {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
 }
 
 /** RFC3339 timestamp for the start of the previous calendar month (UTC). */
@@ -243,6 +238,15 @@ export function spendForDay(response: UsageResponse, now = new Date()): number {
   return toNumber(entry.spend, 'spend')
 }
 
+/** Invoke `fn` for each of the `days` completed calendar days before `now` (excluding today). */
+function forEachPreviousDay(now: Date, days: number, fn: (date: Date) => void): void {
+  for (let offset = 1; offset <= days; offset++) {
+    const date = new Date(now)
+    date.setUTCDate(date.getUTCDate() - offset)
+    fn(date)
+  }
+}
+
 /**
  * Average daily spend over the last `days` completed calendar days (excluding today).
  * Days with no usage entry count as 0. Returns 0 when `days` <= 0.
@@ -250,11 +254,9 @@ export function spendForDay(response: UsageResponse, now = new Date()): number {
 export function avgSpendLastNDays(response: UsageResponse, days: number, now = new Date()): number {
   if (days <= 0) return 0
   let total = 0
-  for (let offset = 1; offset <= days; offset++) {
-    const date = new Date(now)
-    date.setUTCDate(date.getUTCDate() - offset)
+  forEachPreviousDay(now, days, (date) => {
     total += spendForDay(response, date)
-  }
+  })
   return total / days
 }
 
@@ -291,14 +293,12 @@ export function tokensForDay(response: UsageResponse, now = new Date()): TokenBr
 export function avgTokensLastNDays(response: UsageResponse, days: number, now = new Date()): TokenBreakdown {
   if (days <= 0) return { input: 0, output: 0, total: 0 }
   const totals: TokenBreakdown = { input: 0, output: 0, total: 0 }
-  for (let offset = 1; offset <= days; offset++) {
-    const date = new Date(now)
-    date.setUTCDate(date.getUTCDate() - offset)
+  forEachPreviousDay(now, days, (date) => {
     const day = tokensForDay(response, date)
     totals.input += day.input
     totals.output += day.output
     totals.total += day.total
-  }
+  })
   return {
     input: totals.input / days,
     output: totals.output / days,
@@ -321,6 +321,28 @@ function sessionGroupValue(group: UsageGroupedEntry, sessionIds: ReadonlySet<str
   return sessionIds.has(group.group_by_values?.[SESSION_AFFINITY_KEY] as string)
 }
 
+/** An empty session aggregate (all zeros). */
+export function emptySessionSpend(): SessionSpend {
+  return { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
+}
+
+/** Convert a session aggregate to a token breakdown (total = input + output). */
+export function sessionSpendTokens(session: SessionSpend): TokenBreakdown {
+  return { input: session.inputTokens, output: session.outputTokens, total: session.inputTokens + session.outputTokens }
+}
+
+/** Fold matching rows of a single day's `grouped_data` into `total`. */
+function accumulateSessionGroups(groups: readonly UsageGroupedEntry[], sessionIds: ReadonlySet<string>, total: SessionSpend): SessionSpend {
+  for (const group of groups) {
+    if (!sessionGroupValue(group, sessionIds)) continue
+    total.spend += toNumber(group.spend, 'spend')
+    total.requests += toNumber(group.completions_requests, 'completions_requests')
+    total.inputTokens += toNumber(group.input_tokens, 'input_tokens')
+    total.outputTokens += toNumber(group.output_tokens, 'output_tokens')
+  }
+  return total
+}
+
 /**
  * Sum spend/tokens/requests for a set of session-affinity ids across every day
  * in a usage response, matching rows whose
@@ -328,15 +350,9 @@ function sessionGroupValue(group: UsageGroupedEntry, sessionIds: ReadonlySet<str
  * id can be passed as `new Set([id])`. Returns zeros when no rows match.
  */
 export function sessionSpendForSessionIds(response: UsageResponse, sessionIds: ReadonlySet<string>): SessionSpend {
-  const total: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
+  let total = emptySessionSpend()
   for (const entry of Object.values(response.usage ?? {})) {
-    for (const group of entry.grouped_data ?? []) {
-      if (!sessionGroupValue(group, sessionIds)) continue
-      total.spend += toNumber(group.spend, 'spend')
-      total.requests += toNumber(group.completions_requests, 'completions_requests')
-      total.inputTokens += toNumber(group.input_tokens, 'input_tokens')
-      total.outputTokens += toNumber(group.output_tokens, 'output_tokens')
-    }
+    total = accumulateSessionGroups(entry.grouped_data ?? [], sessionIds, total)
   }
   return total
 }
@@ -347,36 +363,7 @@ export function sessionSpendForSessionIds(response: UsageResponse, sessionIds: R
  * has no row that day.
  */
 export function sessionSpendForSessionIdsForDay(response: UsageResponse, sessionIds: ReadonlySet<string>, now = new Date()): SessionSpend {
-  const key = dayKey(now)
-  const entry = response.usage?.[key]
-  if (!entry) return { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
-  let spend = 0
-  let requests = 0
-  let inputTokens = 0
-  let outputTokens = 0
-  for (const group of entry.grouped_data ?? []) {
-    if (!sessionGroupValue(group, sessionIds)) continue
-    spend += toNumber(group.spend, 'spend')
-    requests += toNumber(group.completions_requests, 'completions_requests')
-    inputTokens += toNumber(group.input_tokens, 'input_tokens')
-    outputTokens += toNumber(group.output_tokens, 'output_tokens')
-  }
-  return { spend, requests, inputTokens, outputTokens }
-}
-
-/**
- * Sum spend/tokens/requests for a session across every day in a usage response,
- * matching rows whose `group_by_values[SESSION_AFFINITY_KEY]` equals `sessionId`.
- * Returns zeros when the session has no rows.
- */
-export function sessionSpendFromResponse(response: UsageResponse, sessionId: string): SessionSpend {
-  return sessionSpendForSessionIds(response, new Set([sessionId]))
-}
-
-/**
- * Sum spend/tokens/requests for a session on the day matching `dayKey(now)`
- * (defaults to today, UTC). Returns zeros when the session has no row that day.
- */
-export function sessionSpendForDay(response: UsageResponse, sessionId: string, now = new Date()): SessionSpend {
-  return sessionSpendForSessionIdsForDay(response, new Set([sessionId]), now)
+  const entry = response.usage?.[dayKey(now)]
+  if (!entry) return emptySessionSpend()
+  return accumulateSessionGroups(entry.grouped_data ?? [], sessionIds, emptySessionSpend())
 }

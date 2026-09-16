@@ -14,13 +14,13 @@ import {
   isProjectionOverLimit,
   padEnd,
   padStart,
+  paceColor,
   renderBar,
   shortModel,
   spendRatio,
   spendSeverity,
   severityColor,
   sessionRepaintKey,
-  type Pace,
   type SpendThresholds
 } from './format'
 
@@ -57,12 +57,6 @@ export type PromptIndicatorProps = {
   monthlyProjection: boolean
 }
 
-function paceColor(pace: Pace | undefined, theme: TuiThemeCurrent) {
-  if (pace === 'over') return theme.error
-  if (pace === 'under') return theme.success
-  return theme.textMuted
-}
-
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   const theme = () => props.theme
   const snapshot = createMemo(() => ({
@@ -74,6 +68,15 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     repaintKey: sessionRepaintKey(props.api.state.session.messages(props.sessionID)),
     version: props.store.version()
   }))
+  const snapshotProps = (stale?: boolean) => ({
+    store: props.store,
+    theme: theme(),
+    maxModels: props.maxModels,
+    thresholds: props.thresholds,
+    showTokens: props.showTokens,
+    showSessionInfo: props.showSessionInfo,
+    stale
+  })
 
   return (
     <box flexDirection="column" paddingTop={1}>
@@ -89,19 +92,9 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
           when={props.store.state().status !== 'error'}
           fallback={
             <box flexDirection="column">
-              <text fg={theme().error}>
-                Requesty: {props.store.state().status === 'error' ? (props.store.state() as { message: string }).message : ''}
-              </text>
+              <text fg={theme().error}>Requesty: {props.store.errorMessage() ?? ''}</text>
               <Show when={snapshot().data}>
-                <Snapshot
-                  store={props.store}
-                  theme={theme()}
-                  maxModels={props.maxModels}
-                  thresholds={props.thresholds}
-                  showTokens={props.showTokens}
-                  showSessionInfo={props.showSessionInfo}
-                  stale
-                />
+                <Snapshot {...snapshotProps(true)} />
               </Show>
             </box>
           }
@@ -114,14 +107,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
               </text>
             }
           >
-            <Snapshot
-              store={props.store}
-              theme={theme()}
-              maxModels={props.maxModels}
-              thresholds={props.thresholds}
-              showTokens={props.showTokens}
-              showSessionInfo={props.showSessionInfo}
-            />
+            <Snapshot {...snapshotProps()} />
           </Show>
         </Show>
       </box>
@@ -144,9 +130,17 @@ function Snapshot(props: SnapshotProps): JSX.Element {
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
+  const severity = () => spendSeverity(ratio(), props.thresholds)
+  const barColor = () => severityColor(severity(), props.theme)
   const models = () => data().models.slice(0, props.maxModels)
   const projectionParts = () => formatProjectionParts(spend(), limit())
   const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
+  const spendRows = () => [
+    { label: 'Today', spend: data().todaySpend, tokens: data().todayTokens },
+    { label: 'Daily avg', spend: data().dailyAverage, tokens: data().dailyAverageTokens },
+    { label: '7d avg', spend: data().avg7d, tokens: data().avg7dTokens },
+    { label: '30d avg', spend: data().avg30d, tokens: data().avg30dTokens }
+  ]
   const [expanded, setExpanded] = createSignal(true)
   const [sessionExpanded, setSessionExpanded] = createSignal(true)
   const activeSessionId = () => props.store.activeSessionID()
@@ -157,8 +151,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
       <box flexDirection="column" paddingRight={1}>
         <Show when={limit() > 0}>
           <box flexDirection="row" justifyContent="space-between" alignItems="center">
-            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>{renderBar(ratio(), 24)}</text>
-            <text fg={severityColor(spendSeverity(ratio(), props.thresholds), props.theme)}>{formatPercent(ratio())}</text>
+            <text fg={barColor()}>{renderBar(ratio(), 24)}</text>
+            <text fg={barColor()}>{formatPercent(ratio())}</text>
           </box>
         </Show>
         <box flexDirection="row" justifyContent="space-between">
@@ -190,37 +184,23 @@ function Snapshot(props: SnapshotProps): JSX.Element {
                 <text fg={props.theme.textMuted}>7d {formatUsd(data().avg7d)}</text>
               </box>
               <box flexDirection="row" justifyContent="space-between">
-                <text fg={props.theme.textMuted}>Daily {formatUsd(data().dailyAvg)}</text>
+                <text fg={props.theme.textMuted}>Daily {formatUsd(data().dailyAverage)}</text>
                 <text fg={props.theme.textMuted}>30d {formatUsd(data().avg30d)}</text>
               </box>
             </box>
           }
         >
           <box flexDirection="column" gap={0}>
-            <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>
-                {padEnd('Today', 9)} {padStart(formatUsd(data().todaySpend), 10)}
-              </text>
-              <text fg={props.theme.textMuted}>{formatTokenInline(data().todayTokens.input, data().todayTokens.output)}</text>
-            </box>
-            <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>
-                {padEnd('Daily avg', 9)} {padStart(formatUsd(data().dailyAvg), 10)}
-              </text>
-              <text fg={props.theme.textMuted}>{formatTokenInline(data().dailyAvgTokens.input, data().dailyAvgTokens.output)}</text>
-            </box>
-            <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>
-                {padEnd('7d avg', 9)} {padStart(formatUsd(data().avg7d), 10)}
-              </text>
-              <text fg={props.theme.textMuted}>{formatTokenInline(data().avg7dTokens.input, data().avg7dTokens.output)}</text>
-            </box>
-            <box flexDirection="row" justifyContent="space-between">
-              <text fg={props.theme.textMuted}>
-                {padEnd('30d avg', 9)} {padStart(formatUsd(data().avg30d), 10)}
-              </text>
-              <text fg={props.theme.textMuted}>{formatTokenInline(data().avg30dTokens.input, data().avg30dTokens.output)}</text>
-            </box>
+            <For each={spendRows()}>
+              {(row) => (
+                <box flexDirection="row" justifyContent="space-between">
+                  <text fg={props.theme.textMuted}>
+                    {padEnd(row.label, 9)} {padStart(formatUsd(row.spend), 10)}
+                  </text>
+                  <text fg={props.theme.textMuted}>{formatTokenInline(row.tokens.input, row.tokens.output)}</text>
+                </box>
+              )}
+            </For>
           </box>
         </Show>
       </box>
@@ -314,46 +294,42 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     props.store.version()
     sessionRepaintKey(props.api.state.session.messages(props.sessionID))
 
-    const d = props.store.data()
+    const data = props.store.data()
     const status = props.store.state().status
-    const limit = d?.keyInfo.monthly_limit ?? 0
-    const spend = d?.keyInfo.monthly_spend ?? 0
+    const limit = data?.keyInfo.monthly_limit ?? 0
+    const spend = data?.keyInfo.monthly_spend ?? 0
     const ratio = spendRatio(spend, limit)
-    const name = d?.keyInfo.name ?? ''
-    const color = !d || limit <= 0 ? props.theme.textMuted : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
+    const name = data?.keyInfo.name ?? ''
+    const color = !data || limit <= 0 ? props.theme.textMuted : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
     const projectionParts = formatProjectionParts(spend, limit)
     const projectionOverLimit = isProjectionOverLimit(spend, limit)
 
     const parts: { text: string; color?: unknown; href?: string }[] = []
-    if (d) {
+    if (data) {
       const metrics: string[] = []
-      if (props.showSessionInfo && d.sessionId === props.store.activeSessionID() && d.sessionTotalSpend > 0) {
-        let label = `S ${formatUsd(d.sessionTotalSpend)}`
+      if (props.showSessionInfo && data.sessionId === props.store.activeSessionID() && data.sessionTotalSpend > 0) {
+        let label = `S ${formatUsd(data.sessionTotalSpend)}`
         if (props.showTokens) {
-          label += ` ${formatTokenInline(d.sessionTotalTokens.input, d.sessionTotalTokens.output)}`
+          label += ` ${formatTokenInline(data.sessionTotalTokens.input, data.sessionTotalTokens.output)}`
         }
         metrics.push(label)
       }
       if (props.todaySpend) {
-        let label = `T ${formatUsd(d.todaySpend)}`
+        let label = `T ${formatUsd(data.todaySpend)}`
         if (props.showTokens) {
-          label += ` ${formatTokenInline(d.todayTokens.input, d.todayTokens.output)}`
+          label += ` ${formatTokenInline(data.todayTokens.input, data.todayTokens.output)}`
         }
         metrics.push(label)
       }
-      if (props.dailyAvg) metrics.push(`D ${formatUsd(d.dailyAvg)}`)
-      if (props.avg7d) metrics.push(`7d ${formatUsd(d.avg7d)}`)
-      if (props.avg30d) metrics.push(`30d ${formatUsd(d.avg30d)}`)
+      if (props.dailyAvg) metrics.push(`D ${formatUsd(data.dailyAverage)}`)
+      if (props.avg7d) metrics.push(`7d ${formatUsd(data.avg7d)}`)
+      if (props.avg30d) metrics.push(`30d ${formatUsd(data.avg30d)}`)
       if (metrics.length > 0) {
         parts.push({ text: `${metrics.join(' · ')} `, color: props.theme.textMuted })
       }
     }
-    if (status === 'loading' && !d) {
-      parts.push({ text: 'Requesty …', color: props.theme.textMuted })
-    } else if (status === 'error' && !d) {
-      parts.push({ text: 'Requesty !', color: props.theme.textMuted })
-    } else if (!d) {
-      parts.push({ text: 'Requesty …', color: props.theme.textMuted })
+    if (!data) {
+      parts.push({ text: status === 'error' ? 'Requesty !' : 'Requesty …', color: props.theme.textMuted })
     } else {
       const label =
         limit > 0

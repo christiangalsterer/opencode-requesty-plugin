@@ -35,7 +35,7 @@ function resolveValue(raw: unknown): string | undefined {
   return raw.trim()
 }
 
-function isRequestyProvider(provider: ProviderConfig, name: string): boolean {
+function isRequestyProvider(provider: ProviderConfig): boolean {
   const baseURL = provider.options?.baseURL
   if (typeof baseURL !== 'string') return false
   try {
@@ -52,7 +52,7 @@ function fromConfig(config: SdkConfigLike | undefined): { apiKey: string; provid
   const names = Object.keys(providers).sort((a, b) => (a === 'requesty' ? -1 : b === 'requesty' ? 1 : a.localeCompare(b)))
   for (const name of names) {
     const provider = providers[name]
-    if (!isRequestyProvider(provider, name)) continue
+    if (!isRequestyProvider(provider)) continue
     const apiKey = resolveValue(provider.options?.apiKey)
     if (apiKey) return { apiKey, providerName: name }
   }

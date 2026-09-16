@@ -4,14 +4,13 @@ import {
   aggregateByModel,
   avgSpendLastNDays,
   dayKey,
+  emptySessionSpend,
   endOfLastMonth,
   filterUsageByMonth,
-  sessionSpendForDay,
   sessionSpendForSessionIds,
   sessionSpendForSessionIdsForDay,
-  sessionSpendFromResponse,
+  sessionSpendTokens,
   spendForDay,
-  startOfCurrentMonth,
   startOfLastMonth,
   startOfRollingWindow,
   totalSpendFromUsage,
@@ -25,10 +24,8 @@ import {
   daysRemaining,
   daysToExhaustion,
   formatLimit,
-  formatMonthDelta,
   formatMonthDeltaParts,
   formatOutputInputRatio,
-  formatProjection,
   formatProjectionParts,
   formatSessionStart,
   formatTimestamp,
@@ -184,13 +181,6 @@ describe('aggregateByModel', () => {
     const aggregated = aggregateByModel(response)
     const models = aggregated.models
     assert.equal(models.length, 0)
-  })
-})
-
-describe('startOfCurrentMonth', () => {
-  test('returns first day of month in UTC', () => {
-    const now = new Date('2026-08-09T15:30:00Z')
-    assert.equal(startOfCurrentMonth(now), '2026-08-01T00:00:00.000Z')
   })
 })
 
@@ -503,28 +493,6 @@ describe('month projection', () => {
     assert.equal(paceMarker(undefined), '')
   })
 
-  test('formatProjection renders `~$X EOM <marker>`', () => {
-    // limit 100, spend 60 → over pace; (60/15)*31 = 124.0
-    assert.equal(formatProjection(60, 100, aug15), `~${formatUsd((60 / 15) * 31)} EOM ↑`)
-    // limit 100, spend 10 → under pace; (10/15)*31 = 20.6666… → rounds to $20.67
-    assert.equal(formatProjection(10, 100, aug15), `~${formatUsd((10 / 15) * 31)} EOM ↓`)
-  })
-
-  test('formatProjection omits marker when limit is unlimited', () => {
-    // (30/15)*31 = 62.0
-    assert.equal(formatProjection(30, 0, aug15), `~${formatUsd((30 / 15) * 31)} EOM`)
-  })
-
-  test('formatProjection is empty when there is no spend', () => {
-    assert.equal(formatProjection(0, 100, aug15), '')
-  })
-
-  test('formatProjection rounds (not truncates) to 2 decimals', () => {
-    // spend 7, day 15, days 31 → (7/15)*31 = 14.4666… → rounds to $14.47
-    const result = formatProjection(7, 0, aug15)
-    assert.ok(result.startsWith('~$14.47 EOM'), `expected ~$14.47 EOM…, got ${result}`)
-  })
-
   test('formatProjectionParts returns projected amount and pace arrow', () => {
     assert.deepEqual(formatProjectionParts(60, 100, aug15), { projected: (60 / 15) * 31, arrow: '↑', pace: 'over' })
     assert.deepEqual(formatProjectionParts(10, 100, aug15), { projected: (10 / 15) * 31, arrow: '↓', pace: 'under' })
@@ -557,21 +525,6 @@ describe('month projection', () => {
   test('daysToExhaustion returns undefined for unlimited or no average', () => {
     assert.equal(daysToExhaustion(30, 0, 2), undefined)
     assert.equal(daysToExhaustion(30, 100, 0), undefined)
-  })
-
-  test('formatMonthDelta compares projected spend to last month', () => {
-    // current spend 15 (projected 31), last month 10 → +210%
-    assert.equal(formatMonthDelta(15, 10, aug15), `▲ +210% ($10.00 last month)`)
-    // current spend 3 (projected 6.2), last month 20 → -69%
-    assert.equal(formatMonthDelta(3, 20, aug15), `▼ -69% ($20.00 last month)`)
-    // same projected as last month → →
-    // current spend 10 (projected 20.666…), last month ~20.67 → 0%
-    assert.equal(formatMonthDelta(10, (10 / 15) * 31, aug15), `→ 0% (${formatUsd((10 / 15) * 31)} last month)`)
-  })
-
-  test('formatMonthDelta is empty when no current or last month spend', () => {
-    assert.equal(formatMonthDelta(0, 10, aug15), '')
-    assert.equal(formatMonthDelta(10, 0, aug15), '')
   })
 
   test('formatMonthDeltaParts returns arrow, sign, and percentage', () => {
@@ -637,79 +590,6 @@ describe('severityColor', () => {
 
   test('critical → error color', () => {
     assert.equal(severityColor('critical', theme), 'red')
-  })
-})
-
-describe('sessionSpendFromResponse', () => {
-  const sessionId = 'ses_abc'
-  const usage = {
-    usage: {
-      '2026-08-26': {
-        grouped_data: [
-          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '1.00', completions_requests: 5, input_tokens: 100, output_tokens: 50 }
-        ]
-      },
-      '2026-08-27': {
-        grouped_data: [
-          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '2.50', completions_requests: 7, input_tokens: 200, output_tokens: 100 },
-          { group_by_values: { [SESSION_AFFINITY_KEY]: 'ses_other' }, spend: '9.00', completions_requests: 1, input_tokens: 10, output_tokens: 10 }
-        ]
-      }
-    }
-  } as unknown as UsageResponse
-
-  test('aggregates matching rows across all days, ignoring other sessions', () => {
-    const result = sessionSpendFromResponse(usage, sessionId)
-    assert.equal(result.spend, 3.5)
-    assert.equal(result.requests, 12)
-    assert.equal(result.inputTokens, 300)
-    assert.equal(result.outputTokens, 150)
-  })
-
-  test('coerces string decimals', () => {
-    assert.equal(sessionSpendFromResponse(usage, sessionId).spend, 3.5)
-  })
-
-  test('returns zeros when no row matches', () => {
-    assert.deepEqual(sessionSpendFromResponse(usage, 'ses_missing'), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
-  })
-
-  test('returns zeros for empty usage', () => {
-    assert.deepEqual(sessionSpendFromResponse({ usage: {} }, sessionId), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
-  })
-})
-
-describe('sessionSpendForDay', () => {
-  const sessionId = 'ses_abc'
-  const now = new Date('2026-08-27T12:00:00Z')
-  const usage = {
-    usage: {
-      '2026-08-27': {
-        grouped_data: [
-          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '2.50', completions_requests: 7, input_tokens: 200, output_tokens: 100 },
-          { group_by_values: { [SESSION_AFFINITY_KEY]: 'ses_other' }, spend: '9.00', completions_requests: 1, input_tokens: 10, output_tokens: 10 }
-        ]
-      },
-      '2026-08-26': {
-        grouped_data: [
-          { group_by_values: { [SESSION_AFFINITY_KEY]: sessionId }, spend: '1.00', completions_requests: 5, input_tokens: 100, output_tokens: 50 }
-        ]
-      }
-    }
-  } as unknown as UsageResponse
-
-  test('sums only the matching session rows for the given day', () => {
-    const result = sessionSpendForDay(usage, sessionId, now)
-    assert.deepEqual(result, { spend: 2.5, requests: 7, inputTokens: 200, outputTokens: 100 })
-  })
-
-  test('returns zeros when the session has no rows that day', () => {
-    const result = sessionSpendForDay(usage, sessionId, new Date('2026-08-25T12:00:00Z'))
-    assert.deepEqual(result, { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
-  })
-
-  test('returns zeros when the day has no entry', () => {
-    assert.deepEqual(sessionSpendForDay({ usage: {} }, sessionId, now), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
   })
 })
 
@@ -793,6 +673,24 @@ describe('sessionSpendForSessionIdsForDay', () => {
       inputTokens: 0,
       outputTokens: 0
     })
+  })
+})
+
+describe('emptySessionSpend / sessionSpendTokens', () => {
+  test('emptySessionSpend is all zeros', () => {
+    assert.deepEqual(emptySessionSpend(), { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 })
+  })
+
+  test('sessionSpendTokens maps input/output and sums the total', () => {
+    assert.deepEqual(sessionSpendTokens({ spend: 3.5, requests: 7, inputTokens: 200, outputTokens: 100 }), {
+      input: 200,
+      output: 100,
+      total: 300
+    })
+  })
+
+  test('sessionSpendTokens is all zeros for an empty aggregate', () => {
+    assert.deepEqual(sessionSpendTokens(emptySessionSpend()), { input: 0, output: 0, total: 0 })
   })
 })
 

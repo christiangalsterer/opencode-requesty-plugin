@@ -68,14 +68,13 @@ describe('createRequestyStore', () => {
     assert.equal(data!.keyInfo.name, 'test-key')
     assert.equal(data!.models.length, 1)
     assert.equal(data!.models[0].model, 'openai/gpt-5')
-    assert.equal(data!.monthSpendFromUsage, 8)
     assert.equal(data!.todaySpend, 8)
-    assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
+    assert.equal(data!.dailyAverage, dailyAverage(KEY_INFO.monthly_spend))
     // avg7d/avg30d and the 7d token window exclude today.
     assert.equal(data!.avg7d, avgSpendLastNDays(USAGE, 7))
     assert.equal(data!.avg30d, avgSpendLastNDays(USAGE, 30))
     assert.deepEqual(data!.todayTokens, { input: 100, output: 50, total: 150 })
-    assert.deepEqual(data!.dailyAvgTokens, {
+    assert.deepEqual(data!.dailyAverageTokens, {
       input: dailyAverage(data!.models.reduce((sum, model) => sum + model.inputTokens, 0)),
       output: dailyAverage(data!.models.reduce((sum, model) => sum + model.outputTokens, 0)),
       total: dailyAverage(data!.models.reduce((sum, model) => sum + model.totalTokens, 0))
@@ -93,6 +92,23 @@ describe('createRequestyStore', () => {
     assert.equal(data!.sessionStartLabel, undefined)
     assert.equal(data!.sessionId, undefined)
     assert.equal(store.activeSessionID(), undefined)
+  })
+
+  test('errorMessage and fetchedAt accessors narrow the refresh state', async () => {
+    const store = createStore({})
+    assert.equal(store.errorMessage(), undefined)
+    assert.equal(store.fetchedAt(), undefined)
+
+    await store.refresh()
+    assert.equal(store.errorMessage(), undefined)
+    assert.ok(store.fetchedAt() instanceof Date)
+  })
+
+  test('errorMessage returns the message when the refresh failed', async () => {
+    const store = createStore({ fetchApiKey: () => Promise.reject(new Error('boom')) })
+    await store.refresh()
+    assert.equal(store.errorMessage(), 'boom')
+    assert.equal(store.fetchedAt(), undefined)
   })
 
   test('error sets state to error and calls onError', async () => {
@@ -197,7 +213,7 @@ describe('createRequestyStore', () => {
     assert.ok(data)
     const todayKey = now.toISOString().slice(0, 10)
     assert.equal(data!.todaySpend, spendByDay.get(todayKey))
-    assert.equal(data!.dailyAvg, dailyAverage(KEY_INFO.monthly_spend))
+    assert.equal(data!.dailyAverage, dailyAverage(KEY_INFO.monthly_spend))
 
     let expected7d = 0
     for (let offset = 1; offset <= 7; offset++) {
@@ -224,7 +240,6 @@ describe('createRequestyStore', () => {
     const expectedMonthSpend = [...spendByDay.entries()]
       .filter(([key]) => key.startsWith(currentMonthPrefix))
       .reduce((sum, [, spend]) => sum + spend, 0)
-    assert.equal(data!.monthSpendFromUsage, expectedMonthSpend)
     assert.equal(
       data!.models.reduce((sum, model) => sum + model.spend, 0),
       expectedMonthSpend
@@ -262,7 +277,7 @@ describe('createRequestyStore', () => {
     const expectedMonthTotalTokens = [...totalTokensByDay.entries()]
       .filter(([key]) => key.startsWith(currentMonthPrefix))
       .reduce((sum, [, tokens]) => sum + tokens, 0)
-    assert.deepEqual(data!.dailyAvgTokens, {
+    assert.deepEqual(data!.dailyAverageTokens, {
       input: dailyAverage(expectedMonthInputTokens),
       output: dailyAverage(expectedMonthOutputTokens),
       total: dailyAverage(expectedMonthTotalTokens)
@@ -307,7 +322,6 @@ describe('createRequestyStore', () => {
       .filter(([key]) => key.startsWith(currentMonthPrefix))
       .reduce((sum, [, spend]) => sum + spend, 0)
 
-    assert.equal(data!.monthSpendFromUsage, expectedMonthSpend)
     assert.equal(
       data!.models.reduce((sum, model) => sum + model.spend, 0),
       expectedMonthSpend

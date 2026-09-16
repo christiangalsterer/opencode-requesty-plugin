@@ -20,12 +20,12 @@ import {
   modelAnalyticsUrl,
   padEnd,
   padStart,
+  paceColor,
   renderBar,
   severityColor,
   shortModel,
   spendRatio,
   spendSeverity,
-  type Pace,
   type SpendThresholds
 } from './format'
 
@@ -42,7 +42,10 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   const theme = () => props.theme
   const data = () => props.store.data()
   const state = () => props.store.state()
-  const fetchedAt = () => (state().status === 'ready' ? formatTimestamp((state() as { fetchedAt: Date }).fetchedAt) : '—')
+  const fetchedAt = () => {
+    const at = props.store.fetchedAt()
+    return at ? formatTimestamp(at) : '—'
+  }
 
   return (
     <box flexDirection="column" paddingLeft={2} paddingRight={2} paddingTop={1} flexGrow={1}>
@@ -50,10 +53,12 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
         <box flexDirection="column">
           <Title store={props.store} theme={theme()} showKeyName={props.showKeyName} />
 
-          <Show when={state().status === 'error'}>
-            <CenteredMessage theme={theme()} error>
-              {(state() as { message: string }).message}
-            </CenteredMessage>
+          <Show when={props.store.errorMessage()}>
+            {(message) => (
+              <CenteredMessage theme={theme()} error>
+                {message()}
+              </CenteredMessage>
+            )}
           </Show>
 
           <Show
@@ -100,11 +105,6 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
   const severity = () => spendSeverity(ratio(), props.thresholds)
   const projectionParts = () => formatProjectionParts(spend(), limit())
   const monthDelta = () => formatMonthDeltaParts(spend(), data().lastMonthSpend)
-  const paceColor = (pace: Pace | undefined) => {
-    if (pace === 'over') return props.theme.error
-    if (pace === 'under') return props.theme.success
-    return props.theme.textMuted
-  }
 
   return (
     <box flexDirection="row" gap={3} paddingY={1} flexWrap="wrap">
@@ -119,7 +119,9 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
           value={`~${formatUsd(projectionParts()!.projected)}`}
           theme={props.theme}
           color={isProjectionOverLimit(spend(), limit()) ? props.theme.error : props.theme.text}
-          indicator={projectionParts()!.arrow ? { text: projectionParts()!.arrow, color: paceColor(projectionParts()!.pace) } : undefined}
+          indicator={
+            projectionParts()!.arrow ? { text: projectionParts()!.arrow, color: paceColor(projectionParts()!.pace, props.theme) } : undefined
+          }
         />
       </Show>
       <Show when={monthDelta()}>
@@ -229,7 +231,13 @@ function BudgetSection(props: { store: RequestyStore; theme: TuiThemeCurrent; th
       <box flexDirection="column" gap={1}>
         <box flexDirection="row" gap={3} flexWrap="wrap">
           <Metric label="Today" value={formatUsd(data().todaySpend)} theme={props.theme} color={props.theme.text} tokens={data().todayTokens} />
-          <Metric label="Daily avg" value={formatUsd(data().dailyAvg)} theme={props.theme} color={props.theme.text} tokens={data().dailyAvgTokens} />
+          <Metric
+            label="Daily avg"
+            value={formatUsd(data().dailyAverage)}
+            theme={props.theme}
+            color={props.theme.text}
+            tokens={data().dailyAverageTokens}
+          />
         </box>
         <box flexDirection="row" gap={3} flexWrap="wrap">
           <Metric label="7d avg" value={formatUsd(data().avg7d)} theme={props.theme} color={props.theme.text} tokens={data().avg7dTokens} />

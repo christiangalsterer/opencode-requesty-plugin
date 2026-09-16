@@ -3,12 +3,14 @@ import {
   aggregateByModel,
   avgSpendLastNDays,
   avgTokensLastNDays,
+  emptySessionSpend,
   endOfLastMonth,
   filterUsageByMonth,
   getApiKeySelf,
   getUsageSelf,
   sessionSpendForSessionIds,
   sessionSpendForSessionIdsForDay,
+  sessionSpendTokens,
   spendForDay,
   startOfLastMonth,
   startOfRollingWindow,
@@ -28,13 +30,12 @@ export type RefreshState = { status: 'idle' } | { status: 'loading' } | { status
 export type RequestyData = {
   keyInfo: ApiKeyInfo
   models: ModelUsage[]
-  monthSpendFromUsage: number
   todaySpend: number
-  dailyAvg: number
+  dailyAverage: number
   avg7d: number
   avg30d: number
   todayTokens: TokenBreakdown
-  dailyAvgTokens: TokenBreakdown
+  dailyAverageTokens: TokenBreakdown
   avg7dTokens: TokenBreakdown
   avg30dTokens: TokenBreakdown
   lastMonthSpend: number
@@ -97,6 +98,10 @@ export type RequestyStoreOptions = {
 export type RequestyStore = {
   state: () => RefreshState
   data: () => RequestyData | undefined
+  /** Error message when the last refresh failed; undefined otherwise. */
+  errorMessage: () => string | undefined
+  /** Time of the last successful refresh; undefined when not ready. */
+  fetchedAt: () => Date | undefined
   /** Force a refresh (manual, interval, startup, session events). */
   refresh: () => Promise<void>
   /** Reactive version counter — bumps on message events to force slot re-renders. */
@@ -166,19 +171,15 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const currentMonthUsage = filterUsageByMonth(usage)
         const aggregated = aggregateByModel(currentMonthUsage)
 
-        let lastMonthSpend = 0
-        const [_, lastMonthUsage] = await Promise.all([
-          Promise.resolve(), // Keep main flow clean
-          fetchUsage(options.apiKey, {
-            start: startOfLastMonth(),
-            end: endOfLastMonth(),
-            resolution: 'day'
-          }).catch(() => undefined)
-        ])
-        if (lastMonthUsage) lastMonthSpend = totalSpendFromUsage(lastMonthUsage)
+        const lastMonthUsage = await fetchUsage(options.apiKey, {
+          start: startOfLastMonth(),
+          end: endOfLastMonth(),
+          resolution: 'day'
+        }).catch(() => undefined)
+        const lastMonthSpend = lastMonthUsage ? totalSpendFromUsage(lastMonthUsage) : 0
 
-        let sessionToday: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
-        let sessionTotal: SessionSpend = { spend: 0, requests: 0, inputTokens: 0, outputTokens: 0 }
+        let sessionToday: SessionSpend = emptySessionSpend()
+        let sessionTotal: SessionSpend = emptySessionSpend()
         let sessionStartLabel: string | undefined
         let subagentCount = 0
         const active = session()
@@ -204,16 +205,8 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           sessionTotalSpend: sessionTotal.spend,
           sessionTodayRequests: sessionToday.requests,
           sessionTotalRequests: sessionTotal.requests,
-          sessionTodayTokens: {
-            input: sessionToday.inputTokens,
-            output: sessionToday.outputTokens,
-            total: sessionToday.inputTokens + sessionToday.outputTokens
-          },
-          sessionTotalTokens: {
-            input: sessionTotal.inputTokens,
-            output: sessionTotal.outputTokens,
-            total: sessionTotal.inputTokens + sessionTotal.outputTokens
-          },
+          sessionTodayTokens: sessionSpendTokens(sessionToday),
+          sessionTotalTokens: sessionSpendTokens(sessionTotal),
           sessionStartLabel,
           sessionId: active?.id,
           subagentCount
@@ -223,13 +216,12 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         setData({
           keyInfo,
           models: aggregated.models,
-          monthSpendFromUsage: aggregated.spend,
           todaySpend: spendForDay(usage),
-          dailyAvg: dailyAverage(keyInfo.monthly_spend),
+          dailyAverage: dailyAverage(keyInfo.monthly_spend),
           avg7d: avgSpendLastNDays(usage, 7),
           avg30d: avgSpendLastNDays(usage, 30),
           todayTokens: tokensForDay(usage),
-          dailyAvgTokens: {
+          dailyAverageTokens: {
             input: dailyAverage(aggregated.inputTokens),
             output: dailyAverage(aggregated.outputTokens),
             total: dailyAverage(aggregated.totalTokens)
@@ -260,6 +252,14 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   return {
     state,
     data,
+    errorMessage: () => {
+      const current = state()
+      return current.status === 'error' ? current.message : undefined
+    },
+    fetchedAt: () => {
+      const current = state()
+      return current.status === 'ready' ? current.fetchedAt : undefined
+    },
     refresh,
     version,
     bumpVersion: () => setVersion((v) => v + 1),
