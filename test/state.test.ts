@@ -468,19 +468,22 @@ describe('createRequestyStore', () => {
     assert.equal(data!.sessionTotalSpend, 1.2)
   })
 
-  test('setSessionID with the same id does not bump version or schedule work', async () => {
+  test('setSessionID with the same id does not schedule extra work', async () => {
     const sessionId = 'ses_test'
+    let calls = 0
     const store = createStore({
+      fetchApiKey: () => {
+        calls++
+        return Promise.resolve(KEY_INFO)
+      },
       activeSession: () => ({ id: sessionId, created: undefined })
     })
-    const initial = store.version()
     store.setSessionID(sessionId)
-    const afterChange = store.version()
-    assert.ok(afterChange > initial)
-    // Repeated identical ids are no-ops — version does not change again.
+    assert.equal(calls, 1)
+    // Repeated identical ids are no-ops — no further refresh is scheduled.
     store.setSessionID(sessionId)
     store.setSessionID(sessionId)
-    assert.equal(store.version(), afterChange)
+    assert.equal(calls, 1)
   })
 
   test('setSessionID publishes cached session figures immediately on revisit', async () => {

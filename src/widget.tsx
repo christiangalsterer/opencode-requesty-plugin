@@ -65,8 +65,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     // every message.updated — content mutates in place while the array length
     // stays constant, so a length-only hook would only fire on session start.
     data: props.store.data(),
-    repaintKey: sessionRepaintKey(props.api.state.session.messages(props.sessionID)),
-    version: props.store.version()
+    repaintKey: sessionRepaintKey(props.api.state.session.messages(props.sessionID))
   }))
   const snapshotProps = (stale?: boolean) => ({
     store: props.store,
@@ -291,7 +290,6 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
     // Reading the message *content* (not just length) makes the slot repaint on
     // every message.updated — content mutates in place while the array length
     // stays constant, so a length-only hook would only fire on session start.
-    props.store.version()
     sessionRepaintKey(props.api.state.session.messages(props.sessionID))
 
     const data = props.store.data()

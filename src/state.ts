@@ -104,10 +104,6 @@ export type RequestyStore = {
   fetchedAt: () => Date | undefined
   /** Force a refresh (manual, interval, startup, session events). */
   refresh: () => Promise<void>
-  /** Reactive version counter — bumps on message events to force slot re-renders. */
-  version: () => number
-  /** Bump the version counter (called on message events). */
-  bumpVersion: () => void
   /** Set the active session id; refreshes session cost on the next refresh. */
   setSessionID: (sessionID: string | undefined) => void
   /** Reactive accessor for the currently-active session id (undefined when none). */
@@ -117,7 +113,6 @@ export type RequestyStore = {
 export function createRequestyStore(options: RequestyStoreOptions): RequestyStore {
   const [state, setState] = createSignal<RefreshState>({ status: 'idle' })
   const [data, setData] = createSignal<RequestyData | undefined>(undefined)
-  const [version, setVersion] = createSignal(0)
   const [session, setSession] = createSignal<ActiveSession | undefined>(undefined)
 
   const fetchApiKey = options.fetchApiKey ?? getApiKeySelf
@@ -144,7 +139,6 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     const next = id ? (options.activeSession?.(id) ?? { id, created: undefined }) : undefined
     if (next?.id === session()?.id) return
     setSession(next)
-    setVersion((v) => v + 1)
     // Publish any cached figures for this session synchronously so the current
     // slot invocation can render them instead of the loading placeholder.
     const cached = next ? sessionCache.get(next.id) : undefined
@@ -231,7 +225,6 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           lastMonthSpend,
           ...snapshot
         })
-        setVersion((v) => v + 1)
         options.onRender?.()
         setState({ status: 'ready', fetchedAt: new Date() })
       } catch (error) {
@@ -261,8 +254,6 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
       return current.status === 'ready' ? current.fetchedAt : undefined
     },
     refresh,
-    version,
-    bumpVersion: () => setVersion((v) => v + 1),
     setSessionID: setActiveSession,
     activeSessionID: () => session()?.id
   }

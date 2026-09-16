@@ -210,7 +210,6 @@ const plugin: TuiPluginModule = {
     })
 
     const unsubMessage = api.event.on('message.updated', () => {
-      store.bumpVersion()
       debouncedRefresh()
     })
 
