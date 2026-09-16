@@ -130,6 +130,7 @@ const plugin: TuiPluginModule = {
                 avg30d={settings.prompt.avg30d}
                 showTokens={settings.prompt.showTokens}
                 showKeyName={settings.prompt.showKeyName}
+                showSessionInfo={settings.prompt.showSessionInfo}
                 monthlyProjection={settings.prompt.monthlyProjection}
               />
             )

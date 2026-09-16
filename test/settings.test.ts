@@ -16,6 +16,7 @@ const DEFAULTS = {
     avg30d: false,
     showTokens: true,
     showKeyName: false,
+    showSessionInfo: true,
     monthlyProjection: true,
     order: 50
   },
@@ -238,6 +239,19 @@ describe('readSettings', () => {
     assert.equal(readSettings({ prompt: { showTokens: 'yes' } }).prompt.showTokens, true)
     assert.equal(readSettings({ prompt: { showTokens: 1 } }).prompt.showTokens, true)
     assert.equal(readSettings({ prompt: { showTokens: undefined } }).prompt.showTokens, true)
+  })
+
+  test('prompt.showSessionInfo defaults to true and can be disabled', () => {
+    assert.equal(readSettings(undefined).prompt.showSessionInfo, true)
+    assert.equal(readSettings({}).prompt.showSessionInfo, true)
+    assert.equal(readSettings({ prompt: {} }).prompt.showSessionInfo, true)
+    assert.equal(readSettings({ prompt: { showSessionInfo: false } }).prompt.showSessionInfo, false)
+  })
+
+  test('prompt.showSessionInfo non-boolean values → default', () => {
+    assert.equal(readSettings({ prompt: { showSessionInfo: 'yes' } }).prompt.showSessionInfo, true)
+    assert.equal(readSettings({ prompt: { showSessionInfo: 1 } }).prompt.showSessionInfo, true)
+    assert.equal(readSettings({ prompt: { showSessionInfo: undefined } }).prompt.showSessionInfo, true)
   })
 
   test('prompt.monthlyProjection defaults to true and can be disabled', () => {

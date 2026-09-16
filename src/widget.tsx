@@ -53,6 +53,7 @@ export type PromptIndicatorProps = {
   avg30d: boolean
   showTokens: boolean
   showKeyName: boolean
+  showSessionInfo: boolean
   monthlyProjection: boolean
 }
 
@@ -325,19 +326,26 @@ export function RequestyPromptIndicator(props: PromptIndicatorProps): JSX.Elemen
 
     const parts: { text: string; color?: unknown; href?: string }[] = []
     if (d) {
-      const averages: string[] = []
+      const metrics: string[] = []
+      if (props.showSessionInfo && d.sessionId === props.store.activeSessionID() && d.sessionTotalSpend > 0) {
+        let label = `S ${formatUsd(d.sessionTotalSpend)}`
+        if (props.showTokens) {
+          label += ` ${formatTokenInline(d.sessionTotalTokens.input, d.sessionTotalTokens.output)}`
+        }
+        metrics.push(label)
+      }
       if (props.todaySpend) {
         let label = `T ${formatUsd(d.todaySpend)}`
         if (props.showTokens) {
           label += ` ${formatTokenInline(d.todayTokens.input, d.todayTokens.output)}`
         }
-        averages.push(label)
+        metrics.push(label)
       }
-      if (props.dailyAvg) averages.push(`D ${formatUsd(d.dailyAvg)}`)
-      if (props.avg7d) averages.push(`7d ${formatUsd(d.avg7d)}`)
-      if (props.avg30d) averages.push(`30d ${formatUsd(d.avg30d)}`)
-      if (averages.length > 0) {
-        parts.push({ text: `${averages.join(' · ')} `, color: props.theme.textMuted })
+      if (props.dailyAvg) metrics.push(`D ${formatUsd(d.dailyAvg)}`)
+      if (props.avg7d) metrics.push(`7d ${formatUsd(d.avg7d)}`)
+      if (props.avg30d) metrics.push(`30d ${formatUsd(d.avg30d)}`)
+      if (metrics.length > 0) {
+        parts.push({ text: `${metrics.join(' · ')} `, color: props.theme.textMuted })
       }
     }
     if (status === 'loading' && !d) {
