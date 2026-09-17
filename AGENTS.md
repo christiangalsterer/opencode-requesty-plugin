@@ -37,6 +37,7 @@ Before marking any task as `completed`, the following command chain must be exec
 - `src/tui.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`, `session_prompt_right`), keymap commands, refresh timers.
 - `src/widget.tsx` / `src/prompt.tsx` / `src/dialog.tsx` — sidebar widget / prompt widget / detail dialog (Solid components); `RequestyPromptWidget` renders the `session_prompt_right` indicator.
 - `src/state.ts` — Solid store: fetch + refresh logic with in-flight dedup and pending-refresh pattern (injectable fetchers for tests).
+- `src/descendants.ts` — pure BFS walk of the sub-agent delegation tree (`descendantSessionIDs`); unit-tested.
 - `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
 - `src/api.ts` — Requesty Management API client (`apikey/self`, `apikey/self/usage`).
 - `src/format.ts` — pure formatting helpers (all unit-tested logic lives here).
@@ -45,6 +46,8 @@ Before marking any task as `completed`, the following command chain must be exec
 - `test/logic.test.ts` — `format.ts` + `api.ts` pure helpers.
 - `test/settings.test.ts` — `readSettings` option parsing and bounds.
 - `test/state.test.ts` — `createRequestyStore` refresh/in-flight/pending-refresh/error logic.
+- `test/descendants.test.ts` — `descendantSessionIDs` BFS (tree walk, dedup, cap, error fallback).
+- `test/prompt.test.tsx` / `test/widget.test.tsx` / `test/dialog.test.tsx` — render-level assertions on the Solid components via `@opentui/solid`'s `testRender`.
 
 ## Coding Standards
 
@@ -55,7 +58,7 @@ Before marking any task as `completed`, the following command chain must be exec
 
 - **JSX pragma is mandatory.** Every `.tsx` file needs `/** @jsxImportSource @opentui/solid */` on line 1 (tsc/`jsx: preserve` relies on the pragma). JSX tags are OpenTUI intrinsics (`<box>`, `<text>`), not DOM.
 - **No bundler — the host transforms TSX at load time.** The opencode host installs `@opentui/solid/preload` (a Bun preload hook) that transforms Solid TSX via babel-preset-solid (`moduleName: "@opentui/solid"`, `generate: "universal"`) before execution. The build step just copies `src/*` → `dist/`. Do NOT use a bundler (tsup, esbuild, Bun.build) — it would strip the `/** @jsxImportSource */` pragma or break reactivity by using the wrong JSX transform.
-- **Tests are pure-logic only.** `@opentui/core/testing`'s `createTestRenderer` fails in Node ("native FFI is not available"), so TSX components (`widget.tsx`, `prompt.tsx`, `dialog.tsx`) are untested. Keep display logic in pure helpers in `src/format.ts` and test those in `test/logic.test.ts`.
+- **Component tests render under Bun, not Node.** `@opentui/solid`'s `testRender` (backed by `@opentui/core/testing`) mounts Solid TSX and captures frames; the old "native FFI is not available" failure only applied to the pre-Bun Node/`tsx --test` setup. `bunfig.toml` must preload `@opentui/solid/preload` **under `[test]` as well as top-level** — the top-level `preload` alone does NOT apply to `bun test`, and without the `[test]` entry `solid-js` resolves to its server build (`Show` returns `""` for a falsy `when` with no fallback → "Orphan text error" from the reconciler). Stub the host API as `{ state: { session: { messages: () => [] } } }`, call `setup.renderer.destroy()` in a `finally`, and assert whitespace-normalized substrings of `captureCharFrame()` (not full-frame snapshots). Keep display logic in pure helpers in `src/format.ts` (tested in `test/logic.test.ts`); host-driven slot repaint/re-invocation remains untestable.
 - **bun:test mock API differs from node:test.** Use `mock(() => {})` instead of `mock.fn()`. Access call count via `.mock.calls.length` (not `.mock.callCount()`). Access call arguments via `.mock.calls[i][j]` (not `.mock.calls[i].arguments[j]`).
 - **API decimals are strings.** Requesty's management API serializes decimal fields as strings; coerce with `toNumber` in `src/api.ts` (there are tests relying on this).
 - **`monthly_limit` of 0 means unlimited** — show "unlimited" and hide the progress bar; never divide by it (`spendRatio`/`formatLimit` in `src/format.ts` handle this).

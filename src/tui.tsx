@@ -2,46 +2,15 @@
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
 import { detectApiKey } from './key'
 import { createRequestyStore, type RequestyStore } from './state'
+import { descendantSessionIDs } from './descendants'
 import { RequestySidebarWidget } from './widget'
 import { RequestyPromptWidget } from './prompt'
 import { RequestyDetailDialog } from './dialog'
 import { readSettings } from './settings'
-import type { TuiPluginApi } from '@opencode-ai/plugin/tui'
 
 const PLUGIN_ID = 'opencode-requesty-sidebar'
 const COMMAND_OPEN = 'requesty.open'
 const COMMAND_REFRESH = 'requesty.refresh'
-
-/** Safety cap so a pathological delegation tree can never stall a refresh. */
-const MAX_DESCENDANTS = 200
-
-/**
- * Walks the delegation tree (task subagents run in child sessions, which can
- * have their own children) and returns every descendant session id. Best-effort:
- * if the children endpoint is missing or fails, only the root is resolved.
- */
-async function descendantSessionIDs(api: TuiPluginApi, rootID: string): Promise<string[]> {
-  const found: string[] = []
-  const seen = new Set<string>([rootID])
-  const queue: string[] = [rootID]
-
-  while (queue.length > 0 && found.length < MAX_DESCENDANTS) {
-    const parentID = queue.shift()!
-    try {
-      const result = await api.client.session.children({ sessionID: parentID })
-      for (const child of result.data ?? []) {
-        if (seen.has(child.id)) continue
-        seen.add(child.id)
-        found.push(child.id)
-        queue.push(child.id)
-      }
-    } catch {
-      break
-    }
-  }
-
-  return found
-}
 
 const plugin: TuiPluginModule = {
   id: PLUGIN_ID,
@@ -81,7 +50,10 @@ const plugin: TuiPluginModule = {
         if (!session) return { id: sessionID, created: undefined }
         return { id: sessionID, created: session.time?.created }
       },
-      fetchSessionChildren: (sessionID) => descendantSessionIDs(api, sessionID),
+      fetchSessionChildren: (sessionID) =>
+        descendantSessionIDs(sessionID, (id) =>
+          api.client.session.children({ sessionID: id }).then((result) => (result.data ?? []).map((child) => child.id))
+        ),
       onRender: () => api.renderer.requestRender()
     })
 
