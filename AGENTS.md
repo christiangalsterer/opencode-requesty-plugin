@@ -35,7 +35,7 @@ Before marking any task as `completed`, the following command chain must be exec
 ## Project Structure
 
 - `src/tui.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`, `session_prompt_right`), keymap commands, refresh timers.
-- `src/widget.tsx` / `src/dialog.tsx` — sidebar widget / detail dialog (Solid components); `RequestyPromptIndicator` renders the `session_prompt_right` indicator.
+- `src/widget.tsx` / `src/prompt.tsx` / `src/dialog.tsx` — sidebar widget / prompt widget / detail dialog (Solid components); `RequestyPromptWidget` renders the `session_prompt_right` indicator.
 - `src/state.ts` — Solid store: fetch + refresh logic with in-flight dedup and pending-refresh pattern (injectable fetchers for tests).
 - `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
 - `src/api.ts` — Requesty Management API client (`apikey/self`, `apikey/self/usage`).
@@ -55,7 +55,7 @@ Before marking any task as `completed`, the following command chain must be exec
 
 - **JSX pragma is mandatory.** Every `.tsx` file needs `/** @jsxImportSource @opentui/solid */` on line 1 (tsc/`jsx: preserve` relies on the pragma). JSX tags are OpenTUI intrinsics (`<box>`, `<text>`), not DOM.
 - **No bundler — the host transforms TSX at load time.** The opencode host installs `@opentui/solid/preload` (a Bun preload hook) that transforms Solid TSX via babel-preset-solid (`moduleName: "@opentui/solid"`, `generate: "universal"`) before execution. The build step just copies `src/*` → `dist/`. Do NOT use a bundler (tsup, esbuild, Bun.build) — it would strip the `/** @jsxImportSource */` pragma or break reactivity by using the wrong JSX transform.
-- **Tests are pure-logic only.** `@opentui/core/testing`'s `createTestRenderer` fails in Node ("native FFI is not available"), so TSX components (`widget.tsx`, `dialog.tsx`) are untested. Keep display logic in pure helpers in `src/format.ts` and test those in `test/logic.test.ts`.
+- **Tests are pure-logic only.** `@opentui/core/testing`'s `createTestRenderer` fails in Node ("native FFI is not available"), so TSX components (`widget.tsx`, `prompt.tsx`, `dialog.tsx`) are untested. Keep display logic in pure helpers in `src/format.ts` and test those in `test/logic.test.ts`.
 - **bun:test mock API differs from node:test.** Use `mock(() => {})` instead of `mock.fn()`. Access call count via `.mock.calls.length` (not `.mock.callCount()`). Access call arguments via `.mock.calls[i][j]` (not `.mock.calls[i].arguments[j]`).
 - **API decimals are strings.** Requesty's management API serializes decimal fields as strings; coerce with `toNumber` in `src/api.ts` (there are tests relying on this).
 - **`monthly_limit` of 0 means unlimited** — show "unlimited" and hide the progress bar; never divide by it (`spendRatio`/`formatLimit` in `src/format.ts` handle this).

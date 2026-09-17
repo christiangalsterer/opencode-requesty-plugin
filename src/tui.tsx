@@ -2,7 +2,8 @@
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
 import { detectApiKey } from './key'
 import { createRequestyStore, type RequestyStore } from './state'
-import { RequestySidebarWidget, RequestyPromptIndicator } from './widget'
+import { RequestySidebarWidget } from './widget'
+import { RequestyPromptWidget } from './prompt'
 import { RequestyDetailDialog } from './dialog'
 import { readSettings } from './settings'
 import type { TuiPluginApi } from '@opencode-ai/plugin/tui'
@@ -118,7 +119,7 @@ const plugin: TuiPluginModule = {
         slots: {
           session_prompt_right(ctx, slotProps) {
             return (
-              <RequestyPromptIndicator
+              <RequestyPromptWidget
                 store={store}
                 api={api}
                 sessionID={slotProps.session_id}
