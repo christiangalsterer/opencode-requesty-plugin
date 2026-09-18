@@ -1,6 +1,6 @@
 {
   "name": "@christiangalsterer/opencode-requesty-plugin",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": {
     "name": "Christian Galsterer"
   },
@@ -49,7 +49,7 @@
     "@opentui/core": ">=0.5.3 <1",
     "@opentui/keymap": ">=0.5.3 <1",
     "@opentui/solid": ">=0.5.3 <1",
-    "solid-js": ">=1.9.14 <2"
+    "solid-js": ">=1.9.12 <2"
   },
   "overrides": {
     "solid-js": "$solid-js"

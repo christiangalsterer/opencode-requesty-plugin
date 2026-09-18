@@ -65,23 +65,34 @@ Data comes from the [Requesty Management API](https://docs.requesty.ai/api-refer
 
 ## Installation
 
-Add the plugin to your `tui.json` (project root or `~/.config/opencode/tui.json`). Update the version number to the latest release.
+## Global Installation
 
-```json
-{
-  $schema": "https://opencode.ai/tui.json",
-  "plugin": ["@christiangalsterer/opencode-requesty-plugin@1.2.1"]
-}
+To install the plugin globally run the following command
+
+```sh
+opencode -g @christiangalsterer/opencode-requesty-plugin
 ```
 
-Or with options:
+## Project Installation
+
+## Global Installation
+
+To install the plugin for the current project run the following command
+
+```sh
+opencode @christiangalsterer/opencode-requesty-plugin
+```
+
+## Configuration
+
+To the configure the plugin add/modify the configuration in either the project `.opencode/tui.json` or global `~/.config/opencode/tui.json` file.
 
 ```json
 {
   $schema": "https://opencode.ai/tui.json",
   "plugin": [
     [
-      "@christiangalsterer/opencode-requesty-plugin@1.2.1",
+      "@christiangalsterer/opencode-requesty-plugin",
       {
         "refreshIntervalMs": 300000,
         "warningThreshold": 0.6,
@@ -92,24 +103,6 @@ Or with options:
           "showTokens": true,
           "order": 50
         }
-      }
-    ]
-  ]
-}
-```
-
-Plugin options must be the second item in the nested plugin entry. The same format is used for local plugins; use the generated `dist/tui.tsx` file as the plugin path:
-
-```json
-{
-  "$schema": "https://opencode.ai/tui.json",
-  "plugin": [
-    [
-      "/absolute/path/to/opencode-requesty-sidebar-plugin/dist/tui.tsx",
-      {
-        "sidebar": { "showKeyName": true },
-        "prompt": { "showKeyName": true },
-        "dialog": { "showKeyName": true }
       }
     ]
   ]
@@ -141,6 +134,12 @@ Point at a local checkout instead:
 Run `bun install && bun run build` in the checkout first.
 
 ## Update
+
+To update the plugin please run the following command.
+
+```sh
+opencode -f @christiangalsterer/opencode-requesty-plugin
+```
 
 OpenCode does not currently support plugin updates reliably. See OpenCode PRs #35777, #32822, and #37300. To force OpenCode to download the configured plugin versions, clear its plugin cache:
 
