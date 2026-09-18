@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.2.1...v1.2.2) (2026-09-18)
+
+
+### Bug Fixes
+
+* pin solid-js and verify packed artifact in CI ([f3d04b0](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/f3d04b04b2a59661fcb0fdfe2b7c510a08eb042f))
+
 ## [1.2.1](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.2.0...v1.2.1) (2026-09-18)
 
 
