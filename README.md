@@ -70,7 +70,7 @@ Data comes from the [Requesty Management API](https://docs.requesty.ai/api-refer
 To install the plugin globally run the following command
 
 ```sh
-opencode -g @christiangalsterer/opencode-requesty-plugin
+opencode plugin -g @christiangalsterer/opencode-requesty-plugin
 ```
 
 ## Project Installation
@@ -80,7 +80,7 @@ opencode -g @christiangalsterer/opencode-requesty-plugin
 To install the plugin for the current project run the following command
 
 ```sh
-opencode @christiangalsterer/opencode-requesty-plugin
+opencode plugin @christiangalsterer/opencode-requesty-plugin
 ```
 
 ## Configuration
@@ -138,7 +138,7 @@ Run `bun install && bun run build` in the checkout first.
 To update the plugin please run the following command.
 
 ```sh
-opencode -f @christiangalsterer/opencode-requesty-plugin
+opencode plugin -f @christiangalsterer/opencode-requesty-plugin
 ```
 
 OpenCode does not currently support plugin updates reliably. See OpenCode PRs #35777, #32822, and #37300. To force OpenCode to download the configured plugin versions, clear its plugin cache:
