@@ -18,7 +18,7 @@ An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](http
 
 ## Requirements
 
-- opencode ≥ 1.18 (TUI plugin API with slots)
+- opencode ≥ 1.18
 - A Requesty API key — create one at [app.requesty.ai/api-keys](https://app.requesty.ai/api-keys)
 
 ## Features
@@ -54,7 +54,6 @@ A compact readout on the right side of the session prompt shows:
 - Optional month-end projection (`~$X EOM ↑`) when `prompt.monthlyProjection` is enabled
 
 Disable the readout with `"prompt": { "budgetIndicator": false }`.
-
 
 ### Detail dialog
 
