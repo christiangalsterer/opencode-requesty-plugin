@@ -16,6 +16,11 @@
 
 An [opencode](https://opencode.ai) TUI plugin that shows your [Requesty.ai](https://www.requesty.ai) budget, current monthly spend, and per-model cost distribution right in the session prompt, in the session sidebar, plus a detail dialog via the `/requesty` slash command.
 
+## Requirements
+
+- opencode ≥ 1.18 (TUI plugin API with slots)
+- A Requesty API key — create one at [app.requesty.ai/api-keys](https://app.requesty.ai/api-keys)
+
 ## Features
 
 The plugin surfaces your Requesty.ai budget and usage in three places, each optimized for the space it occupies: a compact sidebar, a full detail dialog, and a minimal prompt-area readout.
@@ -65,7 +70,7 @@ Data comes from the [Requesty Management API](https://docs.requesty.ai/api-refer
 
 ## Installation
 
-## Global Installation
+### Global Installation
 
 To install the plugin globally run the following command
 
@@ -73,14 +78,26 @@ To install the plugin globally run the following command
 opencode plugin -g @christiangalsterer/opencode-requesty-plugin
 ```
 
-## Project Installation
-
-## Global Installation
+### Project Installation
 
 To install the plugin for the current project run the following command
 
 ```sh
 opencode plugin @christiangalsterer/opencode-requesty-plugin
+```
+
+## Update
+
+To update the plugin please run the following command.
+
+```sh
+opencode plugin -f @christiangalsterer/opencode-requesty-plugin
+```
+
+OpenCode does not currently support plugin updates reliably. See OpenCode PRs #35777, #32822, and #37300. To force OpenCode to download the configured plugin versions, clear its plugin cache:
+
+```shell
+rm -rf ~/.cache/opencode/packages/@christiangalsterer/opencode-requesty-plugin*
 ```
 
 ## Configuration
@@ -109,73 +126,7 @@ To the configure the plugin add/modify the configuration in either the project `
 }
 ```
 
-Restart opencode after changing the config — plugins are loaded at startup.
-
-### Local development install
-
-Point at a local checkout instead:
-
-```json
-{
-  "$schema": "https://opencode.ai/tui.json",
-  "plugin": [
-    [
-      "file:///absolute/path/to/opencode-requesty-plugin/dist/tui.tsx",
-      {
-        "sidebar": { "showKeyName": true },
-        "prompt": { "showKeyName": true },
-        "dialog": { "showKeyName": true }
-      }
-    ]
-  ]
-}
-```
-
-Run `bun install && bun run build` in the checkout first.
-
-## Update
-
-To update the plugin please run the following command.
-
-```sh
-opencode plugin -f @christiangalsterer/opencode-requesty-plugin
-```
-
-OpenCode does not currently support plugin updates reliably. See OpenCode PRs #35777, #32822, and #37300. To force OpenCode to download the configured plugin versions, clear its plugin cache:
-
-```shell
-rm -rf ~/.cache/opencode/packages/@christiangalsterer/opencode-requesty-plugin*
-```
-
-## API key detection
-
-The plugin reads your Requesty API key from the opencode provider config: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation.
-
-```json
-{
-  "provider": {
-    "requesty": {
-      "options": { "apiKey": "sk-..." }
-    }
-  }
-}
-```
-
-Or via an environment variable:
-
-```json
-{
-  "provider": {
-    "requesty": {
-      "options": { "apiKey": "{env:REQUESTY_API_KEY}" }
-    }
-  }
-}
-```
-
-If no key is found, the widget shows a short setup hint instead of failing.
-
-## Configuration
+Restart opencode after changing the config.
 
 ### Configuration options
 
@@ -273,12 +224,55 @@ All amounts are in USD and dates are evaluated in UTC.
 - **End of Month projection** — current spend projected forward at the current daily run rate through the end of the month.
 - **Session cost** — spend, request count, and tokens for the currently active opencode session: **Today** and **Since <session start date>**. The window starts at the session's creation timestamp; if that is unavailable it falls back to the last 90 days. Attribution uses Requesty's `extra.X-Session-Affinity` metadata, so values are exact per session (not estimates). While a session's data is still loading the section shows a "…" placeholder rather than a misleading zero; a previously-loaded session is served from a per-session cache so its figures appear immediately on revisit.
 
-## Requirements
+## API key detection
 
-- opencode ≥ 1.18 (TUI plugin API with slots)
-- A Requesty API key — create one at [app.requesty.ai/api-keys](https://app.requesty.ai/api-keys)
+The plugin reads your Requesty API key from the opencode provider config: `provider.requesty.options.apiKey` in `opencode.json`, including `{env:VAR}` interpolation.
+
+```json
+{
+  "provider": {
+    "requesty": {
+      "options": { "apiKey": "sk-..." }
+    }
+  }
+}
+```
+
+Or via an environment variable:
+
+```json
+{
+  "provider": {
+    "requesty": {
+      "options": { "apiKey": "{env:REQUESTY_API_KEY}" }
+    }
+  }
+}
+```
+
+If no key is found, the widget shows a short setup hint instead of failing.
 
 ## Development
+
+### Local development install
+
+Point at a local checkout instead:
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": [
+    [
+      "file:///absolute/path/to/opencode-requesty-plugin/dist/tui.tsx",
+      {
+        "sidebar": { "showKeyName": true },
+        "prompt": { "showKeyName": true },
+        "dialog": { "showKeyName": true }
+      }
+    ]
+  ]
+}
+```
 
 ```bash
 bun install
