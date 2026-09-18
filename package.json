@@ -51,13 +51,16 @@
     "@opentui/solid": ">=0.5.3 <1",
     "solid-js": ">=1.9.14 <2"
   },
+  "overrides": {
+    "solid-js": "$solid-js"
+  },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "ci": "bun run clean && bun install && bun run format && bun test && bun run build",
+    "ci": "bun run clean && bun install && bun run format && bun test && bun run build && bun pm pack && npm i --dry-run *.tgz",
     "build": "bun run typecheck && mkdir -p ./dist && cp -r src/* dist/",
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && mkdir -p ./dist",
