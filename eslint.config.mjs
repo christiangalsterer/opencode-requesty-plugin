@@ -8,7 +8,7 @@ export default tseslint.config(
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
-     name: 'base',
+    name: 'base',
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
