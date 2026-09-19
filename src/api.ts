@@ -74,7 +74,7 @@ export class RequestyApiError extends Error {
 }
 
 async function request<T>(apiKey: string, path: string, init?: { params?: Record<string, string> }): Promise<T> {
-  const url = new URL(path, REQUESTY_ORIGIN.endsWith('/') ? REQUESTY_ORIGIN : REQUESTY_ORIGIN + '/')
+  const url = new URL(path, REQUESTY_ORIGIN.endsWith('/') ? REQUESTY_ORIGIN : `${REQUESTY_ORIGIN}/`)
   for (const [key, value] of Object.entries(init?.params ?? {})) {
     url.searchParams.set(key, value)
   }
@@ -128,7 +128,7 @@ export interface UsageQuery {
 }
 
 /** Get usage statistics for the calling API key (`self`). */
-export function getUsageSelf(apiKey: string, query: UsageQuery): Promise<UsageResponse> {
+export async function getUsageSelf(apiKey: string, query: UsageQuery): Promise<UsageResponse> {
   const params: Record<string, string> = { start: query.start }
   if (query.end) params.end = query.end
   if (query.groupBy && query.groupBy.length > 0) params.group_by = query.groupBy.join(',')

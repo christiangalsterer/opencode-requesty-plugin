@@ -1,13 +1,14 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
-import { detectApiKey } from './key'
+
 import { setApiLogger } from './api'
-import { createRequestyStore, type RequestyStore } from './state'
 import { descendantSessionIDs } from './descendants'
-import { RequestySidebarWidget } from './widget'
-import { RequestyPromptWidget } from './prompt'
 import { RequestyDetailDialog } from './dialog'
+import { detectApiKey } from './key'
+import { RequestyPromptWidget } from './prompt'
 import { readSettings } from './settings'
+import { createRequestyStore, type RequestyStore } from './state'
+import { RequestySidebarWidget } from './widget'
 
 const PLUGIN_ID = 'opencode-requesty-sidebar'
 const COMMAND_OPEN = 'requesty.open'
@@ -55,11 +56,13 @@ const plugin: TuiPluginModule = {
         if (!session) return { id: sessionID, created: undefined }
         return { id: sessionID, created: session.time?.created }
       },
-      fetchSessionChildren: (sessionID) =>
-        descendantSessionIDs(sessionID, (id) =>
+      fetchSessionChildren: async (sessionID) =>
+        descendantSessionIDs(sessionID, async (id) =>
           api.client.session.children({ sessionID: id }).then((result) => (result.data ?? []).map((child) => child.id))
         ),
-      onRender: () => api.renderer.requestRender()
+      onRender: () => {
+        api.renderer.requestRender()
+      }
     })
 
     // Sidebar widget
@@ -125,7 +128,9 @@ const plugin: TuiPluginModule = {
           theme={api.theme.current}
           thresholds={settings.thresholds}
           showKeyName={settings.dialog.showKeyName}
-          onClose={() => api.ui.dialog.clear()}
+          onClose={() => {
+            api.ui.dialog.clear()
+          }}
           onRefresh={() => void store.refresh()}
         />
       ))

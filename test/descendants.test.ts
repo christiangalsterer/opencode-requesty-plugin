@@ -1,10 +1,12 @@
-import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import { MAX_DESCENDANTS, descendantSessionIDs } from '../src/descendants'
+
+import { describe, test } from 'bun:test'
+
+import { descendantSessionIDs, MAX_DESCENDANTS } from '../src/descendants'
 
 /** Build a fetchChildren stub from a parent → children adjacency map. */
 function childrenOf(tree: Record<string, string[]>): (id: string) => Promise<string[]> {
-  return (id) => Promise.resolve(tree[id] ?? [])
+  return async (id) => Promise.resolve(tree[id] ?? [])
 }
 
 describe('descendantSessionIDs', () => {
@@ -48,7 +50,7 @@ describe('descendantSessionIDs', () => {
   })
 
   test('a rejecting fetchChildren resolves the children found so far without throwing', async () => {
-    const found = await descendantSessionIDs('root', (id) => {
+    const found = await descendantSessionIDs('root', async (id) => {
       if (id === 'root') return Promise.resolve(['a', 'b'])
       return Promise.reject(new Error('nope'))
     })
@@ -56,7 +58,7 @@ describe('descendantSessionIDs', () => {
   })
 
   test('a rejecting fetchChildren on the root resolves an empty list', async () => {
-    const found = await descendantSessionIDs('root', () => Promise.reject(new Error('nope')))
+    const found = await descendantSessionIDs('root', async () => Promise.reject(new Error('nope')))
     assert.deepEqual(found, [])
   })
 })

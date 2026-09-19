@@ -1,12 +1,14 @@
 /** @jsxImportSource @opentui/solid */
-import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
+
+import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { RGBA } from '@opentui/core'
 import { testRender } from '@opentui/solid'
-import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
-import { RequestyPromptWidget, type PromptProps } from '../src/prompt'
-import type { RequestyData, RequestyStore } from '../src/state'
+import { describe, test } from 'bun:test'
+
 import type { SpendThresholds } from '../src/format'
+import { type PromptProps, RequestyPromptWidget } from '../src/prompt'
+import type { RequestyData, RequestyStore } from '../src/state'
 
 const THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
 
@@ -91,7 +93,7 @@ async function renderPrompt(store: RequestyStore, overrides: Partial<PromptProps
   const setup = await testRender(() => <RequestyPromptWidget {...BASE_PROPS} store={store} {...overrides} />, { width: 100, height: 2 })
   try {
     await setup.flush()
-    return setup.captureCharFrame().split('\n')[0]!.replace(/\s+/g, ' ').trim()
+    return setup.captureCharFrame().split('\n')[0].replace(/\s+/g, ' ').trim()
   } finally {
     setup.renderer.destroy()
   }

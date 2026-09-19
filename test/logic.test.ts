@@ -1,5 +1,7 @@
-import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
+
+import { describe, test } from 'bun:test'
+
 import {
   aggregateByModel,
   avgSpendLastNDays,
@@ -7,6 +9,7 @@ import {
   emptySessionSpend,
   endOfLastMonth,
   filterUsageByMonth,
+  SESSION_AFFINITY_KEY,
   sessionSpendForSessionIds,
   sessionSpendForSessionIdsForDay,
   sessionSpendTokens,
@@ -14,15 +17,14 @@ import {
   startOfLastMonth,
   startOfRollingWindow,
   totalSpendFromUsage,
-  SESSION_AFFINITY_KEY,
   type UsageResponse
 } from '../src/api'
 import {
-  DEFAULT_THRESHOLDS,
   analyticsUrl,
   dailyAverage,
   daysRemaining,
   daysToExhaustion,
+  DEFAULT_THRESHOLDS,
   formatLimit,
   formatMonthDeltaParts,
   formatOutputInputRatio,
@@ -36,15 +38,15 @@ import {
   isProjectionOverLimit,
   modelAnalyticsUrl,
   normalizeThreshold,
-  padEnd,
-  padStart,
   paceMarker,
   paceStatus,
+  padEnd,
+  padStart,
   projectedMonthEnd,
   renderBar,
   resolveThresholds,
-  severityColor,
   sessionRepaintKey,
+  severityColor,
   shortModel,
   spendRatio,
   spendSeverity
@@ -91,7 +93,7 @@ describe('aggregateByModel', () => {
       }
     }
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     assert.equal(models.length, 2)
     assert.equal(models[0].model, 'openai/gpt-5')
     assert.equal(models[0].spend, 7)
@@ -108,7 +110,7 @@ describe('aggregateByModel', () => {
       }
     }
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     assert.equal(models.length, 1)
     assert.equal(models[0].model, 'unknown')
   })
@@ -122,7 +124,7 @@ describe('aggregateByModel', () => {
       }
     }
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     assert.equal(models.length, 1)
     assert.equal(models[0].model, 'openai/gpt-5')
   })
@@ -136,7 +138,7 @@ describe('aggregateByModel', () => {
       }
     }
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     assert.equal(models.length, 1)
     assert.equal(models[0].model, 'openai/gpt-5')
   })
@@ -152,7 +154,7 @@ describe('aggregateByModel', () => {
       }
     } as unknown as UsageResponse
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     assert.equal(models[0].spend, 2.5)
     assert.equal(models[0].totalTokens, 150)
     assert.equal(models[0].requests, 4)
@@ -167,7 +169,7 @@ describe('aggregateByModel', () => {
       }
     } as unknown as UsageResponse
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     // Spend should be 0 because toNumber returns 0 for non-numeric strings
     assert.equal(models[0].spend, 0)
   })
@@ -179,7 +181,7 @@ describe('aggregateByModel', () => {
       }
     }
     const aggregated = aggregateByModel(response)
-    const models = aggregated.models
+    const { models } = aggregated
     assert.equal(models.length, 0)
   })
 })
@@ -724,7 +726,7 @@ describe('sessionRepaintKey', () => {
   test('changes when tokens mutate in place with a constant array length', () => {
     const before = assistant()
     const after = assistant({ tokens: { input: 100, output: 250, reasoning: 10, cache: { read: 5, write: 2 } } })
-    assert.equal(before.tokens!.output, 50)
+    assert.equal(before.tokens.output, 50)
     assert.notEqual(sessionRepaintKey([before]), sessionRepaintKey([after]))
   })
 

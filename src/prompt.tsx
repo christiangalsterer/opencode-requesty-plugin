@@ -1,7 +1,7 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, createMemo, type JSX } from 'solid-js'
 import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
-import type { RequestyStore } from './state'
+import { createMemo, For, type JSX, Show } from 'solid-js'
+
 import {
   analyticsUrl,
   formatPercent,
@@ -10,12 +10,13 @@ import {
   formatUsd,
   isProjectionOverLimit,
   paceColor,
-  severityColor,
   sessionRepaintKey,
+  severityColor,
   spendRatio,
   spendSeverity,
   type SpendThresholds
 } from './format'
+import type { RequestyStore } from './state'
 
 export interface PromptProps {
   store: RequestyStore
@@ -42,7 +43,7 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
     sessionRepaintKey(props.api.state.session.messages(props.sessionID))
 
     const data = props.store.data()
-    const status = props.store.state().status
+    const { status } = props.store.state()
     const limit = data?.keyInfo.monthly_limit ?? 0
     const spend = data?.keyInfo.monthly_spend ?? 0
     const ratio = spendRatio(spend, limit)
@@ -51,7 +52,7 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
     const projectionParts = formatProjectionParts(spend, limit)
     const projectionOverLimit = isProjectionOverLimit(spend, limit)
 
-    const parts: { text: string; color?: unknown; href?: string }[] = []
+    const parts: Array<{ text: string; color?: unknown; href?: string }> = []
     if (data) {
       const metrics: string[] = []
       if (props.showSessionInfo && data.sessionId === props.store.activeSessionID() && data.sessionTotalSpend > 0) {

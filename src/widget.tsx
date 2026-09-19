@@ -1,8 +1,9 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, createMemo, createSignal, type JSX } from 'solid-js'
 import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
-import type { RequestyStore } from './state'
+import { createMemo, createSignal, For, type JSX, Show } from 'solid-js'
+
 import {
+  analyticsUrl,
   formatLimit,
   formatPercent,
   formatProjectionParts,
@@ -10,19 +11,19 @@ import {
   formatTokenInline,
   formatTokens,
   formatUsd,
-  analyticsUrl,
   isProjectionOverLimit,
+  paceColor,
   padEnd,
   padStart,
-  paceColor,
   renderBar,
+  sessionRepaintKey,
+  severityColor,
   shortModel,
   spendRatio,
   spendSeverity,
-  severityColor,
-  sessionRepaintKey,
   type SpendThresholds
 } from './format'
+import type { RequestyStore } from './state'
 
 export interface WidgetProps {
   store: RequestyStore

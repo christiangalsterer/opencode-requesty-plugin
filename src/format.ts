@@ -66,7 +66,7 @@ export function shortModel(model: string, maxLength: number): string {
   const slash = model.indexOf('/')
   const short = slash >= 0 && slash < model.length - 1 ? model.slice(slash + 1) : model
   if (short.length <= maxLength) return short
-  return short.slice(0, Math.max(1, maxLength - 1)) + '…'
+  return `${short.slice(0, Math.max(1, maxLength - 1))}…`
 }
 
 /** Format a Date as a compact locale string for the "Updated" footer. */
@@ -178,8 +178,8 @@ export interface PaceTheme {
 /** Map a pace to the matching theme color: over → error, under → success, else muted. */
 export function paceColor<T extends PaceTheme>(pace: Pace | undefined, theme: T): T['error'] {
   if (pace === 'over') return theme.error
-  if (pace === 'under') return theme.success as T['error']
-  return theme.textMuted as T['error']
+  if (pace === 'under') return theme.success
+  return theme.textMuted
 }
 
 export interface ProjectionParts {
@@ -340,7 +340,7 @@ export function sessionRepaintKey(messages: readonly MessageRepaintFields[]): nu
   for (const message of messages) {
     seed = hashMix(seed, foldMessageValue(message.cost))
     seed = hashMix(seed, foldMessageValue(message.time?.completed ?? message.time?.created))
-    const tokens = message.tokens
+    const { tokens } = message
     if (!tokens) continue
     seed = hashMix(seed, foldMessageValue(tokens.input))
     seed = hashMix(seed, foldMessageValue(tokens.output))
@@ -361,6 +361,6 @@ export interface SeverityTheme {
 /** Map a spend severity to the matching theme color. Preserves the theme's color type. */
 export function severityColor<T extends SeverityTheme>(severity: SpendSeverity, theme: T): T['error'] {
   if (severity === 'critical') return theme.error
-  if (severity === 'warning') return theme.warning as T['error']
-  return theme.success as T['error']
+  if (severity === 'warning') return theme.warning
+  return theme.success
 }

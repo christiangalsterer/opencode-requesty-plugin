@@ -1,9 +1,11 @@
-import { describe, test, mock, afterEach, beforeEach } from 'bun:test'
 import assert from 'node:assert/strict'
+
+import { afterEach, beforeEach, describe, mock, test } from 'bun:test'
+
 import { getApiKeySelf, getUsageSelf, RequestyApiError } from '../src/api'
 
 describe('api client error handling', () => {
-  const fetchMock = mock(() => Promise.resolve(new Response(JSON.stringify({}), { status: 200 })))
+  const fetchMock = mock(async () => Promise.resolve(new Response(JSON.stringify({}), { status: 200 })))
 
   beforeEach(() => {
     global.fetch = fetchMock as any
@@ -14,19 +16,19 @@ describe('api client error handling', () => {
   })
 
   test('throws RequestyApiError on 401', async () => {
-    fetchMock.mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ error: { message: 'Unauthorized' } }), { status: 401 })))
+    fetchMock.mockImplementation(async () => Promise.resolve(new Response(JSON.stringify({ error: { message: 'Unauthorized' } }), { status: 401 })))
     try {
       await getApiKeySelf('sk-test')
       assert.fail('Should have rejected')
     } catch (err) {
       assert.ok(err instanceof RequestyApiError)
-      assert.equal((err as RequestyApiError).status, 401)
-      assert.equal((err as RequestyApiError).message, 'Unauthorized')
+      assert.equal(err.status, 401)
+      assert.equal(err.message, 'Unauthorized')
     }
   })
 
   test('throws RequestyApiError on 500', async () => {
-    fetchMock.mockImplementation(() =>
+    fetchMock.mockImplementation(async () =>
       Promise.resolve(new Response(JSON.stringify({ error: { message: 'Internal Server Error' } }), { status: 500 }))
     )
     try {
@@ -34,13 +36,13 @@ describe('api client error handling', () => {
       assert.fail('Should have rejected')
     } catch (err) {
       assert.ok(err instanceof RequestyApiError)
-      assert.equal((err as RequestyApiError).status, 500)
-      assert.equal((err as RequestyApiError).message, 'Internal Server Error')
+      assert.equal(err.status, 500)
+      assert.equal(err.message, 'Internal Server Error')
     }
   })
 
   test('handles request timeout as 408', async () => {
-    fetchMock.mockImplementation(() => {
+    fetchMock.mockImplementation(async () => {
       const error = new Error('Request timed out')
       error.name = 'TimeoutError'
       return Promise.reject(error)
@@ -50,14 +52,14 @@ describe('api client error handling', () => {
       assert.fail('Should have rejected')
     } catch (err) {
       assert.ok(err instanceof RequestyApiError)
-      assert.equal((err as RequestyApiError).status, 408)
-      assert.ok((err as RequestyApiError).message.includes('timed out'))
+      assert.equal(err.status, 408)
+      assert.ok(err.message.includes('timed out'))
     }
   })
 })
 
 describe('api client data coercion', () => {
-  const fetchMock = mock(() =>
+  const fetchMock = mock(async () =>
     Promise.resolve(
       new Response(
         JSON.stringify({
@@ -82,7 +84,7 @@ describe('api client data coercion', () => {
   })
 
   test('getUsageSelf constructs URL parameters correctly', async () => {
-    fetchMock.mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ usage: {} }), { status: 200 })))
+    fetchMock.mockImplementation(async () => Promise.resolve(new Response(JSON.stringify({ usage: {} }), { status: 200 })))
     await getUsageSelf('sk-test', {
       start: '2026-08-01',
       end: '2026-08-31',
@@ -90,8 +92,8 @@ describe('api client data coercion', () => {
       resolution: 'day'
     })
 
-    const calls = fetchMock.mock.calls
-    const url = new URL((calls as any)[calls.length - 1][0] as any)
+    const { calls } = fetchMock.mock
+    const url = new URL((calls as any)[calls.length - 1][0])
     assert.equal(url.searchParams.get('start'), '2026-08-01')
     assert.equal(url.searchParams.get('end'), '2026-08-31')
     assert.equal(url.searchParams.get('group_by'), 'model,key')
@@ -99,11 +101,11 @@ describe('api client data coercion', () => {
   })
 
   test('getUsageSelf handles minimal query', async () => {
-    fetchMock.mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ usage: {} }), { status: 200 })))
+    fetchMock.mockImplementation(async () => Promise.resolve(new Response(JSON.stringify({ usage: {} }), { status: 200 })))
     await getUsageSelf('sk-test', { start: '2026-08-01' })
 
-    const calls = fetchMock.mock.calls
-    const url = new URL((calls as any)[calls.length - 1][0] as any)
+    const { calls } = fetchMock.mock
+    const url = new URL((calls as any)[calls.length - 1][0])
     assert.equal(url.searchParams.get('start'), '2026-08-01')
     assert.equal(url.searchParams.has('end'), false)
     assert.equal(url.searchParams.has('group_by'), false)

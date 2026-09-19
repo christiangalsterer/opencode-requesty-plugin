@@ -1,7 +1,9 @@
-import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import { readSettings } from '../src/settings'
+
+import { describe, test } from 'bun:test'
+
 import { DEFAULT_THRESHOLDS } from '../src/format'
+import { readSettings } from '../src/settings'
 
 const DEFAULTS = {
   refreshIntervalMs: 300000,

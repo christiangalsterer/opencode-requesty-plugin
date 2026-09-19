@@ -1,13 +1,15 @@
 /** @jsxImportSource @opentui/solid */
-import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
+
+import type { TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { RGBA } from '@opentui/core'
 import { testRender } from '@opentui/solid'
-import type { TuiThemeCurrent } from '@opencode-ai/plugin/tui'
-import { RequestyDetailDialog, type DetailDialogProps } from '../src/dialog'
+import { describe, test } from 'bun:test'
+
 import type { ModelUsage } from '../src/api'
-import type { RequestyData, RequestyStore } from '../src/state'
+import { type DetailDialogProps, RequestyDetailDialog } from '../src/dialog'
 import type { SpendThresholds } from '../src/format'
+import type { RequestyData, RequestyStore } from '../src/state'
 
 const THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
 

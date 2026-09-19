@@ -1,8 +1,8 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, type JSX } from 'solid-js'
 import type { TuiThemeCurrent } from '@opencode-ai/plugin/tui'
+import { For, type JSX, Show } from 'solid-js'
+
 import type { ModelUsage, TokenBreakdown } from './api'
-import type { RequestyStore } from './state'
 import {
   analyticsUrl,
   daysRemaining,
@@ -18,9 +18,9 @@ import {
   formatUsd,
   isProjectionOverLimit,
   modelAnalyticsUrl,
+  paceColor,
   padEnd,
   padStart,
-  paceColor,
   renderBar,
   severityColor,
   shortModel,
@@ -28,6 +28,7 @@ import {
   spendSeverity,
   type SpendThresholds
 } from './format'
+import type { RequestyStore } from './state'
 
 export interface DetailDialogProps {
   store: RequestyStore
