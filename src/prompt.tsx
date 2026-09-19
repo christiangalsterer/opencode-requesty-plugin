@@ -1,7 +1,7 @@
 /** @jsxImportSource @opentui/solid */
-import { Show, For, createMemo, type JSX } from 'solid-js'
+
 import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
-import type { RequestyStore } from './state'
+import { createMemo, For, type JSX, Show } from 'solid-js'
 import {
   analyticsUrl,
   formatPercent,
@@ -10,12 +10,13 @@ import {
   formatUsd,
   isProjectionOverLimit,
   paceColor,
-  severityColor,
+  type SpendThresholds,
   sessionRepaintKey,
+  severityColor,
   spendRatio,
-  spendSeverity,
-  type SpendThresholds
+  spendSeverity
 } from './format'
+import type { RequestyStore } from './state'
 
 export interface PromptProps {
   store: RequestyStore

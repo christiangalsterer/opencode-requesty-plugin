@@ -65,7 +65,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "ci": "bun run clean && bun install && bun run format && bun test && bun run build && bun pm pack && npm i --omit=dev --dry-run *.tgz",
+    "ci": "bun run clean && bun install && bun test && bun run build && bun pm pack && npm i --omit=dev --dry-run *.tgz",
     "biome": "biome check",
     "biome:fix": "biome check --write",
     "build": "bun run typecheck && mkdir -p ./dist && cp -r src/* dist/",

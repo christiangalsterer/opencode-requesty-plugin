@@ -1,6 +1,6 @@
 import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import { MAX_DESCENDANTS, descendantSessionIDs } from '../src/descendants'
+import { descendantSessionIDs, MAX_DESCENDANTS } from '../src/descendants'
 
 /** Build a fetchChildren stub from a parent → children adjacency map. */
 function childrenOf(tree: Record<string, string[]>): (id: string) => Promise<string[]> {

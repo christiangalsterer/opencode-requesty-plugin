@@ -1,7 +1,7 @@
 import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import { readSettings } from '../src/settings'
 import { DEFAULT_THRESHOLDS } from '../src/format'
+import { readSettings } from '../src/settings'
 
 const DEFAULTS = {
   refreshIntervalMs: 300000,
@@ -110,7 +110,6 @@ describe('readSettings', () => {
   })
 
   test('extra properties in sidebar are ignored', () => {
-    // @ts-ignore
     const settings = readSettings({ sidebar: { enabled: false, junk: 'ignore' } })
     assert.equal(settings.sidebar.enabled, false)
   })

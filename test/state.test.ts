@@ -1,9 +1,9 @@
-import { describe, test, mock } from 'bun:test'
+import { describe, mock, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import { createRequestyStore } from '../src/state'
+import type { ApiKeyInfo, UsageResponse } from '../src/api'
 import { avgSpendLastNDays, avgTokensLastNDays, sessionSpendForSessionIds, sessionSpendForSessionIdsForDay } from '../src/api'
 import { dailyAverage } from '../src/format'
-import type { ApiKeyInfo, UsageResponse } from '../src/api'
+import { createRequestyStore } from '../src/state'
 
 const KEY_INFO: ApiKeyInfo = {
   id: 'key-1',

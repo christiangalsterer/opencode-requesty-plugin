@@ -1,4 +1,4 @@
-import { describe, test, beforeEach, afterEach } from 'bun:test'
+import { afterEach, beforeEach, describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { detectApiKey } from '../src/key'
 

@@ -1,13 +1,13 @@
 /** @jsxImportSource @opentui/solid */
 import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
+import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { RGBA } from '@opentui/core'
 import { testRender } from '@opentui/solid'
-import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
-import { RequestySidebarWidget, type WidgetProps } from '../src/widget'
 import type { ModelUsage } from '../src/api'
-import type { RequestyData, RequestyStore } from '../src/state'
 import type { SpendThresholds } from '../src/format'
+import type { RequestyData, RequestyStore } from '../src/state'
+import { RequestySidebarWidget, type WidgetProps } from '../src/widget'
 
 const THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
 

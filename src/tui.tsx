@@ -1,13 +1,13 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
-import { detectApiKey } from './key'
 import { setApiLogger } from './api'
-import { createRequestyStore, type RequestyStore } from './state'
 import { descendantSessionIDs } from './descendants'
-import { RequestySidebarWidget } from './widget'
-import { RequestyPromptWidget } from './prompt'
 import { RequestyDetailDialog } from './dialog'
+import { detectApiKey } from './key'
+import { RequestyPromptWidget } from './prompt'
 import { readSettings } from './settings'
+import { createRequestyStore, type RequestyStore } from './state'
+import { RequestySidebarWidget } from './widget'
 
 const PLUGIN_ID = 'opencode-requesty-sidebar'
 const COMMAND_OPEN = 'requesty.open'

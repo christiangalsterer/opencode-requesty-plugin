@@ -1,4 +1,4 @@
-import { describe, test, mock, afterEach, beforeEach } from 'bun:test'
+import { afterEach, beforeEach, describe, mock, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { getApiKeySelf, getUsageSelf, RequestyApiError } from '../src/api'
 
