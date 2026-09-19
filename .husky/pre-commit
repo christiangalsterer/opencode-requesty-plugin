@@ -1,2 +1,1 @@
-bun run format:fix
-git add -u
+npx lint-staged
