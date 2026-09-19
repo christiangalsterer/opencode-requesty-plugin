@@ -79,6 +79,7 @@
     "test:coverage": "bun run typecheck && bun test --coverage",
     "release:prepare": "bun run clean && bun install && bun run format && bun test",
     "publish-npm": "bun run ci && bun publish --access=public",
-    "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run"
+    "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run",
+    "prepare": "husky"
   }
 }
