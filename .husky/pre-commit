@@ -1,1 +1,2 @@
-bun run husky
+bun run format:fix
+git add -u
