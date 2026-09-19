@@ -39,9 +39,17 @@
     "@opentui/solid": "0.5.11",
     "@types/bun": "1.4.2",
     "@types/node": "26.6.2",
+    "eslint": "10.10.0",
+    "eslint-config-love": "157.0.0",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-simple-import-sort": "14.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
     "prettier": "3.9.8",
     "solid-js": "1.9.15",
-    "typescript": "7.0.2"
+    "typescript": "^6.0.3",
+    "typescript-7": "npm:typescript@^7.0.2",
+    "typescript-eslint": "8.70.0"
   },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.18.16 <2",
@@ -60,7 +68,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "ci": "bun run clean && bun install && bun run format && bun test && bun run build && bun pm pack && npm i --dry-run *.tgz",
+    "ci": "bun run clean && bun install && bun run format && bun run lint && bun test && bun run build && bun pm pack && npm i --dry-run *.tgz",
     "build": "bun run typecheck && mkdir -p ./dist && cp -r src/* dist/",
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && mkdir -p ./dist",
@@ -68,6 +76,8 @@
     "deps": "bun install",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "bun run typecheck && bun test",
     "test:coverage": "bun run typecheck && bun test --coverage",
