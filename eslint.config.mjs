@@ -22,7 +22,7 @@ export default tseslint.config(
   },
   {
     plugins: {
-      'import': importPlugin,
+      import: importPlugin,
       'simple-import-sort': simpleImportSortPlugin,
       tseslint
     },
