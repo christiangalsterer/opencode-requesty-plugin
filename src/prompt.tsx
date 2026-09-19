@@ -76,14 +76,14 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
         parts.push({ text: `${metrics.join(' · ')} `, color: props.theme.textMuted })
       }
     }
-    if (!data) {
-      parts.push({ text: status === 'error' ? 'Requesty !' : 'Requesty …', color: props.theme.textMuted })
-    } else {
+    if (data) {
       const label =
         limit > 0
           ? `${formatUsd(spend)}/${formatUsd(limit)} ${formatPercent(ratio)}${props.showKeyName ? ` (${name})` : ''}`
           : `${formatUsd(spend)}/unlimited${props.showKeyName ? ` (${name})` : ''}`
       parts.push({ text: label, color, href: analyticsUrl(name) })
+    } else {
+      parts.push({ text: status === 'error' ? 'Requesty !' : 'Requesty …', color: props.theme.textMuted })
     }
     if (props.monthlyProjection && projectionParts) {
       const valueColor = projectionOverLimit ? props.theme.error : props.theme.textMuted
