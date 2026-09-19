@@ -1,7 +1,7 @@
 import love from 'eslint-config-love'
-import tseslint from 'typescript-eslint'
-import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort'
 import importPlugin from 'eslint-plugin-import'
+import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   love,
