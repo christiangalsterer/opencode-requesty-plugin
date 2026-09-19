@@ -6,7 +6,7 @@
       "name": "@christiangalsterer/opencode-requesty-plugin",
       "devDependencies": {
         "@biomejs/biome": "2.5.14",
-        "@opencode-ai/plugin": "^1.3.3",
+        "@opencode-ai/plugin": "1.18.31",
         "@opencode-ai/sdk": "1.18.31",
         "@opentui/core": "0.5.11",
         "@opentui/keymap": "0.5.11",
