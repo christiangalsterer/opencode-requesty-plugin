@@ -1,6 +1,7 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
 import { detectApiKey } from './key'
+import { setApiLogger } from './api'
 import { createRequestyStore, type RequestyStore } from './state'
 import { descendantSessionIDs } from './descendants'
 import { RequestySidebarWidget } from './widget'
@@ -15,6 +16,10 @@ const COMMAND_REFRESH = 'requesty.refresh'
 const plugin: TuiPluginModule = {
   id: PLUGIN_ID,
   tui: async (api, rawOptions) => {
+    setApiLogger((level, message) => {
+      void api.client.app.log({ service: 'requesty', level, message }).catch(() => {})
+    })
+
     const settings = readSettings(rawOptions)
 
     const key = detectApiKey(api.state.config)

@@ -27,7 +27,7 @@ import { dailyAverage, formatSessionStart } from './format'
 
 export type RefreshState = { status: 'idle' } | { status: 'loading' } | { status: 'ready'; fetchedAt: Date } | { status: 'error'; message: string }
 
-export type RequestyData = {
+export interface RequestyData {
   keyInfo: ApiKeyInfo
   models: ModelUsage[]
   todaySpend: number
@@ -54,7 +54,10 @@ export type RequestyData = {
 }
 
 /** The active session to attribute cost to. `created` is an epoch-ms timestamp. */
-export type ActiveSession = { id: string; created: number | undefined }
+export interface ActiveSession {
+  id: string
+  created: number | undefined
+}
 
 /**
  * The session-specific slice of `RequestyData`, cached per session id so a
@@ -77,7 +80,7 @@ type SessionSnapshot = Pick<
 /** Maximum number of per-session snapshots retained (oldest evicted first). */
 const SESSION_CACHE_LIMIT = 50
 
-export type RequestyStoreOptions = {
+export interface RequestyStoreOptions {
   apiKey: string
   onError?: (message: string) => void
   /** Injectable fetchers (defaults to the real API client); used by tests. */
@@ -95,7 +98,7 @@ export type RequestyStoreOptions = {
   onRender?: () => void
 }
 
-export type RequestyStore = {
+export interface RequestyStore {
   state: () => RefreshState
   data: () => RequestyData | undefined
   /** Error message when the last refresh failed; undefined otherwise. */

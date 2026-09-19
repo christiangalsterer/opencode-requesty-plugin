@@ -29,7 +29,7 @@ import {
   type SpendThresholds
 } from './format'
 
-export type DetailDialogProps = {
+export interface DetailDialogProps {
   store: RequestyStore
   theme: TuiThemeCurrent
   thresholds: SpendThresholds

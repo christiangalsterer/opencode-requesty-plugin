@@ -3,12 +3,21 @@
 const REQUESTY_ORIGIN = 'https://api-v2.requesty.ai'
 const REQUEST_TIMEOUT_MS = 10_000
 
-// Injected by opencode host; keeping definition minimal to avoid import dependency.
-const logger = {
-  warn: (message: string) => console.warn(`[Requesty] ${message}`)
+export type ApiLogger = (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void
+
+// Injected by the opencode host at plugin init; defaults to a no-op so pure
+// module usage (and tests) never touches `console` (invisible in the TUI).
+let apiLogger: ApiLogger | undefined
+
+export function setApiLogger(logger: ApiLogger | undefined): void {
+  apiLogger = logger
 }
 
-export type ApiKeyInfo = {
+function logWarn(message: string): void {
+  apiLogger?.('warn', message)
+}
+
+export interface ApiKeyInfo {
   id: string
   name: string
   logging: boolean
@@ -28,11 +37,11 @@ function toNumber(value: unknown, field?: string): number {
     const parsed = Number(value)
     if (Number.isFinite(parsed)) return parsed
   }
-  if (field) logger.warn(`Failed to coerce field "${field}" to number: ${JSON.stringify(value)}`)
+  if (field) logWarn(`Failed to coerce field "${field}" to number: ${JSON.stringify(value)}`)
   return 0
 }
 
-export type UsageGroupedEntry = {
+export interface UsageGroupedEntry {
   group_by_values: Record<string, unknown>
   completions_requests?: number
   spend?: number
@@ -41,7 +50,7 @@ export type UsageGroupedEntry = {
   total_tokens?: number
 }
 
-export type UsageEntry = {
+export interface UsageEntry {
   completions_requests?: number
   spend?: number
   input_tokens?: number
@@ -50,7 +59,7 @@ export type UsageEntry = {
   grouped_data?: UsageGroupedEntry[]
 }
 
-export type UsageResponse = {
+export interface UsageResponse {
   usage: Record<string, UsageEntry>
 }
 
@@ -92,7 +101,7 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
       const body = JSON.parse(raw) as { error?: { message?: string } }
       if (body?.error?.message) message = body.error.message
     } catch {
-      logger.warn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, 200)}`)
+      logWarn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, 200)}`)
     }
     throw new RequestyApiError(response.status, message)
   }
@@ -109,7 +118,7 @@ export async function getApiKeySelf(apiKey: string): Promise<ApiKeyInfo> {
   }
 }
 
-export type UsageQuery = {
+export interface UsageQuery {
   /** RFC3339 start datetime (required). */
   start: string
   /** RFC3339 end datetime (optional). */
@@ -128,7 +137,7 @@ export function getUsageSelf(apiKey: string, query: UsageQuery): Promise<UsageRe
 }
 
 /** Per-model aggregate over a usage response. */
-export type ModelUsage = {
+export interface ModelUsage {
   model: string
   spend: number
   inputTokens: number
@@ -138,7 +147,7 @@ export type ModelUsage = {
 }
 
 /** Aggregated totals from a usage response. */
-export type AggregatedUsage = {
+export interface AggregatedUsage {
   models: ModelUsage[]
   spend: number
   inputTokens: number
@@ -260,7 +269,7 @@ export function avgSpendLastNDays(response: UsageResponse, days: number, now = n
   return total / days
 }
 
-export type TokenBreakdown = {
+export interface TokenBreakdown {
   input: number
   output: number
   total: number
@@ -310,7 +319,7 @@ export function avgTokensLastNDays(response: UsageResponse, days: number, now = 
 export const SESSION_AFFINITY_KEY = 'extra.X-Session-Affinity'
 
 /** Aggregate cost/tokens/requests for a single Requesty session over a usage response. */
-export type SessionSpend = {
+export interface SessionSpend {
   spend: number
   requests: number
   inputTokens: number

@@ -9,7 +9,7 @@ const MAX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 const MIN_MAX_MODELS = 1
 const MAX_MAX_MODELS = 20
 
-export type SidebarSettings = {
+export interface SidebarSettings {
   enabled: boolean
   maxModels: number
   showTokens: boolean
@@ -18,7 +18,7 @@ export type SidebarSettings = {
   order: number
 }
 
-export type PromptSettings = {
+export interface PromptSettings {
   enabled: boolean
   budgetIndicator: boolean
   todaySpend: boolean
@@ -32,11 +32,11 @@ export type PromptSettings = {
   order: number
 }
 
-export type DialogSettings = {
+export interface DialogSettings {
   showKeyName: boolean
 }
 
-export type PluginSettings = {
+export interface PluginSettings {
   refreshIntervalMs: number
   thresholds: SpendThresholds
   sidebar: SidebarSettings

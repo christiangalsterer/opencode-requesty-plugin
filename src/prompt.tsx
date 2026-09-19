@@ -17,7 +17,7 @@ import {
   type SpendThresholds
 } from './format'
 
-export type PromptProps = {
+export interface PromptProps {
   store: RequestyStore
   api: TuiPluginApi
   sessionID: string

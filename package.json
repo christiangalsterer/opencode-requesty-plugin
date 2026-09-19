@@ -39,12 +39,12 @@
     "@opentui/solid": "0.5.11",
     "@types/bun": "1.4.2",
     "@types/node": "26.6.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.5.1",
+    "husky": "9.1.7",
+    "lint-staged": "17.5.1",
     "prettier": "3.9.8",
     "solid-js": "1.9.15",
-    "typescript": "^6.0.3",
-    "typescript-7": "npm:typescript@^7.0.2",
+    "typescript": "6.0.3",
+    "typescript-7": "npm:typescript@7.0.2",
     "typescript-eslint": "8.70.0"
   },
   "peerDependencies": {

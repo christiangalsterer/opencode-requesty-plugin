@@ -169,7 +169,7 @@ export function paceMarker(pace: Pace | undefined): string {
 }
 
 /** Theme subset used to map a pace to a color. Structural type keeps format.ts free of plugin SDK imports. */
-export type PaceTheme = {
+export interface PaceTheme {
   error: unknown
   success: unknown
   textMuted: unknown
@@ -182,7 +182,7 @@ export function paceColor<T extends PaceTheme>(pace: Pace | undefined, theme: T)
   return theme.textMuted as T['error']
 }
 
-export type ProjectionParts = {
+export interface ProjectionParts {
   projected: number
   arrow: string
   pace: Pace | undefined
@@ -200,7 +200,7 @@ export function formatProjectionParts(spend: number, limit: number, date = new D
   return { projected, arrow: paceMarker(pace), pace }
 }
 
-export type MonthDeltaParts = {
+export interface MonthDeltaParts {
   arrow: string
   sign: string
   pct: number
@@ -234,7 +234,7 @@ export function modelAnalyticsUrl(keyName: string, modelName: string): string {
 export type SpendSeverity = 'ok' | 'warning' | 'critical'
 
 /** Spend/limit ratios at which the bar turns yellow (warning) and red (error). */
-export type SpendThresholds = {
+export interface SpendThresholds {
   warning: number
   error: number
 }
@@ -287,7 +287,7 @@ export function padStart(value: string, width: number): string {
  * so format.ts stays free of plugin SDK imports; structurally compatible with
  * the host's `Message` type. These mutations are what signal a repaint.
  */
-export type MessageRepaintFields = {
+export interface MessageRepaintFields {
   cost?: number
   time?: {
     created?: number
@@ -352,7 +352,7 @@ export function sessionRepaintKey(messages: readonly MessageRepaintFields[]): nu
 }
 
 /** Theme subset used to map a severity to a color. Structural type keeps format.ts free of plugin SDK imports. */
-export type SeverityTheme = {
+export interface SeverityTheme {
   error: unknown
   warning: unknown
   success: unknown

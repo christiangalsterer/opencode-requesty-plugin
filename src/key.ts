@@ -14,14 +14,14 @@ export type KeyResult = { ok: true; apiKey: string; source: string } | { ok: fal
 const ENV_INTERPOLATION = /^\{env:([^}]+)\}$/
 const REQUESTY_HOST = /(^|\.)requesty\.ai$/i
 
-type ProviderConfig = {
+interface ProviderConfig {
   options?: {
     apiKey?: unknown
     baseURL?: unknown
   }
 }
 
-type SdkConfigLike = {
+interface SdkConfigLike {
   provider?: Record<string, ProviderConfig>
 }
 

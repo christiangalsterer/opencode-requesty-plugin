@@ -24,7 +24,7 @@ import {
   type SpendThresholds
 } from './format'
 
-export type WidgetProps = {
+export interface WidgetProps {
   store: RequestyStore
   api: TuiPluginApi
   sessionID: string
@@ -98,7 +98,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   )
 }
 
-type SnapshotProps = {
+interface SnapshotProps {
   store: RequestyStore
   theme: TuiThemeCurrent
   maxModels: number
