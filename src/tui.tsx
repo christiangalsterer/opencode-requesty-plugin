@@ -5,6 +5,7 @@ import { descendantSessionIDs, rootSessionID } from './descendants'
 import { RequestyDetailDialog } from './dialog'
 import { detectApiKey } from './key'
 import { RequestyPromptWidget } from './prompt'
+import { sessionIDFromRoute } from './route'
 import { readSettings } from './settings'
 import { createRequestyStore, type RequestyStore } from './state'
 import { RequestySidebarWidget } from './widget'
@@ -173,7 +174,13 @@ const plugin: TuiPluginModule = {
     })
 
     // Refresh triggers: startup, interval safety net, session lifecycle
-    void store.refresh()
+    const initialSessionID = sessionIDFromRoute(api.route.current)
+    if (initialSessionID) {
+      // `setSessionID` triggers the refresh, so don't also call `refresh()` here.
+      store.setSessionID(initialSessionID)
+    } else {
+      void store.refresh()
+    }
 
     const interval = setInterval(() => {
       void store.refresh()

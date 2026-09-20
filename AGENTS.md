@@ -37,7 +37,8 @@ Before marking any task as `completed`, the following command chain must be exec
 - `src/tui.tsx` — plugin entry (`TuiPluginModule`): slot registration (`sidebar_content`, `session_prompt_right`), keymap commands, refresh timers.
 - `src/widget.tsx` / `src/prompt.tsx` / `src/dialog.tsx` — sidebar widget / prompt widget / detail dialog (Solid components); `RequestyPromptWidget` renders the `session_prompt_right` indicator.
 - `src/state.ts` — Solid store: fetch + refresh logic with in-flight dedup and pending-refresh pattern (injectable fetchers for tests).
-- `src/descendants.ts` — pure BFS walk of the sub-agent delegation tree (`descendantSessionIDs`); unit-tested.
+- `src/descendants.ts` — pure BFS walk of the sub-agent delegation tree (`descendantSessionIDs`) and upward root walk (`rootSessionID`); unit-tested.
+- `src/route.ts` — pure `sessionIDFromRoute` (extracts the active session id from the host route); unit-tested.
 - `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
 - `src/api.ts` — Requesty Management API client (`apikey/self`, `apikey/self/usage`).
 - `src/format.ts` — pure formatting helpers (all unit-tested logic lives here).
@@ -47,6 +48,7 @@ Before marking any task as `completed`, the following command chain must be exec
 - `test/settings.test.ts` — `readSettings` option parsing and bounds.
 - `test/state.test.ts` — `createRequestyStore` refresh/in-flight/pending-refresh/error logic.
 - `test/descendants.test.ts` — `descendantSessionIDs` BFS (tree walk, dedup, cap, error fallback).
+- `test/route.test.ts` — `sessionIDFromRoute` route → session id extraction.
 - `test/prompt.test.tsx` / `test/widget.test.tsx` / `test/dialog.test.tsx` — render-level assertions on the Solid components via `@opentui/solid`'s `testRender`.
 
 ## Coding Standards
