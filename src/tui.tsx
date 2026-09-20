@@ -1,7 +1,7 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
 import { setApiLogger } from './api'
-import { descendantSessionIDs } from './descendants'
+import { descendantSessionIDs, rootSessionID } from './descendants'
 import { RequestyDetailDialog } from './dialog'
 import { detectApiKey } from './key'
 import { RequestyPromptWidget } from './prompt'
@@ -51,9 +51,10 @@ const plugin: TuiPluginModule = {
         api.ui.toast({ variant: 'error', title: 'Requesty', message })
       },
       activeSession: (sessionID) => {
-        const session = api.state.session.get(sessionID)
-        if (!session) return { id: sessionID, created: undefined }
-        return { id: sessionID, created: session.time?.created }
+        const rootID = rootSessionID(sessionID, (id) => api.state.session.get(id)?.parentID)
+        const session = api.state.session.get(rootID)
+        if (!session) return { id: rootID, created: undefined }
+        return { id: rootID, created: session.time?.created }
       },
       fetchSessionChildren: (sessionID) =>
         descendantSessionIDs(sessionID, (id) =>
@@ -180,7 +181,7 @@ const plugin: TuiPluginModule = {
     })
 
     const unsubSessionUpdated = api.event.on('session.updated', (evt) => {
-      store.setSessionID(evt.properties.info.id)
+      store.syncActiveSession(evt.properties.info.id)
     })
 
     const unsubSessionIdle = api.event.on('session.idle', () => {

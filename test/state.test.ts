@@ -486,6 +486,115 @@ describe('createRequestyStore', () => {
     assert.equal(calls, 1)
   })
 
+  test('setSessionID re-resolves when the session created timestamp becomes available', async () => {
+    const sessionId = 'ses_test'
+    const created = Date.UTC(2026, 7, 27, 12)
+    const expectedStartLabel = new Date(created).toISOString().slice(0, 10)
+    let calls = 0
+    let resolvedCreated: number | undefined
+    const store = createStore({
+      fetchApiKey: () => {
+        calls++
+        return Promise.resolve(KEY_INFO)
+      },
+      activeSession: () => ({ id: sessionId, created: resolvedCreated })
+    })
+
+    // First resolution: host has no created timestamp yet → fallback window.
+    store.setSessionID(sessionId)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(calls, 1)
+    assert.notEqual(store.data()!.sessionStartLabel, expectedStartLabel)
+
+    // Same id, still no created → no extra work.
+    store.setSessionID(sessionId)
+    assert.equal(calls, 1)
+
+    // Host now knows the created timestamp → same id but must re-resolve.
+    resolvedCreated = created
+    store.setSessionID(sessionId)
+    assert.equal(calls, 2)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(store.data()!.sessionStartLabel, expectedStartLabel)
+  })
+
+  test('syncActiveSession ignores an update for an unrelated session', async () => {
+    const sessionA = 'ses_a'
+    const sessionB = 'ses_b'
+    let calls = 0
+    const store = createStore({
+      fetchApiKey: () => {
+        calls++
+        return Promise.resolve(KEY_INFO)
+      },
+      activeSession: (id) => ({ id, created: undefined })
+    })
+    store.setSessionID(sessionA)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(calls, 1)
+    assert.equal(store.activeSessionID(), sessionA)
+
+    // An update for a different session must not flip the active session.
+    store.syncActiveSession(sessionB)
+    assert.equal(store.activeSessionID(), sessionA)
+    assert.equal(calls, 1)
+  })
+
+  test('syncActiveSession re-resolves the active session when created becomes available', async () => {
+    const sessionId = 'ses_test'
+    const created = Date.UTC(2026, 7, 27, 12)
+    const expectedStartLabel = new Date(created).toISOString().slice(0, 10)
+    let calls = 0
+    let resolvedCreated: number | undefined
+    const store = createStore({
+      fetchApiKey: () => {
+        calls++
+        return Promise.resolve(KEY_INFO)
+      },
+      activeSession: () => ({ id: sessionId, created: resolvedCreated })
+    })
+
+    store.setSessionID(sessionId)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(calls, 1)
+
+    // Same id, unchanged created → no extra work.
+    store.syncActiveSession(sessionId)
+    assert.equal(calls, 1)
+
+    // Host now reports the created timestamp → re-resolve and refresh.
+    resolvedCreated = created
+    store.syncActiveSession(sessionId)
+    assert.equal(calls, 2)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(store.data()!.sessionStartLabel, expectedStartLabel)
+  })
+
+  test('syncActiveSession maps a child update to its root session', async () => {
+    const rootId = 'ses_root'
+    const childId = 'ses_child'
+    let calls = 0
+    const store = createStore({
+      fetchApiKey: () => {
+        calls++
+        return Promise.resolve(KEY_INFO)
+      },
+      activeSession: (id) => ({ id: id === childId ? rootId : id, created: undefined })
+    })
+
+    // Displaying the child resolves to the root.
+    store.setSessionID(childId)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(store.activeSessionID(), rootId)
+    assert.equal(calls, 1)
+
+    // A child update resolves to the active root → re-resolve (no-op here since
+    // created is unchanged, so no extra fetch).
+    store.syncActiveSession(childId)
+    assert.equal(store.activeSessionID(), rootId)
+    assert.equal(calls, 1)
+  })
+
   test('setSessionID publishes cached session figures immediately on revisit', async () => {
     const sessionA = 'ses_a'
     const sessionB = 'ses_b'

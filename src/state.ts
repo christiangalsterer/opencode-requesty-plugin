@@ -47,7 +47,7 @@ export interface RequestyData {
   sessionTotalTokens: TokenBreakdown
   /** Label for the session's start (e.g. "2026-08-27"); undefined when unavailable. */
   sessionStartLabel: string | undefined
-  /** Id of the session the session-cost fields belong to; undefined when none. */
+  /** Id of the root session the session-cost fields belong to; undefined when none. */
   sessionId: string | undefined
   /** Number of descendant (sub-agent) sessions folded into the session totals. */
   subagentCount: number
@@ -109,6 +109,12 @@ export interface RequestyStore {
   refresh: () => Promise<void>
   /** Set the active session id; refreshes session cost on the next refresh. */
   setSessionID: (sessionID: string | undefined) => void
+  /**
+   * Re-resolve and refresh the active session when the host reports an update
+   * for it. Updates for any other session (e.g. a sub-agent child of a different
+   * root) are ignored so the sidebar never flips to an unrelated session.
+   */
+  syncActiveSession: (sessionID: string) => void
   /** Reactive accessor for the currently-active session id (undefined when none). */
   activeSessionID: () => string | undefined
 }
@@ -139,16 +145,28 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   }
 
   function setActiveSession(id: string | undefined): void {
+    const current = session()
     const next = id ? (options.activeSession?.(id) ?? { id, created: undefined }) : undefined
-    if (next?.id === session()?.id) return
+    if (next?.id === current?.id && next?.created === current?.created) return
+    const idChanged = next?.id !== current?.id
     setSession(next)
     // Publish any cached figures for this session synchronously so the current
-    // slot invocation can render them instead of the loading placeholder.
-    const cached = next ? sessionCache.get(next.id) : undefined
+    // slot invocation can render them instead of the loading placeholder. Only on
+    // a true revisit (id change) — a re-resolved `created` for the same id must
+    // wait for the refresh rather than render the stale fallback-window snapshot.
+    const cached = idChanged && next ? sessionCache.get(next.id) : undefined
     if (cached) {
       setData((previous) => (previous ? { ...previous, ...cached } : previous))
     }
     void refresh()
+  }
+
+  function syncActiveSession(id: string): void {
+    // Resolve through `activeSession` so a child id maps to its root; only a
+    // session that resolves to the currently-active root is re-resolved.
+    const resolved = options.activeSession?.(id)
+    if ((resolved?.id ?? id) !== session()?.id) return
+    setActiveSession(id)
   }
 
   async function refresh(): Promise<void> {
@@ -258,6 +276,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     },
     refresh,
     setSessionID: setActiveSession,
+    syncActiveSession,
     activeSessionID: () => session()?.id
   }
 }
