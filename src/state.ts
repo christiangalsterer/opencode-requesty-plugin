@@ -129,6 +129,13 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
 
   let inFlight: Promise<void> | undefined
   let pending = false
+  /**
+   * The raw session id currently displayed (before resolving to its root), so
+   * `syncActiveSession` can recognize an update for the displayed session even
+   * when its resolved root has since changed (e.g. a parent session loading
+   * after its child was first shown).
+   */
+  let displayedID: string | undefined
 
   /** Per-session snapshots, keyed by session id; refreshed on every session-aware refresh. */
   const sessionCache = new Map<string, SessionSnapshot>()
@@ -147,6 +154,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   function setActiveSession(id: string | undefined): void {
     const current = session()
     const next = id ? (options.activeSession?.(id) ?? { id, created: undefined }) : undefined
+    // Track the raw displayed id even when the resolved root is unchanged, so a
+    // later update for this exact session is recognized by `syncActiveSession`.
+    displayedID = id
     if (next?.id === current?.id && next?.created === current?.created) return
     const idChanged = next?.id !== current?.id
     setSession(next)
@@ -162,10 +172,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   }
 
   function syncActiveSession(id: string): void {
-    // Resolve through `activeSession` so a child id maps to its root; only a
-    // session that resolves to the currently-active root is re-resolved.
-    const resolved = options.activeSession?.(id)
-    if ((resolved?.id ?? id) !== session()?.id) return
+    // Only re-resolve updates for the session currently displayed; updates for
+    // any other session (e.g. a sub-agent of a different root) are ignored.
+    if (id !== displayedID) return
     setActiveSession(id)
   }
 

@@ -595,6 +595,30 @@ describe('createRequestyStore', () => {
     assert.equal(calls, 1)
   })
 
+  test('syncActiveSession re-roots a displayed child once its parent becomes known', async () => {
+    const childId = 'ses_child'
+    const parentId = 'ses_parent'
+    let parentID: string | undefined
+    let created: number | undefined
+    const store = createStore({
+      activeSession: (id) => {
+        const rootID = id === childId && parentID ? parentID : id
+        return { id: rootID, created: rootID === parentId ? created : undefined }
+      }
+    })
+
+    // The child is displayed before its parent session is known → treated as root.
+    store.setSessionID(childId)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(store.activeSessionID(), childId)
+
+    // The parent session becomes known and an update for the displayed child fires.
+    parentID = parentId
+    created = Date.UTC(2026, 7, 27, 12)
+    store.syncActiveSession(childId)
+    assert.equal(store.activeSessionID(), parentId)
+  })
+
   test('setSessionID publishes cached session figures immediately on revisit', async () => {
     const sessionA = 'ses_a'
     const sessionB = 'ses_b'
