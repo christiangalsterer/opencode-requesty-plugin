@@ -96,6 +96,9 @@ const plugin: TuiPluginModule = {
         order: settings.prompt.order,
         slots: {
           session_prompt_right(ctx, slotProps) {
+            // Supply the active session id when the sidebar is disabled, so the
+            // prompt's session spend still resolves.
+            store.setSessionID(slotProps.session_id)
             return (
               <RequestyPromptWidget
                 store={store}

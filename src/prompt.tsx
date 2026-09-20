@@ -55,7 +55,7 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
     const parts: { text: string; color?: unknown; href?: string }[] = []
     if (data) {
       const metrics: string[] = []
-      if (props.showSessionInfo && data.sessionId === props.store.activeSessionID() && data.sessionTotalSpend > 0) {
+      if (props.showSessionInfo && data.sessionId !== undefined && data.sessionId === props.store.activeSessionID() && data.sessionTotalSpend > 0) {
         let label = `S ${formatUsd(data.sessionTotalSpend)}`
         if (props.showTokens) {
           label += ` ${formatTokenInline(data.sessionTotalTokens.input, data.sessionTotalTokens.output)}`

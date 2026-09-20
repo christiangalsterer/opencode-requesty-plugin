@@ -172,6 +172,10 @@ describe('RequestyPromptWidget', () => {
     // Zero session spend → no session metric.
     const zeroStore = makeStore(makeData({ sessionTotalSpend: 0 }), { activeSessionID: 'ses_test' })
     assert.ok(!(await renderPrompt(zeroStore)).includes('S $'))
+
+    // No active session id (both undefined) → no session metric.
+    const noSessionStore = makeStore(makeData({ sessionId: undefined }), { activeSessionID: undefined })
+    assert.ok(!(await renderPrompt(noSessionStore)).includes('S $'))
   })
 
   test('renders the month-end projection only when enabled and a limit is set', async () => {
