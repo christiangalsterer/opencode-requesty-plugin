@@ -11,7 +11,7 @@ import { readSettings } from './settings'
 import { createRequestyStore, type RequestyStore } from './state'
 import { RequestySidebarWidget } from './widget'
 
-const PLUGIN_ID = 'opencode-requesty-sidebar'
+const PLUGIN_ID = 'opencode-requesty-plugin'
 const COMMAND_OPEN = 'requesty.open'
 const COMMAND_REFRESH = 'requesty.refresh'
 /** Debounce for message-driven refreshes, so a burst of updates triggers one fetch. */
