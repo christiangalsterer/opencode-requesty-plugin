@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.3](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.2.2...v1.2.3) (2026-09-21)
+
+
+### Bug Fixes
+
+* **prompt:** resolve session spend when the sidebar is disabled ([df1d418](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/df1d4188517ed133da4aab8cc0dd41fb9d43fef8))
+* render the Updated footer timestamp in local time ([b0cf9a0](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/b0cf9a09bf4fa1e842f3031a01666e60180cc031))
+* **session:** attribute cost to the root session incl. sub-agents ([98cb8ed](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/98cb8ed8f57eb0e9be847585ba8fa76242cc4022))
+* **session:** re-root a displayed child once its parent session loads ([da13041](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/da130413306b1ca3a9444531875688bfee2a0d11))
+* **session:** seed active session from route at startup ([13f66b9](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/13f66b9da8726afcf486da4843fef1bcca5395b8))
+* **sidebar:** repaint on store refresh completion ([56a7507](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/56a750766c201c0d7edc3d2b2adf38de6e5171a2))
+
 ## [1.2.2](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.2.1...v1.2.2) (2026-09-18)
 
 
