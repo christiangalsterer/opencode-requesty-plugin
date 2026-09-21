@@ -49,9 +49,8 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     // Reading the message *content* (not just length) makes the slot repaint on
     // every message.updated — content mutates in place while the array length
     // stays constant, so a length-only hook would only fire on session start.
-    const data = props.store.data()
-    const repaintKey = sessionRepaintKey(props.api.state.session.messages(props.sessionID))
-    return { data, repaintKey }
+    sessionRepaintKey(props.api.state.session.messages(props.sessionID))
+    return props.store.data()
   })
   const snapshotProps = (stale?: boolean) => ({
     store: props.store,
@@ -66,9 +65,9 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   return (
     <box flexDirection="column" paddingTop={1}>
       <text fg={theme().text}>
-        <Show when={snapshot().data} fallback={<strong>Requesty</strong>}>
-          <a href={analyticsUrl(snapshot().data!.keyInfo.name)}>
-            <strong>Requesty{props.showKeyName ? ` (${snapshot().data!.keyInfo.name})` : ''}</strong>
+        <Show when={snapshot()} fallback={<strong>Requesty</strong>}>
+          <a href={analyticsUrl(snapshot()!.keyInfo.name)}>
+            <strong>Requesty{props.showKeyName ? ` (${snapshot()!.keyInfo.name})` : ''}</strong>
           </a>
         </Show>
       </text>
@@ -78,14 +77,14 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
           fallback={
             <box flexDirection="column">
               <text fg={theme().error}>Requesty: {props.store.errorMessage() ?? ''}</text>
-              <Show when={snapshot().data}>
+              <Show when={snapshot()}>
                 <Snapshot {...snapshotProps(true)} />
               </Show>
             </box>
           }
         >
           <Show
-            when={snapshot().data}
+            when={snapshot()}
             fallback={
               <text fg={theme().textMuted}>
                 {props.store.state().status === 'loading' ? 'Loading Requesty usage…' : 'Requesty: waiting for first refresh…'}
