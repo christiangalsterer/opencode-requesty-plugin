@@ -322,13 +322,10 @@ describe('format helpers', () => {
     assert.equal(formatUsd(18.21894606), '$18.22')
   })
 
-  test('formatTimestamp renders a locale string with spaces', () => {
-    const formatted = formatTimestamp(new Date('2026-08-14T23:05:09.123Z'))
-    assert.ok(formatted.includes('2026'))
-    assert.ok(formatted.includes('08'))
-    assert.ok(formatted.includes('14'))
-    assert.ok(formatted.includes('23'))
-    assert.ok(!formatted.includes('T'))
+  test('formatTimestamp renders YYYY-MM-DD HH:MM:SS in local time', () => {
+    // Local-component dates render identically in every timezone.
+    assert.equal(formatTimestamp(new Date(2026, 7, 14, 23, 5, 9)), '2026-08-14 23:05:09')
+    assert.equal(formatTimestamp(new Date(2026, 0, 3, 4, 5, 6)), '2026-01-03 04:05:06')
   })
 
   test('formatTokens', () => {

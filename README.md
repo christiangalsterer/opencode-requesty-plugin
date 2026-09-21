@@ -214,7 +214,7 @@ Data is refreshed on startup, on a configurable periodic interval, when a new se
 
 ## Metrics
 
-All amounts are in USD and dates are evaluated in UTC.
+All amounts are in USD and dates are evaluated in UTC. The detail dialog's `Updated:` footer is shown in your local timezone.
 
 - **Today** — spend and tokens for the current calendar day.
 - **Daily avg** — current month's total spend and tokens divided by the number of days elapsed so far this month.

@@ -69,19 +69,15 @@ export function shortModel(model: string, maxLength: number): string {
   return short.slice(0, Math.max(1, maxLength - 1)) + '…'
 }
 
-/** Format a Date as a compact locale string for the "Updated" footer. */
+/** Format a Date as `YYYY-MM-DD HH:MM:SS` in local time. */
 export function formatTimestamp(date: Date): string {
-  return date
-    .toLocaleString('sv-SE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    })
-    .replace('T', ' ')
+  const yyyy = padStart(String(date.getFullYear()), 4)
+  const mm = padStart(String(date.getMonth() + 1), 2)
+  const dd = padStart(String(date.getDate()), 2)
+  const hh = padStart(String(date.getHours()), 2)
+  const mi = padStart(String(date.getMinutes()), 2)
+  const ss = padStart(String(date.getSeconds()), 2)
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`
 }
 
 /** Format an RFC3339 timestamp as a `YYYY-MM-DD` label (UTC), e.g. "2026-08-27". */
@@ -100,7 +96,7 @@ export function dayOfMonth(date = new Date()): number {
 }
 
 /** Fraction of the month elapsed [0,1] — dayOfMonth / daysInMonth. */
-export function monthElapsedRatio(date = new Date()): number {
+function monthElapsedRatio(date = new Date()): number {
   const days = daysInMonth(date)
   return days > 0 ? dayOfMonth(date) / days : 0
 }
