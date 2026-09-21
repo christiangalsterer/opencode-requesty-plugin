@@ -21,6 +21,7 @@ import {
   analyticsUrl,
   DEFAULT_THRESHOLDS,
   dailyAverage,
+  daysInMonth,
   daysRemaining,
   daysToExhaustion,
   formatLimit,
@@ -414,7 +415,7 @@ describe('format helpers', () => {
 
   test('normalizeThreshold handles extreme values', () => {
     assert.equal(normalizeThreshold(-10), undefined)
-    assert.equal(normalizeThreshold(110), 1.1) // Correction: code logic allows 1.1, so this is valid behavior
+    assert.equal(normalizeThreshold(110), 1.1)
     assert.equal(normalizeThreshold(100), 1)
     assert.equal(normalizeThreshold(0), 0)
   })
@@ -453,10 +454,16 @@ describe('month projection', () => {
   // All dates fixed to 2026-08-15 (15/31 ≈ 48.4% of month elapsed).
   const aug15 = new Date('2026-08-15T12:00:00Z')
 
-  test('handles Feb 29 (leap year) projection', () => {
-    const leapDay = new Date('2026-02-28T12:00:00Z') // Not a leap year in 2026, so Feb has 28 days
+  test('handles a non-leap February (2026) projection', () => {
     const feb28 = new Date('2026-02-28T12:00:00Z')
+    assert.equal(daysInMonth(feb28), 28)
     assert.equal(projectedMonthEnd(14, feb28), (14 / 28) * 28)
+  })
+
+  test('handles a leap February (2028) projection', () => {
+    const feb29 = new Date('2028-02-29T12:00:00Z')
+    assert.equal(daysInMonth(feb29), 29)
+    assert.equal(projectedMonthEnd(14, feb29), (14 / 29) * 29)
   })
 
   test('handles end-of-year projection (December)', () => {
