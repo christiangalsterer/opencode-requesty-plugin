@@ -1,6 +1,6 @@
 /** Requesty Management API client. */
 
-const REQUESTY_ORIGIN = 'https://api-v2.requesty.ai'
+const REQUESTY_ORIGIN = 'https://api-v2.requesty.ai/'
 const REQUEST_TIMEOUT_MS = 10_000
 
 export type ApiLogger = (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void
@@ -75,7 +75,7 @@ export class RequestyApiError extends Error {
 }
 
 async function request<T>(apiKey: string, path: string, init?: { params?: Record<string, string> }): Promise<T> {
-  const url = new URL(path, REQUESTY_ORIGIN.endsWith('/') ? REQUESTY_ORIGIN : REQUESTY_ORIGIN + '/')
+  const url = new URL(path, REQUESTY_ORIGIN)
   for (const [key, value] of Object.entries(init?.params ?? {})) {
     url.searchParams.set(key, value)
   }
