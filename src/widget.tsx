@@ -40,18 +40,24 @@ export interface WidgetProps {
   showKeyName: boolean
   /** Show the per-session cost collapsible section. */
   showSessionInfo: boolean
+  /** Optional plugin-owned heartbeat; reading it keeps time-derived values fresh. */
+  tick?: () => number
 }
 
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
   const theme = () => props.theme
-  const snapshot = createMemo(() => ({
+  const snapshot = createMemo(() => {
     // Read host-tracked state to force sidebar slot repaints on session/message updates.
     // Reading the message *content* (not just length) makes the slot repaint on
     // every message.updated — content mutates in place while the array length
     // stays constant, so a length-only hook would only fire on session start.
-    data: props.store.data(),
-    repaintKey: sessionRepaintKey(props.api.state.session.messages(props.sessionID))
-  }))
+    const data = props.store.data()
+    const repaintKey = sessionRepaintKey(props.api.state.session.messages(props.sessionID))
+    // Plugin-owned heartbeat: reading it keeps time-derived values fresh and lets
+    // a timer (macrotask) update re-evaluate this memo even without host input.
+    props.tick?.()
+    return { data, repaintKey }
+  })
   const snapshotProps = (stale?: boolean) => ({
     store: props.store,
     theme: theme(),

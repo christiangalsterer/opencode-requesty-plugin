@@ -1,5 +1,6 @@
 import { describe, mock, test } from 'bun:test'
 import assert from 'node:assert/strict'
+import { createSignal } from 'solid-js'
 import type { ApiKeyInfo, UsageResponse } from '../src/api'
 import { avgSpendLastNDays, avgTokensLastNDays, sessionSpendForSessionIds, sessionSpendForSessionIdsForDay } from '../src/api'
 import { dailyAverage } from '../src/format'
@@ -43,9 +44,11 @@ function createStore(opts: {
   activeSession?: (id: string) => { id: string; created: number | undefined } | undefined
   fetchSessionChildren?: (id: string) => Promise<string[]>
   onRender?: () => void
+  createSignal?: typeof createSignal
 }) {
   return createRequestyStore({
     apiKey: 'sk-test',
+    createSignal: opts.createSignal,
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
     fetchUsage: (key, _query) => opts.fetchUsage?.() ?? Promise.resolve(_query?.end ? EMPTY_USAGE : USAGE),
@@ -62,6 +65,8 @@ describe('createRequestyStore', () => {
     assert.equal(store.state().status, 'idle')
     await store.refresh()
     assert.equal(store.state().status, 'ready')
+    // onRender is deferred to a macrotask so it lands after Solid flushes.
+    await new Promise((resolve) => setTimeout(resolve, 0))
     assert.equal(onRender.mock.calls.length, 1)
     const data = store.data()
     assert.ok(data)
@@ -759,5 +764,19 @@ describe('createRequestyStore', () => {
     assert.equal(store.state().status, 'ready')
     assert.equal(data!.subagentCount, 0)
     assert.equal(data!.sessionTodaySpend, 1.0)
+  })
+
+  test('uses the injected createSignal for its reactive primitives', async () => {
+    let signalCount = 0
+    const injected = (<T>(value: T) => {
+      signalCount++
+      return createSignal(value)
+    }) as typeof createSignal
+    const store = createStore({ createSignal: injected })
+    // state, data, session
+    assert.equal(signalCount, 3)
+    await store.refresh()
+    assert.equal(store.state().status, 'ready')
+    assert.ok(store.data())
   })
 })

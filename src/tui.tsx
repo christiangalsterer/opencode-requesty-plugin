@@ -1,5 +1,6 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPluginModule } from '@opencode-ai/plugin/tui'
+import { createSignal } from 'solid-js'
 import { setApiLogger } from './api'
 import { descendantSessionIDs, rootSessionID } from './descendants'
 import { RequestyDetailDialog } from './dialog'
@@ -13,6 +14,8 @@ import { RequestySidebarWidget } from './widget'
 const PLUGIN_ID = 'opencode-requesty-sidebar'
 const COMMAND_OPEN = 'requesty.open'
 const COMMAND_REFRESH = 'requesty.refresh'
+/** Plugin-owned heartbeat: re-evaluates time-derived sidebar values between refreshes. */
+const TICK_INTERVAL_MS = 60_000
 
 const plugin: TuiPluginModule = {
   id: PLUGIN_ID,
@@ -22,6 +25,10 @@ const plugin: TuiPluginModule = {
     })
 
     const settings = readSettings(rawOptions)
+
+    const [tick, setTick] = createSignal(0)
+    const tickTimer = setInterval(() => setTick((value) => value + 1), TICK_INTERVAL_MS)
+    api.lifecycle.onDispose(() => clearInterval(tickTimer))
 
     const key = detectApiKey(api.state.config)
     if (!key.ok) {
@@ -48,6 +55,9 @@ const plugin: TuiPluginModule = {
 
     const store: RequestyStore = createRequestyStore({
       apiKey: key.apiKey,
+      // Use this module's `createSignal` (the same Solid instance the widget
+      // renders under) so store updates re-run the widget's memos and repaint.
+      createSignal,
       onError: (message) => {
         api.ui.toast({ variant: 'error', title: 'Requesty', message })
       },
@@ -84,6 +94,7 @@ const plugin: TuiPluginModule = {
                 showTokens={settings.sidebar.showTokens}
                 showKeyName={settings.sidebar.showKeyName}
                 showSessionInfo={settings.sidebar.showSessionInfo}
+                tick={tick}
               />
             )
           }

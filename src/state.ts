@@ -80,9 +80,22 @@ type SessionSnapshot = Pick<
 /** Maximum number of per-session snapshots retained (oldest evicted first). */
 const SESSION_CACHE_LIMIT = 50
 
+/** Delay before requesting a repaint, so Solid has flushed the data update first. */
+const RENDER_REQUEST_DELAY_MS = 0
+
 export interface RequestyStoreOptions {
   apiKey: string
   onError?: (message: string) => void
+  /**
+   * Injectable Solid `createSignal`, so the store's reactive primitives are
+   * created by the same Solid instance the host renders the plugin's JSX with.
+   * `state.ts` is a `.ts` module whose `solid-js` import can resolve to a
+   * different runtime copy than the `.tsx` widgets; signals from that copy are
+   * read but never subscribed by the widget's memos (no repaint on refresh).
+   * `tui.tsx` passes its own `createSignal`, which is proven to be the widget's
+   * instance. Defaults to the module's `createSignal` for tests/non-host use.
+   */
+  createSignal?: typeof createSignal
   /** Injectable fetchers (defaults to the real API client); used by tests. */
   fetchApiKey?: typeof getApiKeySelf
   fetchUsage?: typeof getUsageSelf
@@ -120,9 +133,10 @@ export interface RequestyStore {
 }
 
 export function createRequestyStore(options: RequestyStoreOptions): RequestyStore {
-  const [state, setState] = createSignal<RefreshState>({ status: 'idle' })
-  const [data, setData] = createSignal<RequestyData | undefined>(undefined)
-  const [session, setSession] = createSignal<ActiveSession | undefined>(undefined)
+  const makeSignal = options.createSignal ?? createSignal
+  const [state, setState] = makeSignal<RefreshState>({ status: 'idle' })
+  const [data, setData] = makeSignal<RequestyData | undefined>(undefined)
+  const [session, setSession] = makeSignal<ActiveSession | undefined>(undefined)
 
   const fetchApiKey = options.fetchApiKey ?? getApiKeySelf
   const fetchUsage = options.fetchUsage ?? getUsageSelf
@@ -255,7 +269,12 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           lastMonthSpend,
           ...snapshot
         })
-        options.onRender?.()
+        // Defer the repaint request to a macrotask: Solid flushes signal
+        // subscribers in a microtask, so a synchronous requestRender() would
+        // draw a frame before the widget's memo observes the new data and
+        // nothing would request a second frame (the sidebar would then stay
+        // stale until the next host event).
+        setTimeout(() => options.onRender?.(), RENDER_REQUEST_DELAY_MS)
         setState({ status: 'ready', fetchedAt: new Date() })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)

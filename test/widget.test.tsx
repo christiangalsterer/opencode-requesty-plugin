@@ -4,9 +4,10 @@ import assert from 'node:assert/strict'
 import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { RGBA } from '@opentui/core'
 import { testRender } from '@opentui/solid'
+import { createSignal } from 'solid-js'
 import type { ModelUsage } from '../src/api'
 import type { SpendThresholds } from '../src/format'
-import type { RequestyData, RequestyStore } from '../src/state'
+import { createRequestyStore, type RequestyData, type RequestyStore } from '../src/state'
 import { RequestySidebarWidget, type WidgetProps } from '../src/widget'
 
 const THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
@@ -192,5 +193,57 @@ describe('RequestySidebarWidget', () => {
     assert.ok(frame.includes('model-0'))
     assert.ok(frame.includes('model-1'))
     assert.ok(!frame.includes('model-2'))
+  })
+
+  test('repaints the frame when a plugin-owned store update is followed by a tick', async () => {
+    const [data, setData] = createSignal<RequestyData | undefined>(makeData())
+    const [tick, setTick] = createSignal(0)
+    const store = {
+      data,
+      state: () => ({ status: 'ready' as const, fetchedAt: new Date() }),
+      errorMessage: () => undefined,
+      activeSessionID: () => 'ses_test'
+    } as unknown as RequestyStore
+    const setup = await testRender(() => <RequestySidebarWidget {...BASE_PROPS} store={store} tick={tick} />, {
+      width: 70,
+      height: 30
+    })
+    try {
+      await setup.flush()
+      assert.ok(setup.captureCharFrame().includes('$2.50'))
+      setData(makeData({ keyInfo: { ...makeData().keyInfo, monthly_spend: 7.5 } }))
+      setTick((value) => value + 1)
+      await setup.flush()
+      assert.ok(setup.captureCharFrame().includes('$7.50'))
+    } finally {
+      setup.renderer.destroy()
+    }
+  })
+
+  test('repaints when a real store refresh completes, without a tick or host event', async () => {
+    const store = createRequestyStore({
+      apiKey: 'sk-test',
+      createSignal,
+      fetchApiKey: () =>
+        Promise.resolve({
+          id: 'key-1',
+          name: 'mykey',
+          logging: false,
+          monthly_spend: 2.5,
+          monthly_limit: 10,
+          permissions: { manage: 'none', completions: 'write' }
+        }),
+      fetchUsage: () => Promise.resolve({ usage: {} })
+    })
+    const setup = await testRender(() => <RequestySidebarWidget {...BASE_PROPS} store={store} />, { width: 70, height: 30 })
+    try {
+      await setup.flush()
+      assert.ok(!setup.captureCharFrame().includes('$2.50 / $10.00'))
+      await store.refresh()
+      await setup.flush()
+      assert.ok(setup.captureCharFrame().includes('$2.50 / $10.00'))
+    } finally {
+      setup.renderer.destroy()
+    }
   })
 })
