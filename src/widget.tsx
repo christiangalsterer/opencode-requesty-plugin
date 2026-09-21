@@ -40,8 +40,6 @@ export interface WidgetProps {
   showKeyName: boolean
   /** Show the per-session cost collapsible section. */
   showSessionInfo: boolean
-  /** Optional plugin-owned heartbeat; reading it keeps time-derived values fresh. */
-  tick?: () => number
 }
 
 export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
@@ -53,9 +51,6 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     // stays constant, so a length-only hook would only fire on session start.
     const data = props.store.data()
     const repaintKey = sessionRepaintKey(props.api.state.session.messages(props.sessionID))
-    // Plugin-owned heartbeat: reading it keeps time-derived values fresh and lets
-    // a timer (macrotask) update re-evaluate this memo even without host input.
-    props.tick?.()
     return { data, repaintKey }
   })
   const snapshotProps = (stale?: boolean) => ({

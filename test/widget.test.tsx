@@ -195,16 +195,15 @@ describe('RequestySidebarWidget', () => {
     assert.ok(!frame.includes('model-2'))
   })
 
-  test('repaints the frame when a plugin-owned store update is followed by a tick', async () => {
+  test('repaints the frame when a plugin-owned store update arrives', async () => {
     const [data, setData] = createSignal<RequestyData | undefined>(makeData())
-    const [tick, setTick] = createSignal(0)
     const store = {
       data,
       state: () => ({ status: 'ready' as const, fetchedAt: new Date() }),
       errorMessage: () => undefined,
       activeSessionID: () => 'ses_test'
     } as unknown as RequestyStore
-    const setup = await testRender(() => <RequestySidebarWidget {...BASE_PROPS} store={store} tick={tick} />, {
+    const setup = await testRender(() => <RequestySidebarWidget {...BASE_PROPS} store={store} />, {
       width: 70,
       height: 30
     })
@@ -212,7 +211,6 @@ describe('RequestySidebarWidget', () => {
       await setup.flush()
       assert.ok(setup.captureCharFrame().includes('$2.50'))
       setData(makeData({ keyInfo: { ...makeData().keyInfo, monthly_spend: 7.5 } }))
-      setTick((value) => value + 1)
       await setup.flush()
       assert.ok(setup.captureCharFrame().includes('$7.50'))
     } finally {
