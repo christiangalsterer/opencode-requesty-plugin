@@ -149,7 +149,6 @@ export interface ModelUsage {
 /** Aggregated totals from a usage response. */
 export interface AggregatedUsage {
   models: ModelUsage[]
-  spend: number
   inputTokens: number
   outputTokens: number
   totalTokens: number
@@ -161,7 +160,7 @@ export interface AggregatedUsage {
  */
 export function aggregateByModel(response: UsageResponse): AggregatedUsage {
   const byModel = new Map<string, ModelUsage>()
-  const totals = { spend: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+  const totals = { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
 
   for (const entry of Object.values(response.usage ?? {})) {
     for (const group of entry.grouped_data ?? []) {
@@ -182,7 +181,6 @@ export function aggregateByModel(response: UsageResponse): AggregatedUsage {
       current.requests += requests
       byModel.set(model, current)
 
-      totals.spend += spend
       totals.inputTokens += input
       totals.outputTokens += output
       totals.totalTokens += total

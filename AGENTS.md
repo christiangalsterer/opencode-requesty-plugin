@@ -45,6 +45,7 @@ Before marking any task as `completed`, the following command chain must be exec
 - `src/key.ts` — API key detection: reads `provider.*.options.apiKey` from the opencode provider config (incl. `{env:VAR}` interpolation and custom providers with a Requesty baseURL).
 - `bunfig.toml` — Bun config (preload for standalone dev, test settings).
 - `test/logic.test.ts` — `format.ts` + `api.ts` pure helpers.
+- `test/helpers.ts` — shared render-test fixtures (`makeData`/`makeStore`/`makeApi`/`makeTheme`, `THRESHOLDS`, `TOKENS`, `MODEL`).
 - `test/settings.test.ts` — `readSettings` option parsing and bounds.
 - `test/state.test.ts` — `createRequestyStore` refresh/in-flight/pending-refresh/error logic.
 - `test/descendants.test.ts` — `descendantSessionIDs` BFS (tree walk, dedup, cap, error fallback).

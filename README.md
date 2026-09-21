@@ -105,7 +105,7 @@ To the configure the plugin add/modify the configuration in either the project `
 
 ```json
 {
-  $schema": "https://opencode.ai/tui.json",
+  "$schema": "https://opencode.ai/tui.json",
   "plugin": [
     [
       "@christiangalsterer/opencode-requesty-plugin",

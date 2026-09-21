@@ -20,8 +20,7 @@ import {
   startOfRollingWindow,
   type TokenBreakdown,
   tokensForDay,
-  totalSpendFromUsage,
-  type UsageResponse
+  totalSpendFromUsage
 } from './api'
 import { dailyAverage, formatSessionStart } from './format'
 
@@ -308,5 +307,3 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     activeSessionID: () => session()?.id
   }
 }
-
-export type { UsageResponse }

@@ -14,6 +14,8 @@ import { RequestySidebarWidget } from './widget'
 const PLUGIN_ID = 'opencode-requesty-sidebar'
 const COMMAND_OPEN = 'requesty.open'
 const COMMAND_REFRESH = 'requesty.refresh'
+/** Debounce for message-driven refreshes, so a burst of updates triggers one fetch. */
+const REFRESH_DEBOUNCE_MS = 2000
 
 const plugin: TuiPluginModule = {
   id: PLUGIN_ID,
@@ -147,7 +149,7 @@ const plugin: TuiPluginModule = {
       clearTimeout(debounceTimer)
       debounceTimer = setTimeout(() => {
         void store.refresh()
-      }, 2000)
+      }, REFRESH_DEBOUNCE_MS)
     }
 
     // Commands (command palette + slash command)
