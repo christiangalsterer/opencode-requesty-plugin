@@ -28,7 +28,6 @@ describe('detectApiKey', () => {
     assert.equal(result.ok, true)
     if (!result.ok) return
     assert.equal(result.apiKey, 'sk-test')
-    assert.ok(result.source.includes('requesty'))
   })
 
   test('detects custom provider with Requesty baseURL', () => {
@@ -45,7 +44,6 @@ describe('detectApiKey', () => {
     assert.equal(result.ok, true)
     if (!result.ok) return
     assert.equal(result.apiKey, 'sk-custom')
-    assert.ok(result.source.includes('requesty-export'))
   })
 
   test('isRequestyProvider handles malformed baseURL (catch block)', () => {
@@ -125,6 +123,5 @@ describe('detectApiKey', () => {
     assert.equal(result.ok, true)
     if (!result.ok) return
     assert.equal(result.apiKey, 'sk-canonical')
-    assert.ok(result.source.includes('requesty'))
   })
 })

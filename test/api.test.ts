@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, mock, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import { getApiKeySelf, getUsageSelf, RequestyApiError } from '../src/api'
+import { getApiKeySelf, getUsageSelf, RequestyApiError, setApiLogger } from '../src/api'
 
 describe('api client error handling', () => {
   const fetchMock = mock(() => Promise.resolve(new Response(JSON.stringify({}), { status: 200 })))
@@ -114,5 +114,55 @@ describe('api client data coercion', () => {
     const info = await getApiKeySelf('sk-test')
     assert.equal(info.monthly_spend, 0)
     assert.equal(info.monthly_limit, 0)
+  })
+})
+
+describe('api client logging', () => {
+  const fetchMock = mock(() => Promise.resolve(new Response(JSON.stringify({}), { status: 200 })))
+  const logger = mock((_level: 'debug' | 'info' | 'warn' | 'error', _message: string) => {})
+
+  beforeEach(() => {
+    global.fetch = fetchMock as any
+    logger.mockClear()
+    setApiLogger(logger)
+  })
+
+  afterEach(() => {
+    setApiLogger(undefined)
+  })
+
+  test('does not warn for absent optional decimal fields', async () => {
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ id: 'id', name: 'name', logging: true, permissions: { manage: 'none', completions: 'none' } }), { status: 200 })
+      )
+    )
+    const info = await getApiKeySelf('sk-test')
+    assert.equal(info.monthly_spend, 0)
+    assert.equal(info.monthly_limit, 0)
+    assert.equal(logger.mock.calls.length, 0)
+  })
+
+  test('warns for a present but uncoercible decimal field', async () => {
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            id: 'id',
+            name: 'name',
+            logging: true,
+            monthly_spend: 'invalid',
+            monthly_limit: 10,
+            permissions: { manage: 'none', completions: 'none' }
+          }),
+          { status: 200 }
+        )
+      )
+    )
+    const info = await getApiKeySelf('sk-test')
+    assert.equal(info.monthly_spend, 0)
+    assert.equal(logger.mock.calls.length, 1)
+    assert.equal(logger.mock.calls[0][0], 'warn')
+    assert.ok(logger.mock.calls[0][1].includes('monthly_spend'))
   })
 })

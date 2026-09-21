@@ -9,7 +9,7 @@
  * Intentionally does NOT read ~/.local/share/opencode/auth.json.
  */
 
-export type KeyResult = { ok: true; apiKey: string; source: string } | { ok: false; reason: string }
+export type KeyResult = { ok: true; apiKey: string } | { ok: false; reason: string }
 
 const ENV_INTERPOLATION = /^\{env:([^}]+)\}$/
 const REQUESTY_HOST = /(^|\.)requesty\.ai$/i
@@ -45,7 +45,7 @@ function isRequestyProvider(provider: ProviderConfig): boolean {
   }
 }
 
-function fromConfig(config: SdkConfigLike | undefined): { apiKey: string; providerName: string } | undefined {
+function fromConfig(config: SdkConfigLike | undefined): string | undefined {
   const providers = config?.provider
   if (!providers) return undefined
   // Prefer the canonical provider id, then any custom Requesty provider.
@@ -54,16 +54,14 @@ function fromConfig(config: SdkConfigLike | undefined): { apiKey: string; provid
     const provider = providers[name]
     if (!isRequestyProvider(provider)) continue
     const apiKey = resolveValue(provider.options?.apiKey)
-    if (apiKey) return { apiKey, providerName: name }
+    if (apiKey) return apiKey
   }
   return undefined
 }
 
 export function detectApiKey(config: SdkConfigLike | undefined): KeyResult {
-  const fromOpencodeConfig = fromConfig(config)
-  if (fromOpencodeConfig) {
-    return { ok: true, apiKey: fromOpencodeConfig.apiKey, source: `opencode provider config (${fromOpencodeConfig.providerName})` }
-  }
+  const apiKey = fromConfig(config)
+  if (apiKey) return { ok: true, apiKey }
 
   return {
     ok: false,

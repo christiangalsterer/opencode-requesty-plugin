@@ -32,6 +32,7 @@ export interface ApiKeyInfo {
 
 /** The API serializes decimal fields as strings — coerce them to numbers. */
 function toNumber(value: unknown, field?: string): number {
+  if (value === undefined || value === null) return 0
   if (typeof value === 'number') return value
   if (typeof value === 'string') {
     const parsed = Number(value)

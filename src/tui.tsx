@@ -38,8 +38,7 @@ const plugin: TuiPluginModule = {
                   <text fg={ctx.theme.current.textMuted}>
                     <strong>Requesty</strong>
                   </text>
-                  <text fg={ctx.theme.current.textMuted}>No API key found.</text>
-                  <text fg={ctx.theme.current.textMuted}>Add provider.requesty.options.apiKey to opencode.json.</text>
+                  <text fg={ctx.theme.current.textMuted}>{key.reason}</text>
                 </box>
               )
             }
