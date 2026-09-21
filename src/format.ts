@@ -71,12 +71,12 @@ export function shortModel(model: string, maxLength: number): string {
 
 /** Format a Date as `YYYY-MM-DD HH:MM:SS` in local time. */
 export function formatTimestamp(date: Date): string {
-  const yyyy = padStart(String(date.getFullYear()), 4)
-  const mm = padStart(String(date.getMonth() + 1), 2)
-  const dd = padStart(String(date.getDate()), 2)
-  const hh = padStart(String(date.getHours()), 2)
-  const mi = padStart(String(date.getMinutes()), 2)
-  const ss = padStart(String(date.getSeconds()), 2)
+  const yyyy = String(date.getFullYear()).padStart(4, '0')
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const hh = String(date.getHours()).padStart(2, '0')
+  const mi = String(date.getMinutes()).padStart(2, '0')
+  const ss = String(date.getSeconds()).padStart(2, '0')
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`
 }
 

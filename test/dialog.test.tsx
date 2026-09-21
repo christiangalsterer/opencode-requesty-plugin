@@ -9,9 +9,7 @@ import { makeData, makeStore, makeTheme, THRESHOLDS } from './helpers'
 const BASE_PROPS: Omit<DetailDialogProps, 'store'> = {
   theme: makeTheme(),
   thresholds: THRESHOLDS,
-  showKeyName: false,
-  onClose: () => {},
-  onRefresh: () => {}
+  showKeyName: false
 }
 
 /** Render the detail dialog and return its whitespace-normalized frame. */

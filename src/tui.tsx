@@ -130,14 +130,7 @@ const plugin: TuiPluginModule = {
     // Detail dialog
     const openDialog = () => {
       api.ui.dialog.replace(() => (
-        <RequestyDetailDialog
-          store={store}
-          theme={api.theme.current}
-          thresholds={settings.thresholds}
-          showKeyName={settings.dialog.showKeyName}
-          onClose={() => api.ui.dialog.clear()}
-          onRefresh={() => void store.refresh()}
-        />
+        <RequestyDetailDialog store={store} theme={api.theme.current} thresholds={settings.thresholds} showKeyName={settings.dialog.showKeyName} />
       ))
       api.ui.dialog.setSize('large')
       void store.refresh()

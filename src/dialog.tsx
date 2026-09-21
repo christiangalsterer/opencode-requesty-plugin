@@ -35,8 +35,6 @@ export interface DetailDialogProps {
   theme: TuiThemeCurrent
   thresholds: SpendThresholds
   showKeyName: boolean
-  onClose: () => void
-  onRefresh: () => void
 }
 
 export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
@@ -349,11 +347,6 @@ function Footer(props: { fetchedAt: string; theme: TuiThemeCurrent }): JSX.Eleme
   return (
     <box flexDirection="row" border borderStyle="single" borderColor={props.theme.textMuted} paddingX={1} alignItems="center">
       <box flexDirection="row" gap={1}>
-        <text fg={props.theme.text}>
-          <strong>Refresh</strong>
-        </text>
-        <text fg={props.theme.textMuted}>r</text>
-        <text fg={props.theme.textMuted}>·</text>
         <text fg={props.theme.text}>
           <strong>Close</strong>
         </text>
