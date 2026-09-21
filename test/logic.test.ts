@@ -39,8 +39,6 @@ import {
   normalizeThreshold,
   paceMarker,
   paceStatus,
-  padEnd,
-  padStart,
   projectedMonthEnd,
   renderBar,
   resolveThresholds,
@@ -564,20 +562,6 @@ describe('month projection', () => {
 
   test('isProjectionOverLimit is false when there is no spend', () => {
     assert.equal(isProjectionOverLimit(0, 100, aug15), false)
-  })
-})
-
-describe('padEnd / padStart', () => {
-  test('padEnd right-pads to width', () => {
-    assert.equal(padEnd('abc', 5), 'abc  ')
-    assert.equal(padEnd('abc', 3), 'abc')
-    assert.equal(padEnd('abc', 2), 'abc')
-  })
-
-  test('padStart left-pads to width', () => {
-    assert.equal(padStart('abc', 5), '  abc')
-    assert.equal(padStart('abc', 3), 'abc')
-    assert.equal(padStart('abc', 2), 'abc')
   })
 })
 

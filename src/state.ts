@@ -79,6 +79,12 @@ type SessionSnapshot = Pick<
 /** Maximum number of per-session snapshots retained (oldest evicted first). */
 const SESSION_CACHE_LIMIT = 50
 
+/** Rolling window (days) fetched for the monthly/rolling-average metrics. */
+const USAGE_WINDOW_DAYS = 30
+
+/** Fallback session window (days) when the session's creation time is unknown. */
+const SESSION_FALLBACK_WINDOW_DAYS = 90
+
 /** Delay before requesting a repaint, so Solid has flushed the data update first. */
 const RENDER_REQUEST_DELAY_MS = 0
 
@@ -201,7 +207,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
       try {
         const keyInfo = await fetchApiKey(options.apiKey)
         const usage = await fetchUsage(options.apiKey, {
-          start: startOfRollingWindow(30),
+          start: startOfRollingWindow(USAGE_WINDOW_DAYS),
           groupBy: ['model_used'],
           resolution: 'day' as const
         })
@@ -226,7 +232,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           subagentCount = children.length
           const sessionIds = new Set<string>([active.id, ...children])
           const startIso =
-            active.created !== undefined && Number.isFinite(active.created) ? new Date(active.created).toISOString() : startOfRollingWindow(90)
+            active.created !== undefined && Number.isFinite(active.created)
+              ? new Date(active.created).toISOString()
+              : startOfRollingWindow(SESSION_FALLBACK_WINDOW_DAYS)
           sessionStartLabel = formatSessionStart(startIso)
           const sessionUsage = await fetchUsage(options.apiKey, {
             start: startIso,

@@ -55,7 +55,7 @@ Before marking any task as `completed`, the following command chain must be exec
 ## Coding Standards
 
 - TypeScript `strict`, ESM, no semicolons (match existing style), 2-space indent.
-- README contains the user-facing docs — update it when changing options, display output, or behavior (its ASCII sidebar example must match actual rendering).
+- README contains the user-facing docs — update it when changing options, display output, or behavior, and keep its screenshots in `docs/images/` current.
 
 ## Hard-earned gotchas
 

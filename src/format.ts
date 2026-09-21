@@ -268,16 +268,6 @@ export function resolveThresholds(warning: unknown, error: unknown): SpendThresh
   return thresholds
 }
 
-/** Right-pad a string to `width` with spaces; no-op when already long enough. */
-export function padEnd(value: string, width: number): string {
-  return value.length >= width ? value : value + ' '.repeat(width - value.length)
-}
-
-/** Left-pad a string to `width` with spaces; no-op when already long enough. */
-export function padStart(value: string, width: number): string {
-  return value.length >= width ? value : ' '.repeat(width - value.length) + value
-}
-
 /**
  * Structural subset of an assistant message's live-mutating fields. Kept local
  * so format.ts stays free of plugin SDK imports; structurally compatible with

@@ -13,8 +13,6 @@ import {
   formatUsd,
   isProjectionOverLimit,
   paceColor,
-  padEnd,
-  padStart,
   renderBar,
   type SpendThresholds,
   sessionRepaintKey,
@@ -24,6 +22,9 @@ import {
   spendSeverity
 } from './format'
 import type { RequestyStore } from './state'
+
+/** Width of the budget progress bar in the sidebar. */
+const SIDEBAR_BAR_WIDTH = 24
 
 export interface WidgetProps {
   store: RequestyStore
@@ -135,7 +136,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
       <box flexDirection="column" paddingRight={1}>
         <Show when={limit() > 0}>
           <box flexDirection="row" justifyContent="space-between" alignItems="center">
-            <text fg={barColor()}>{renderBar(ratio(), 24)}</text>
+            <text fg={barColor()}>{renderBar(ratio(), SIDEBAR_BAR_WIDTH)}</text>
             <text fg={barColor()}>{formatPercent(ratio())}</text>
           </box>
         </Show>
@@ -179,7 +180,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
               {(row) => (
                 <box flexDirection="row" justifyContent="space-between">
                   <text fg={props.theme.textMuted}>
-                    {padEnd(row.label, 9)} {padStart(formatUsd(row.spend), 10)}
+                    {row.label.padEnd(9)} {formatUsd(row.spend).padStart(10)}
                   </text>
                   <text fg={props.theme.textMuted}>{formatTokenInline(row.tokens.input, row.tokens.output)}</text>
                 </box>
@@ -211,8 +212,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           <Show when={sessionLoaded()} fallback={<text fg={props.theme.textMuted}> Session cost loading…</text>}>
             <box flexDirection="column">
               <text fg={props.theme.text}>
-                {padEnd('Today', 27)}
-                {padStart(formatUsd(data().sessionTodaySpend), 8)}
+                {'Today'.padEnd(27)}
+                {formatUsd(data().sessionTodaySpend).padStart(8)}
               </text>
               <text fg={props.theme.textMuted}>
                 {'  '}
@@ -220,8 +221,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
                 {formatTokenBreakdown(data().sessionTodayTokens.input, data().sessionTodayTokens.output)}
               </text>
               <text fg={props.theme.text}>
-                {padEnd(`Since ${data().sessionStartLabel ?? '…'}`, 27)}
-                {padStart(formatUsd(data().sessionTotalSpend), 8)}
+                {`Since ${data().sessionStartLabel ?? '…'}`.padEnd(27)}
+                {formatUsd(data().sessionTotalSpend).padStart(8)}
               </text>
               <text fg={props.theme.textMuted}>
                 {'  '}
@@ -250,8 +251,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
             {(model) => (
               <box flexDirection="column">
                 <text fg={props.theme.text}>
-                  {padEnd(shortModel(model.model, 26), 27)}
-                  {padStart(formatUsd(model.spend), 8)}
+                  {shortModel(model.model, 26).padEnd(27)}
+                  {formatUsd(model.spend).padStart(8)}
                 </text>
                 <text fg={props.theme.textMuted}>
                   {'  '}

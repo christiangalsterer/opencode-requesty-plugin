@@ -19,8 +19,6 @@ import {
   isProjectionOverLimit,
   modelAnalyticsUrl,
   paceColor,
-  padEnd,
-  padStart,
   renderBar,
   type SpendThresholds,
   severityColor,
@@ -29,6 +27,12 @@ import {
   spendSeverity
 } from './format'
 import type { RequestyStore } from './state'
+
+/** Model rows shown in the scrollbox before it scrolls. */
+const MODEL_SCROLL_ROWS = 5
+
+/** Width of the budget progress bar in the detail dialog. */
+const DIALOG_BAR_WIDTH = 40
 
 export interface DetailDialogProps {
   store: RequestyStore
@@ -210,7 +214,7 @@ function BudgetSection(props: { store: RequestyStore; theme: TuiThemeCurrent; th
       <Show when={limit() > 0}>
         <box flexDirection="row" alignItems="center" gap={1}>
           <box flexGrow={1}>
-            <text fg={barColor()}>{renderBar(ratio(), 40)}</text>
+            <text fg={barColor()}>{renderBar(ratio(), DIALOG_BAR_WIDTH)}</text>
           </box>
           <text fg={barColor()}>
             <strong>{formatPercent(ratio())}</strong>
@@ -281,7 +285,7 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
             <TableHeader theme={props.theme} />
           </box>
           <Show
-            when={models().length > 5}
+            when={models().length > MODEL_SCROLL_ROWS}
             fallback={
               <box flexDirection="column" gap={0}>
                 <For each={models()}>
@@ -291,7 +295,7 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
             }
           >
             <scrollbox
-              height={5}
+              height={MODEL_SCROLL_ROWS}
               gap={0}
               style={{
                 scrollbarOptions: {
@@ -323,8 +327,8 @@ function TableHeader(props: { theme: TuiThemeCurrent }): JSX.Element {
     <text fg={props.theme.textMuted}>
       <strong>
         <u>
-          {padEnd('Model', 24)} {padStart('Spend', 9)} {padStart('Share', 6)} {padEnd('Tokens (↑In ↓Out)', 22)} {padStart('Reqs', 6)}{' '}
-          {padStart('Out/In', 6)}
+          {'Model'.padEnd(24)} {'Spend'.padStart(9)} {'Share'.padStart(6)} {'Tokens (↑In ↓Out)'.padEnd(22)} {'Reqs'.padStart(6)}{' '}
+          {'Out/In'.padStart(6)}
         </u>
       </strong>
     </text>
@@ -335,10 +339,10 @@ function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: strin
   const share = props.totalSpend > 0 ? formatPercent(props.model.spend / props.totalSpend) : '—'
   return (
     <text fg={props.theme.text}>
-      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>{padEnd(shortModel(props.model.model, 23), 24)}</a>{' '}
-      {padStart(formatUsd(props.model.spend), 9)} {padStart(share, 6)}{' '}
-      {padEnd(`${formatTokens(props.model.totalTokens)} ${formatTokenBreakdown(props.model.inputTokens, props.model.outputTokens)}`, 22)}{' '}
-      {padStart(formatTokens(props.model.requests), 6)} {padStart(formatOutputInputRatio(props.model.inputTokens, props.model.outputTokens), 6)}
+      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>{shortModel(props.model.model, 23).padEnd(24)}</a>{' '}
+      {formatUsd(props.model.spend).padStart(9)} {share.padStart(6)}{' '}
+      {`${formatTokens(props.model.totalTokens)} ${formatTokenBreakdown(props.model.inputTokens, props.model.outputTokens)}`.padEnd(22)}{' '}
+      {formatTokens(props.model.requests).padStart(6)} {formatOutputInputRatio(props.model.inputTokens, props.model.outputTokens).padStart(6)}
     </text>
   )
 }

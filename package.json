@@ -26,7 +26,7 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "opencode": "^1.18.11"
+    "opencode": "^1.18.16"
   },
   "publishConfig": {
     "access": "public"
