@@ -12,9 +12,5 @@
       "bun run test *": "allow",
       "bun run build *": "allow"
     }
-  },
-  "tool_output": {
-    "max_lines": 200,
-    "max_bytes": 4096
   }
 }

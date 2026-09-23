@@ -5,10 +5,12 @@ import {
   avgSpendLastNDays,
   avgTokensLastNDays,
   emptySessionSpend,
-  endOfLastMonth,
   filterUsageByMonth,
   getApiKeySelf,
   getUsageSelf,
+  lastMonthSpendFromUsage,
+  MAX_USAGE_RANGE_DAYS,
+  mergeUsage,
   type ModelUsage,
   SESSION_AFFINITY_KEY,
   type SessionSpend,
@@ -16,11 +18,12 @@ import {
   sessionSpendForSessionIdsForDay,
   sessionSpendTokens,
   spendForDay,
-  startOfLastMonth,
+  splitUsageWindow,
   startOfRollingWindow,
+  startOfUsageWindow,
   type TokenBreakdown,
   tokensForDay,
-  totalSpendFromUsage
+  type UsageResponse
 } from './api'
 import { dailyAverage, formatSessionStart } from './format'
 
@@ -82,8 +85,13 @@ const SESSION_CACHE_LIMIT = 50
 /** Rolling window (days) fetched for the monthly/rolling-average metrics. */
 const USAGE_WINDOW_DAYS = 30
 
-/** Fallback session window (days) when the session's creation time is unknown. */
-const SESSION_FALLBACK_WINDOW_DAYS = 90
+/**
+ * Fallback session window (days) when the session's creation time is unknown.
+ * Kept one day below the per-request range limit so it always fits in a single
+ * request (a window starting at midnight `n` days ago spans slightly more than
+ * `n` days once the partial current day is included).
+ */
+const SESSION_FALLBACK_WINDOW_DAYS = MAX_USAGE_RANGE_DAYS - 1
 
 /** Delay before requesting a repaint, so Solid has flushed the data update first. */
 const RENDER_REQUEST_DELAY_MS = 0
@@ -206,41 +214,54 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     inFlight = (async () => {
       try {
         const keyInfo = await fetchApiKey(options.apiKey)
+
+        const active = session()
+        // One window serves the rolling averages and last month's spend.
+        const globalStart = startOfUsageWindow(USAGE_WINDOW_DAYS)
+        const sessionStartIso = active
+          ? active.created !== undefined && Number.isFinite(active.created)
+            ? new Date(active.created).toISOString()
+            : startOfRollingWindow(SESSION_FALLBACK_WINDOW_DAYS)
+          : undefined
+        // When the session window starts at or after the global window, the
+        // global response already contains the session's rows, so a single
+        // request serves both the global and session metrics.
+        const sessionWithinGlobal = sessionStartIso !== undefined && sessionStartIso >= globalStart
+
         const usage = await fetchUsage(options.apiKey, {
-          start: startOfRollingWindow(USAGE_WINDOW_DAYS),
-          groupBy: ['model_used'],
+          start: globalStart,
+          groupBy: sessionWithinGlobal ? ['model_used', SESSION_AFFINITY_KEY] : ['model_used'],
           resolution: 'day' as const
         })
         const currentMonthUsage = filterUsageByMonth(usage)
         const aggregated = aggregateByModel(currentMonthUsage)
-
-        const lastMonthUsage = await fetchUsage(options.apiKey, {
-          start: startOfLastMonth(),
-          end: endOfLastMonth(),
-          resolution: 'day'
-        }).catch(() => undefined)
-        const lastMonthSpend = lastMonthUsage ? totalSpendFromUsage(lastMonthUsage) : 0
+        const lastMonthSpend = lastMonthSpendFromUsage(usage)
 
         let sessionToday: SessionSpend = emptySessionSpend()
         let sessionTotal: SessionSpend = emptySessionSpend()
         let sessionStartLabel: string | undefined
         let subagentCount = 0
-        const active = session()
-        if (active) {
+        if (active && sessionStartIso) {
           const head = options.fetchSessionChildren?.(active.id) ?? Promise.resolve([])
           const children = await head.catch(() => [])
           subagentCount = children.length
           const sessionIds = new Set<string>([active.id, ...children])
-          const startIso =
-            active.created !== undefined && Number.isFinite(active.created)
-              ? new Date(active.created).toISOString()
-              : startOfRollingWindow(SESSION_FALLBACK_WINDOW_DAYS)
-          sessionStartLabel = formatSessionStart(startIso)
-          const sessionUsage = await fetchUsage(options.apiKey, {
-            start: startIso,
-            groupBy: [SESSION_AFFINITY_KEY],
-            resolution: 'day'
-          })
+          sessionStartLabel = formatSessionStart(sessionStartIso)
+          let sessionUsage: UsageResponse
+          if (sessionWithinGlobal) {
+            sessionUsage = usage
+          } else {
+            // The session predates the global window: fetch it separately,
+            // split into API-sized chunks when the span exceeds the per-request
+            // range limit (sessions older than ~100 days).
+            const windows = splitUsageWindow(sessionStartIso)
+            const responses = await Promise.all(
+              windows.map((window) =>
+                fetchUsage(options.apiKey, { start: window.start, end: window.end, groupBy: [SESSION_AFFINITY_KEY], resolution: 'day' })
+              )
+            )
+            sessionUsage = mergeUsage(...responses)
+          }
           sessionToday = sessionSpendForSessionIdsForDay(sessionUsage, sessionIds)
           sessionTotal = sessionSpendForSessionIds(sessionUsage, sessionIds)
         }

@@ -94,7 +94,8 @@ describe('api client data coercion', () => {
     const url = new URL((calls as any)[calls.length - 1][0] as any)
     assert.equal(url.searchParams.get('start'), '2026-08-01')
     assert.equal(url.searchParams.get('end'), '2026-08-31')
-    assert.equal(url.searchParams.get('group_by'), 'model,key')
+    // Multiple group_by dimensions are emitted as repeated query params.
+    assert.deepEqual(url.searchParams.getAll('group_by'), ['model', 'key'])
     assert.equal(url.searchParams.get('resolution'), 'day')
   })
 

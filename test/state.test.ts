@@ -1,8 +1,8 @@
 import { describe, mock, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { createSignal } from 'solid-js'
-import type { ApiKeyInfo, UsageResponse } from '../src/api'
-import { avgSpendLastNDays, avgTokensLastNDays, sessionSpendForSessionIds, sessionSpendForSessionIdsForDay } from '../src/api'
+import type { ApiKeyInfo, UsageQuery, UsageResponse } from '../src/api'
+import { avgSpendLastNDays, avgTokensLastNDays, SESSION_AFFINITY_KEY, sessionSpendForSessionIds, sessionSpendForSessionIdsForDay } from '../src/api'
 import { dailyAverage } from '../src/format'
 import { createRequestyStore } from '../src/state'
 
@@ -16,8 +16,6 @@ const KEY_INFO: ApiKeyInfo = {
 }
 
 const TODAY_KEY = new Date().toISOString().slice(0, 10)
-
-const EMPTY_USAGE: UsageResponse = { usage: {} }
 
 const USAGE: UsageResponse = {
   usage: {
@@ -39,7 +37,7 @@ const USAGE: UsageResponse = {
 
 function createStore(opts: {
   fetchApiKey?: () => Promise<ApiKeyInfo>
-  fetchUsage?: () => Promise<UsageResponse>
+  fetchUsage?: (query?: UsageQuery) => Promise<UsageResponse>
   onError?: (msg: string) => void
   activeSession?: (id: string) => { id: string; created: number | undefined } | undefined
   fetchSessionChildren?: (id: string) => Promise<string[]>
@@ -51,11 +49,16 @@ function createStore(opts: {
     createSignal: opts.createSignal,
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
-    fetchUsage: (key, _query) => opts.fetchUsage?.() ?? Promise.resolve(_query?.end ? EMPTY_USAGE : USAGE),
+    fetchUsage: (_key, query) => opts.fetchUsage?.(query) ?? Promise.resolve(USAGE),
     activeSession: opts.activeSession,
     fetchSessionChildren: opts.fetchSessionChildren,
     onRender: opts.onRender
   })
+}
+
+/** Let the refresh chain (including any pending follow-up) run to completion. */
+function settle(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 20))
 }
 
 describe('createRequestyStore', () => {
@@ -674,13 +677,14 @@ describe('createRequestyStore', () => {
     })
     await store.refresh()
     store.setSessionID(sessionA)
-    await store.refresh()
+    await settle()
     assert.equal(store.data()!.sessionId, sessionA)
 
-    // B has never been fetched → no cached snapshot, so the id stays stale.
+    // B has never been fetched → no cached snapshot, so the id stays stale
+    // until the refresh chain (including any pending follow-up) settles.
     store.setSessionID(sessionB)
     assert.equal(store.data()!.sessionId, sessionA)
-    await store.refresh()
+    await settle()
     assert.equal(store.data()!.sessionId, sessionB)
   })
 
@@ -778,5 +782,76 @@ describe('createRequestyStore', () => {
     await store.refresh()
     assert.equal(store.state().status, 'ready')
     assert.ok(store.data())
+  })
+
+  test('a session-less refresh issues a single usage request', async () => {
+    const queries: UsageQuery[] = []
+    const store = createStore({
+      fetchUsage: (query) => {
+        if (query) queries.push(query)
+        return Promise.resolve(USAGE)
+      }
+    })
+    await store.refresh()
+    assert.equal(queries.length, 1)
+    assert.deepEqual(queries[0].groupBy, ['model_used'])
+  })
+
+  test('a recent session reuses the global usage request (single call)', async () => {
+    const sessionId = 'ses_test'
+    const now = new Date()
+    const created = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12)
+    const queries: UsageQuery[] = []
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created }),
+      fetchUsage: (query) => {
+        if (query) queries.push(query)
+        return Promise.resolve(USAGE)
+      }
+    })
+    store.setSessionID(sessionId)
+    // `setSessionID` triggers the refresh; wait for it to settle.
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(queries.length, 1)
+    assert.deepEqual(queries[0].groupBy, ['model_used', SESSION_AFFINITY_KEY])
+  })
+
+  test('a session older than the global window issues a separate session-only request', async () => {
+    const sessionId = 'ses_test'
+    const created = Date.UTC(2020, 0, 1, 12)
+    const queries: UsageQuery[] = []
+    const store = createStore({
+      activeSession: () => ({ id: sessionId, created }),
+      fetchUsage: (query) => {
+        if (query) queries.push(query)
+        return Promise.resolve(USAGE)
+      }
+    })
+    store.setSessionID(sessionId)
+    // `setSessionID` triggers the refresh; wait for it (and any pending
+    // follow-up) to settle.
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    // global (model_used) + session-only chunks (affinity), each a separate call
+    const globalCalls = queries.filter((q) => q.groupBy?.includes('model_used'))
+    const sessionCalls = queries.filter((q) => q.groupBy?.length === 1 && q.groupBy[0] === SESSION_AFFINITY_KEY)
+    assert.equal(globalCalls.length, 1)
+    assert.ok(sessionCalls.length >= 1)
+    // Every session chunk carries an explicit end (chunked range).
+    for (const call of sessionCalls) assert.ok(call.end)
+  })
+
+  test('derives last month spend from the merged usage response', async () => {
+    const now = new Date()
+    const previous = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 15))
+    const previousKey = previous.toISOString().slice(0, 10)
+    const usage = {
+      usage: {
+        [previousKey]: { spend: '4.25', grouped_data: [{ group_by_values: { model_used: 'openai/gpt-5' }, spend: '4.25' }] },
+        ...USAGE.usage
+      }
+    } as unknown as UsageResponse
+    const store = createStore({ fetchUsage: () => Promise.resolve(usage) })
+    await store.refresh()
+    assert.equal(store.data()!.lastMonthSpend, 4.25)
   })
 })

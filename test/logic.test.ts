@@ -5,17 +5,22 @@ import {
   avgSpendLastNDays,
   dayKey,
   emptySessionSpend,
-  endOfLastMonth,
   filterUsageByMonth,
+  lastMonthSpendFromUsage,
+  MAX_USAGE_RANGE_DAYS,
+  mergeUsage,
   SESSION_AFFINITY_KEY,
   sessionSpendForSessionIds,
   sessionSpendForSessionIdsForDay,
   sessionSpendTokens,
   spendForDay,
+  splitUsageWindow,
   startOfLastMonth,
   startOfRollingWindow,
+  startOfUsageWindow,
   totalSpendFromUsage,
-  type UsageResponse
+  type UsageResponse,
+  usageParams
 } from '../src/api'
 import {
   analyticsUrl,
@@ -183,17 +188,15 @@ describe('aggregateByModel', () => {
   })
 })
 
-describe('startOfLastMonth / endOfLastMonth', () => {
-  test('returns first and last day of previous month in UTC', () => {
+describe('startOfLastMonth', () => {
+  test('returns the first day of the previous month in UTC', () => {
     const now = new Date('2026-08-09T15:30:00Z')
     assert.equal(startOfLastMonth(now), '2026-07-01T00:00:00.000Z')
-    assert.equal(endOfLastMonth(now), '2026-07-31T23:59:59.000Z')
   })
 
   test('handles January (rolls to previous year)', () => {
     const now = new Date('2026-01-15T12:00:00Z')
     assert.equal(startOfLastMonth(now), '2025-12-01T00:00:00.000Z')
-    assert.equal(endOfLastMonth(now), '2025-12-31T23:59:59.000Z')
   })
 })
 
@@ -206,6 +209,129 @@ describe('startOfRollingWindow', () => {
   test('returns the start of today for a 0-day window', () => {
     const now = new Date('2026-08-18T15:30:00Z')
     assert.equal(startOfRollingWindow(0, now), '2026-08-18T00:00:00.000Z')
+  })
+})
+
+describe('startOfUsageWindow', () => {
+  test('returns the earlier of the rolling window and last month start', () => {
+    // Aug 18: rolling 30d = Jul 19; last month = Jul 1 → last month is earlier.
+    const now = new Date('2026-08-18T15:30:00Z')
+    assert.equal(startOfUsageWindow(30, now), '2026-07-01T00:00:00.000Z')
+  })
+
+  test('returns the rolling window when it is earlier than last month start', () => {
+    // Aug 2: rolling 30d = Jul 3; last month = Jul 1 → last month still earlier.
+    // Use a days value large enough that the rolling window precedes last month.
+    const now = new Date('2026-08-18T15:30:00Z')
+    assert.equal(startOfUsageWindow(60, now), '2026-06-19T00:00:00.000Z')
+  })
+})
+
+describe('lastMonthSpendFromUsage', () => {
+  test('sums only the previous calendar month entries', () => {
+    const response = {
+      usage: {
+        '2026-06-30': { spend: 1 },
+        '2026-07-01': { spend: '2.50' },
+        '2026-07-31': { spend: '3.25' },
+        '2026-08-01': { spend: 4 },
+        '2026-08-15': { spend: 5 }
+      }
+    } as unknown as UsageResponse
+    assert.equal(lastMonthSpendFromUsage(response, new Date('2026-08-15T12:00:00Z')), 5.75)
+  })
+
+  test('returns 0 when there is no previous-month usage', () => {
+    const response = { usage: { '2026-08-15': { spend: 5 } } } as unknown as UsageResponse
+    assert.equal(lastMonthSpendFromUsage(response, new Date('2026-08-15T12:00:00Z')), 0)
+  })
+
+  test('handles January (previous month is December of the prior year)', () => {
+    const response = {
+      usage: {
+        '2025-12-15': { spend: '7.00' },
+        '2026-01-05': { spend: 1 }
+      }
+    } as unknown as UsageResponse
+    assert.equal(lastMonthSpendFromUsage(response, new Date('2026-01-15T12:00:00Z')), 7)
+  })
+})
+
+describe('mergeUsage', () => {
+  test('combines the usage maps of multiple responses', () => {
+    const a = { usage: { '2026-08-01': { spend: 1 } } } as unknown as UsageResponse
+    const b = { usage: { '2026-08-02': { spend: 2 } } } as unknown as UsageResponse
+    const merged = mergeUsage(a, b)
+    assert.deepEqual(Object.keys(merged.usage).sort(), ['2026-08-01', '2026-08-02'])
+    assert.equal(totalSpendFromUsage(merged), 3)
+  })
+
+  test('later responses win on duplicate keys', () => {
+    const a = { usage: { '2026-08-01': { spend: 1 } } } as unknown as UsageResponse
+    const b = { usage: { '2026-08-01': { spend: 9 } } } as unknown as UsageResponse
+    assert.equal(totalSpendFromUsage(mergeUsage(a, b)), 9)
+  })
+
+  test('handles empty input', () => {
+    assert.deepEqual(mergeUsage({ usage: {} }, { usage: {} }), { usage: {} })
+  })
+})
+
+describe('splitUsageWindow', () => {
+  test('returns a single window when the span is within the limit', () => {
+    const now = new Date('2026-08-15T12:00:00Z')
+    const start = new Date('2026-08-01T00:00:00Z').toISOString()
+    const windows = splitUsageWindow(start, now)
+    assert.equal(windows.length, 1)
+    assert.equal(windows[0].start, start)
+    assert.equal(windows[0].end, now.toISOString())
+  })
+
+  test('splits a span longer than the max range into consecutive chunks', () => {
+    const now = new Date('2026-08-15T12:00:00Z')
+    const start = new Date('2026-01-01T00:00:00Z').toISOString()
+    const windows = splitUsageWindow(start, now)
+    assert.ok(windows.length > 1)
+    assert.equal(windows[0].start, start)
+    assert.equal(windows[windows.length - 1].end, now.toISOString())
+    // Chunks are contiguous and none exceeds the max span.
+    const maxMs = MAX_USAGE_RANGE_DAYS * 24 * 60 * 60 * 1000
+    for (let i = 0; i < windows.length; i++) {
+      const span = new Date(windows[i].end).getTime() - new Date(windows[i].start).getTime()
+      assert.ok(span <= maxMs)
+      if (i > 0) assert.equal(windows[i].start, windows[i - 1].end)
+    }
+  })
+
+  test('falls back to a single window for an invalid start', () => {
+    const now = new Date('2026-08-15T12:00:00Z')
+    const windows = splitUsageWindow('not-a-date', now)
+    assert.deepEqual(windows, [{ start: 'not-a-date', end: now.toISOString() }])
+  })
+})
+
+describe('usageParams', () => {
+  test('emits a single start param by default', () => {
+    assert.deepEqual(usageParams({ start: '2026-08-01T00:00:00Z' }), { start: '2026-08-01T00:00:00Z' })
+  })
+
+  test('emits repeated group_by entries for multiple dimensions', () => {
+    const params = usageParams({
+      start: '2026-08-01T00:00:00Z',
+      end: '2026-08-15T00:00:00Z',
+      groupBy: ['model_used', SESSION_AFFINITY_KEY],
+      resolution: 'day'
+    })
+    assert.deepEqual(params.group_by, ['model_used', SESSION_AFFINITY_KEY])
+    assert.equal(params.start, '2026-08-01T00:00:00Z')
+    assert.equal(params.end, '2026-08-15T00:00:00Z')
+    assert.equal(params.resolution, 'day')
+  })
+
+  test('omits end and group_by when not provided', () => {
+    const params = usageParams({ start: '2026-08-01T00:00:00Z', groupBy: [] })
+    assert.equal(params.end, undefined)
+    assert.equal(params.group_by, undefined)
   })
 })
 

@@ -74,10 +74,16 @@ export class RequestyApiError extends Error {
   }
 }
 
-async function request<T>(apiKey: string, path: string, init?: { params?: Record<string, string> }): Promise<T> {
+async function request<T>(apiKey: string, path: string, init?: { params?: Record<string, string | string[]> }): Promise<T> {
   const url = new URL(path, REQUESTY_ORIGIN)
   for (const [key, value] of Object.entries(init?.params ?? {})) {
-    url.searchParams.set(key, value)
+    // Array values are emitted as repeated query params (e.g. `group_by=a&group_by=b`),
+    // which is how the Requesty API accepts multiple group_by dimensions.
+    if (Array.isArray(value)) {
+      for (const item of value) url.searchParams.append(key, item)
+    } else {
+      url.searchParams.set(key, value)
+    }
   }
   let response: Response
   try {
@@ -128,13 +134,18 @@ export interface UsageQuery {
   resolution?: 'hour' | 'day' | 'month'
 }
 
+/** Build the query params for a usage request (pure; array values become repeated params). */
+export function usageParams(query: UsageQuery): Record<string, string | string[]> {
+  const params: Record<string, string | string[]> = { start: query.start }
+  if (query.end) params.end = query.end
+  if (query.groupBy && query.groupBy.length > 0) params.group_by = [...query.groupBy]
+  if (query.resolution) params.resolution = query.resolution
+  return params
+}
+
 /** Get usage statistics for the calling API key (`self`). */
 export function getUsageSelf(apiKey: string, query: UsageQuery): Promise<UsageResponse> {
-  const params: Record<string, string> = { start: query.start }
-  if (query.end) params.end = query.end
-  if (query.groupBy && query.groupBy.length > 0) params.group_by = query.groupBy.join(',')
-  if (query.resolution) params.resolution = query.resolution
-  return request<UsageResponse>(apiKey, '/v1/manage/apikey/self/usage', { params })
+  return request<UsageResponse>(apiKey, '/v1/manage/apikey/self/usage', { params: usageParams(query) })
 }
 
 /** Per-model aggregate over a usage response. */
@@ -207,17 +218,70 @@ export function startOfLastMonth(now = new Date()): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString()
 }
 
-/** RFC3339 timestamp for the end of the previous calendar month (UTC). */
-export function endOfLastMonth(now = new Date()): string {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59)).toISOString()
-}
-
 /** RFC3339 timestamp for `days` days ago at midnight UTC. */
 export function startOfRollingWindow(days: number, now = new Date()): string {
   const date = new Date(now)
   date.setUTCDate(date.getUTCDate() - days)
   date.setUTCHours(0, 0, 0, 0)
   return date.toISOString()
+}
+
+/**
+ * Start of the single window that serves both the rolling-average metrics and
+ * last month's spend: the earlier of `startOfRollingWindow(days)` and
+ * `startOfLastMonth()`. Because the previous calendar month always starts
+ * before a 30-day rolling window, this lets one request cover both.
+ */
+export function startOfUsageWindow(days: number, now = new Date()): string {
+  const rolling = startOfRollingWindow(days, now)
+  const lastMonth = startOfLastMonth(now)
+  return lastMonth < rolling ? lastMonth : rolling
+}
+
+/** Sum spend for the previous calendar month from a day-keyed usage response. */
+export function lastMonthSpendFromUsage(response: UsageResponse, now = new Date()): number {
+  const previous = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
+  const prefix = dayKey(previous).slice(0, 7)
+  let total = 0
+  for (const [key, entry] of Object.entries(response.usage ?? {})) {
+    if (key.startsWith(prefix)) total += toNumber(entry.spend, 'spend')
+  }
+  return total
+}
+
+/** Merge multiple day-keyed usage responses (non-overlapping keys) into one. */
+export function mergeUsage(...responses: UsageResponse[]): UsageResponse {
+  const usage: Record<string, UsageEntry> = {}
+  for (const response of responses) {
+    for (const [key, entry] of Object.entries(response.usage ?? {})) {
+      usage[key] = entry
+    }
+  }
+  return { usage }
+}
+
+/** Maximum span (days) the usage API accepts per request. */
+export const MAX_USAGE_RANGE_DAYS = 90
+
+/**
+ * Split a `[start, now]` span into consecutive windows of at most `maxDays`
+ * days, returned as `{ start, end }` RFC3339 pairs. Used to fetch a session
+ * window older than the API's per-request range limit.
+ */
+export function splitUsageWindow(start: string, now = new Date(), maxDays = MAX_USAGE_RANGE_DAYS): { start: string; end: string }[] {
+  const startMs = new Date(start).getTime()
+  if (!Number.isFinite(startMs)) return [{ start, end: now.toISOString() }]
+  const spanMs = now.getTime() - startMs
+  const maxMs = maxDays * 24 * 60 * 60 * 1000
+  if (spanMs <= maxMs) return [{ start, end: now.toISOString() }]
+  const windows: { start: string; end: string }[] = []
+  let cursor = startMs
+  while (cursor < now.getTime()) {
+    const end = Math.min(cursor + maxMs, now.getTime())
+    windows.push({ start: new Date(cursor).toISOString(), end: new Date(end).toISOString() })
+    cursor = end
+  }
+  return windows
 }
 
 /** Keep only usage entries that fall within the current calendar month. */
