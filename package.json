@@ -1,6 +1,6 @@
 {
   "name": "@christiangalsterer/opencode-requesty-plugin",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "author": {
     "name": "Christian Galsterer"
   },
@@ -22,7 +22,10 @@
   "homepage": "https://github.com/christiangalsterer/opencode-requesty-plugin#readme",
   "type": "module",
   "exports": {
-    "./tui": "./dist/tui.tsx",
+    "./tui": {
+      "import": "./dist/tui.js",
+      "types": "./dist/tui.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "engines": {
@@ -67,7 +70,7 @@
     "ci": "bun run clean && bun install && bun test && bun run build && bun pm pack && npm i --omit=dev --dry-run *.tgz",
     "biome": "biome check",
     "biome:fix": "biome check --write",
-    "build": "bun run typecheck && mkdir -p ./dist && cp -r src/* dist/",
+    "build": "bun run typecheck && bun run build.ts",
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && rm -rf christiangalsterer-opencode-requesty-plugin*.tgz && mkdir -p ./dist",
     "clean:deps": "rm -rf ./node_modules && bun run deps",

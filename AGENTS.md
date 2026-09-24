@@ -44,6 +44,8 @@ Before marking any task as `completed`, the following command chain must be exec
 - `src/format.ts` — pure formatting helpers (all unit-tested logic lives here).
 - `src/key.ts` — API key detection: reads `provider.*.options.apiKey` from the opencode provider config (incl. `{env:VAR}` interpolation and custom providers with a Requesty baseURL).
 - `bunfig.toml` — Bun config (preload for standalone dev, test settings).
+- `build.ts` — build script: pre-compiles `src/tui.tsx` → `dist/tui.js` with `@opentui/solid/bun-plugin` and runs `tsc -p tsconfig.build.json` for declarations.
+- `tsconfig.build.json` — declaration-only emit config (`emitDeclarationOnly`, `outDir: dist`).
 - `test/logic.test.ts` — `format.ts` + `api.ts` pure helpers.
 - `test/helpers.ts` — shared render-test fixtures (`makeData`/`makeStore`/`makeApi`/`makeTheme`, `THRESHOLDS`, `TOKENS`, `MODEL`).
 - `test/settings.test.ts` — `readSettings` option parsing and bounds.
@@ -51,6 +53,7 @@ Before marking any task as `completed`, the following command chain must be exec
 - `test/descendants.test.ts` — `descendantSessionIDs` BFS (tree walk, dedup, cap, error fallback).
 - `test/route.test.ts` — `sessionIDFromRoute` route → session id extraction.
 - `test/prompt.test.tsx` / `test/widget.test.tsx` / `test/dialog.test.tsx` — render-level assertions on the Solid components via `@opentui/solid`'s `testRender`.
+- `test/build-output.test.ts` — asserts the build emits the reactive (lazy) Solid transform, not the eager Bun-native JSX transform.
 
 ## Coding Standards
 
@@ -60,7 +63,7 @@ Before marking any task as `completed`, the following command chain must be exec
 ## Hard-earned gotchas
 
 - **JSX pragma is mandatory.** Every `.tsx` file needs `/** @jsxImportSource @opentui/solid */` on line 1 (tsc/`jsx: preserve` relies on the pragma). JSX tags are OpenTUI intrinsics (`<box>`, `<text>`), not DOM.
-- **No bundler — the host transforms TSX at load time.** The opencode host installs `@opentui/solid/preload` (a Bun preload hook) that transforms Solid TSX via babel-preset-solid (`moduleName: "@opentui/solid"`, `generate: "universal"`) before execution. The build step just copies `src/*` → `dist/`. Do NOT use a bundler (tsup, esbuild, Bun.build) — it would strip the `/** @jsxImportSource */` pragma or break reactivity by using the wrong JSX transform.
+- **The shipped artifact is pre-compiled with `@opentui/solid/bun-plugin` — do NOT ship raw TSX.** `build.ts` runs `Bun.build` with `@opentui/solid/bun-plugin` (`target: "bun"`, `packages: "external"`, `splitting`, sourcemaps) to emit `dist/tui.js`, plus `tsc -p tsconfig.build.json` for `.d.ts`. `package.json` `exports["./tui"]` points at `dist/tui.js`. This is required because the opencode host's `@opentui/solid/preload` Bun plugin only transforms files **outside `node_modules`** (`sourceFilter = /^(?!.*node_modules).*\.tsx?$/`); an npm-installed plugin lives under `node_modules`, so its `.tsx` would instead be compiled by Bun's native JSX transform, which emits **eager** `<Show>` children. That silently breaks the lazy-children assumption behind every `<Show when={x}>{x!...}</Show>` (e.g. `Metric`'s `props.tokens!.input`), throwing `undefined is not an object` at runtime even though `bun test` passes (tests preload the Babel transform). Keep `src/*.tsx` as source; never ship `.tsx` in `dist/`.
 - **Component tests render under Bun, not Node.** `@opentui/solid`'s `testRender` (backed by `@opentui/core/testing`) mounts Solid TSX and captures frames; the old "native FFI is not available" failure only applied to the pre-Bun Node/`tsx --test` setup. `bunfig.toml` must preload `@opentui/solid/preload` **under `[test]` as well as top-level** — the top-level `preload` alone does NOT apply to `bun test`, and without the `[test]` entry `solid-js` resolves to its server build (`Show` returns `""` for a falsy `when` with no fallback → "Orphan text error" from the reconciler). Stub the host API as `{ state: { session: { messages: () => [] } } }`, call `setup.renderer.destroy()` in a `finally`, and assert whitespace-normalized substrings of `captureCharFrame()` (not full-frame snapshots). Keep display logic in pure helpers in `src/format.ts` (tested in `test/logic.test.ts`); host-driven slot repaint/re-invocation remains untestable.
 - **bun:test mock API differs from node:test.** Use `mock(() => {})` instead of `mock.fn()`. Access call count via `.mock.calls.length` (not `.mock.callCount()`). Access call arguments via `.mock.calls[i][j]` (not `.mock.calls[i].arguments[j]`).
 - **API decimals are strings.** Requesty's management API serializes decimal fields as strings; coerce with `toNumber` in `src/api.ts` (there are tests relying on this).
