@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.3.0...v1.3.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* pre-compile shipped artifact to avoid runtime crash in requesty dialog ([a4b78bf](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/a4b78bf3a90913cf27022aaa7a43eca4989ee684))
+
 ## [1.3.0](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.2.3...v1.3.0) (2026-09-23)
 
 
