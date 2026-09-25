@@ -74,6 +74,8 @@
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && rm -rf christiangalsterer-opencode-requesty-plugin*.tgz && mkdir -p ./dist",
     "clean:deps": "rm -rf ./node_modules && bun run deps",
+    "docker:build": "docker build -t opencode-requesty-plugin .",
+    "docker:run": "docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/alice/.config/opencode/opencode.json:ro -v \"$PWD\":/home/alice/plugin:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin",
     "deps": "bun install",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
