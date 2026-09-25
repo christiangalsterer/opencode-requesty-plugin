@@ -2,8 +2,16 @@ import { describe, mock, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { createSignal } from 'solid-js'
 import type { ApiKeyInfo, UsageQuery, UsageResponse } from '../src/api'
-import { avgSpendLastNDays, avgTokensLastNDays, SESSION_AFFINITY_KEY, sessionSpendForSessionIds, sessionSpendForSessionIdsForDay } from '../src/api'
-import { dailyAverage } from '../src/format'
+import {
+  avgSpendLastNDays,
+  avgTokensLastNDays,
+  SESSION_AFFINITY_KEY,
+  sessionSpendForSessionIds,
+  sessionSpendForSessionIdsForDay,
+  startOfUsageWindow
+} from '../src/api'
+import { CALENDAR_PROJECTION, dailyAverage, WORKDAY_PROJECTION } from '../src/format'
+import type { ProjectionSettings } from '../src/settings'
 import { createRequestyStore } from '../src/state'
 
 const KEY_INFO: ApiKeyInfo = {
@@ -43,10 +51,12 @@ function createStore(opts: {
   fetchSessionChildren?: (id: string) => Promise<string[]>
   onRender?: () => void
   createSignal?: typeof createSignal
+  projection?: ProjectionSettings
 }) {
   return createRequestyStore({
     apiKey: 'sk-test',
     createSignal: opts.createSignal,
+    projection: opts.projection,
     onError: opts.onError,
     fetchApiKey: () => opts.fetchApiKey?.() ?? Promise.resolve(KEY_INFO),
     fetchUsage: (_key, query) => opts.fetchUsage?.(query) ?? Promise.resolve(USAGE),
@@ -853,5 +863,70 @@ describe('createRequestyStore', () => {
     const store = createStore({ fetchUsage: () => Promise.resolve(usage) })
     await store.refresh()
     assert.equal(store.data()!.lastMonthSpend, 4.25)
+  })
+
+  test('defaults to the weekday projection basis', async () => {
+    // USAGE only carries today's spend, so the sampled history is empty and the
+    // weekday basis degrades to the calendar model.
+    const store = createStore({})
+    await store.refresh()
+    assert.deepEqual(store.data()!.projection, CALENDAR_PROJECTION)
+  })
+
+  test('the configured basis selects a static model without needing history', async () => {
+    const store = createStore({ projection: { basis: 'workdays', historyDays: 28 } })
+    await store.refresh()
+    assert.deepEqual(store.data()!.projection, WORKDAY_PROJECTION)
+
+    const calendar = createStore({ projection: { basis: 'calendar', historyDays: 28 } })
+    await calendar.refresh()
+    assert.deepEqual(calendar.data()!.projection, CALENDAR_PROJECTION)
+  })
+
+  test('the weekday basis derives its weights from the fetched history', async () => {
+    // Four weeks of Mon–Fri-only spend must reproduce the workday weights.
+    const now = new Date()
+    const usage: Record<string, { spend: number }> = {}
+    for (let offset = 1; offset <= 28; offset++) {
+      const date = new Date(now)
+      date.setUTCDate(date.getUTCDate() - offset)
+      const weekday = date.getUTCDay()
+      usage[date.toISOString().slice(0, 10)] = { spend: weekday === 0 || weekday === 6 ? 0 : 10 }
+    }
+    const store = createStore({ projection: { basis: 'weekday', historyDays: 28 }, fetchUsage: () => Promise.resolve({ usage }) })
+    await store.refresh()
+    const projection = store.data()!.projection
+    assert.equal(projection.basis, 'weekday')
+    assert.deepEqual(
+      projection.weights.map((weight) => Math.round(weight * 1e6) / 1e6),
+      WORKDAY_PROJECTION.weights.map((weight) => Math.round(weight * 1e6) / 1e6)
+    )
+  })
+
+  test('the weekday basis widens the usage window to cover its history', async () => {
+    const queries: UsageQuery[] = []
+    const store = createStore({
+      projection: { basis: 'weekday', historyDays: 84 },
+      fetchUsage: (query) => {
+        if (query) queries.push(query)
+        return Promise.resolve(USAGE)
+      }
+    })
+    await store.refresh()
+    assert.equal(queries.length, 1)
+    assert.equal(queries[0].start, startOfUsageWindow(84))
+  })
+
+  test('a non-weekday basis keeps the default 30-day usage window', async () => {
+    const queries: UsageQuery[] = []
+    const store = createStore({
+      projection: { basis: 'workdays', historyDays: 84 },
+      fetchUsage: (query) => {
+        if (query) queries.push(query)
+        return Promise.resolve(USAGE)
+      }
+    })
+    await store.refresh()
+    assert.equal(queries[0].start, startOfUsageWindow(30))
   })
 })

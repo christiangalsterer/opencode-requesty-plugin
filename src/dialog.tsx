@@ -19,6 +19,7 @@ import {
   isProjectionOverLimit,
   modelAnalyticsUrl,
   paceColor,
+  projectionBasisLabel,
   renderBar,
   type SpendThresholds,
   severityColor,
@@ -106,8 +107,9 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
   const severity = () => spendSeverity(ratio(), props.thresholds)
-  const projectionParts = () => formatProjectionParts(spend(), limit())
-  const monthDelta = () => formatMonthDeltaParts(spend(), data().lastMonthSpend)
+  const projection = () => data().projection
+  const projectionParts = () => formatProjectionParts(spend(), limit(), new Date(), projection())
+  const monthDelta = () => formatMonthDeltaParts(spend(), data().lastMonthSpend, new Date(), projection())
 
   return (
     <box flexDirection="row" gap={3} paddingY={1} flexWrap="wrap">
@@ -118,10 +120,10 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
       </Show>
       <Show when={projectionParts()}>
         <TrendMetric
-          label="End of Month"
+          label={`End of Month (${projectionBasisLabel(projectionParts()!.basis)})`}
           value={`~${formatUsd(projectionParts()!.projected)}`}
           theme={props.theme}
-          color={isProjectionOverLimit(spend(), limit()) ? props.theme.error : props.theme.text}
+          color={isProjectionOverLimit(spend(), limit(), new Date(), projection()) ? props.theme.error : props.theme.text}
           indicator={
             projectionParts()!.arrow ? { text: projectionParts()!.arrow, color: paceColor(projectionParts()!.pace, props.theme) } : undefined
           }
@@ -191,7 +193,7 @@ function BudgetSection(props: { store: RequestyStore; theme: TuiThemeCurrent; th
   const ratio = () => spendRatio(spend(), limit())
   const severity = () => spendSeverity(ratio(), props.thresholds)
   const barColor = () => severityColor(severity(), props.theme)
-  const exhaustionDays = () => daysToExhaustion(spend(), limit(), data().avg7d)
+  const exhaustionDays = () => daysToExhaustion(spend(), limit(), data().avg7d, new Date(), data().projection)
   const overBudget = () => {
     const d = exhaustionDays()
     return d !== undefined && d <= daysRemaining()

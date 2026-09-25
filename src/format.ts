@@ -95,8 +95,152 @@ export function dayOfMonth(date = new Date()): number {
   return date.getUTCDate()
 }
 
-/** Fraction of the month elapsed [0,1] — dayOfMonth / daysInMonth. */
-function monthElapsedRatio(date = new Date()): number {
+/** Number of weekdays; weight arrays are indexed 0 = Sunday … 6 = Saturday (matching `getUTCDay`). */
+export const WEEKDAY_COUNT = 7
+
+/**
+ * How month-end spend is extrapolated from the spend so far:
+ *   `calendar`  — every day of the month weighs the same (plain run rate).
+ *   `workdays`  — only Mon–Fri are expected to produce spend.
+ *   `weekday`   — per-weekday weights measured from recent usage history.
+ */
+export type ProjectionBasis = 'calendar' | 'workdays' | 'weekday'
+
+/**
+ * Relative expected spend per weekday, normalized so the weights average 1
+ * (a weight of 1 therefore means "an average day"). `basis` reports which
+ * model actually produced the weights, after any fallback.
+ */
+export interface ProjectionModel {
+  basis: ProjectionBasis
+  /** Weight per weekday, index 0 = Sunday … 6 = Saturday. */
+  weights: readonly number[]
+}
+
+const UNIFORM_WEIGHTS: readonly number[] = [1, 1, 1, 1, 1, 1, 1]
+
+/** Every day weighs the same — the plain calendar run rate. */
+export const CALENDAR_PROJECTION: ProjectionModel = { basis: 'calendar', weights: UNIFORM_WEIGHTS }
+
+/**
+ * Normalize weekday weights so they average 1. Returns undefined when the
+ * input is not a usable 7-slot, non-negative, non-zero-sum weight array.
+ */
+export function normalizeWeights(values: readonly number[]): number[] | undefined {
+  if (values.length !== WEEKDAY_COUNT) return undefined
+  let sum = 0
+  for (const value of values) {
+    if (!Number.isFinite(value) || value < 0) return undefined
+    sum += value
+  }
+  if (sum <= 0) return undefined
+  const mean = sum / WEEKDAY_COUNT
+  return values.map((value) => value / mean)
+}
+
+/** Mon–Fri only: weekend days are expected to produce no spend. */
+export const WORKDAY_PROJECTION: ProjectionModel = {
+  basis: 'workdays',
+  weights: normalizeWeights([0, 1, 1, 1, 1, 1, 0]) ?? UNIFORM_WEIGHTS
+}
+
+/**
+ * Observed spend per weekday: `totals[weekday]` summed spend and
+ * `counts[weekday]` the number of complete days sampled (zero-spend days
+ * included — they are what makes a quiet weekend measurable).
+ */
+export interface WeekdaySeries {
+  totals: readonly number[]
+  counts: readonly number[]
+}
+
+/** Minimum sampled days required before a measured weekday profile is trusted. */
+export const MIN_WEEKDAY_SAMPLES = WEEKDAY_COUNT
+
+/** An empty weekday series (all totals and counts zero). */
+export function emptyWeekdaySeries(): WeekdaySeries {
+  return { totals: new Array<number>(WEEKDAY_COUNT).fill(0), counts: new Array<number>(WEEKDAY_COUNT).fill(0) }
+}
+
+/**
+ * Derive a weekday spend profile from sampled history. Weekdays without a
+ * sample fall back to the overall daily mean (weight 1). Falls back to
+ * `CALENDAR_PROJECTION` when the history is too short or carries no spend.
+ */
+export function weekdayProjection(series: WeekdaySeries): ProjectionModel {
+  if (series.totals.length !== WEEKDAY_COUNT || series.counts.length !== WEEKDAY_COUNT) return CALENDAR_PROJECTION
+  let totalSpend = 0
+  let totalDays = 0
+  for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) {
+    totalSpend += series.totals[weekday] ?? 0
+    totalDays += series.counts[weekday] ?? 0
+  }
+  if (totalDays < MIN_WEEKDAY_SAMPLES || totalSpend <= 0) return CALENDAR_PROJECTION
+  const overallMean = totalSpend / totalDays
+  const averages: number[] = []
+  for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) {
+    const count = series.counts[weekday] ?? 0
+    averages.push(count > 0 ? (series.totals[weekday] ?? 0) / count : overallMean)
+  }
+  const weights = normalizeWeights(averages)
+  if (!weights) return CALENDAR_PROJECTION
+  return { basis: 'weekday', weights }
+}
+
+/**
+ * Resolve the configured basis to a concrete model. The `weekday` basis needs
+ * history and silently degrades to `calendar` when there is not enough of it.
+ */
+export function resolveProjection(basis: ProjectionBasis, series?: WeekdaySeries): ProjectionModel {
+  if (basis === 'workdays') return WORKDAY_PROJECTION
+  if (basis === 'weekday') return series ? weekdayProjection(series) : CALENDAR_PROJECTION
+  return CALENDAR_PROJECTION
+}
+
+/** Short human-readable label for a projection basis, e.g. for a UI hint. */
+export function projectionBasisLabel(basis: ProjectionBasis): string {
+  if (basis === 'weekday') return 'weekday profile'
+  if (basis === 'workdays') return 'workdays'
+  return 'calendar'
+}
+
+/** Weekday (0 = Sunday) of the first day of `date`'s month (UTC). */
+function firstWeekdayOfMonth(date: Date): number {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1)).getUTCDay()
+}
+
+/** Weight totals for a month, split into the elapsed part (through today) and the whole month. */
+export interface MonthWeights {
+  /** Summed weight of day 1 through today (today counted in full, as the run rate does). */
+  elapsed: number
+  /** Summed weight of every day in the month. */
+  total: number
+  /** Summed weight of the days after today. */
+  remaining: number
+}
+
+/** Sum a model's weekday weights over a month, split at today. */
+export function monthWeights(date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): MonthWeights {
+  const days = daysInMonth(date)
+  const today = dayOfMonth(date)
+  const firstWeekday = firstWeekdayOfMonth(date)
+  let elapsed = 0
+  let total = 0
+  for (let day = 1; day <= days; day++) {
+    const weight = model.weights[(firstWeekday + day - 1) % WEEKDAY_COUNT] ?? 0
+    total += weight
+    if (day <= today) elapsed += weight
+  }
+  return { elapsed, total, remaining: total - elapsed }
+}
+
+/**
+ * Fraction of the month's expected spend that the elapsed days account for.
+ * With the calendar basis this is simply dayOfMonth / daysInMonth.
+ */
+function monthElapsedRatio(date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): number {
+  const { elapsed, total } = monthWeights(date, model)
+  if (total > 0 && elapsed > 0) return elapsed / total
   const days = daysInMonth(date)
   return days > 0 ? dayOfMonth(date) / days : 0
 }
@@ -107,11 +251,19 @@ export function dailyAverage(spend: number, date = new Date()): number {
   return day > 0 ? spend / day : 0
 }
 
-/** Projected month-end spend at the current daily run rate. */
-export function projectedMonthEnd(spend: number, date = new Date()): number {
+/**
+ * Projected month-end spend, extrapolating the spend so far over the month's
+ * remaining expected weight. Falls back to the calendar run rate when the
+ * elapsed days carry no weight (e.g. `workdays` basis on a month's first weekend).
+ */
+export function projectedMonthEnd(spend: number, date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): number {
+  const { elapsed, total } = monthWeights(date, model)
+  // Divide by the elapsed weight before scaling: with uniform weights this is
+  // bit-identical to the plain `(spend / dayOfMonth) * daysInMonth` run rate,
+  // so an exactly-on-target month projects to exactly the limit.
+  if (elapsed > 0 && total > 0) return (spend / elapsed) * total
   const day = dayOfMonth(date)
-  const days = daysInMonth(date)
-  return day > 0 ? (spend / day) * days : 0
+  return day > 0 ? (spend / day) * daysInMonth(date) : 0
 }
 
 /** Days remaining in the month (inclusive of today). */
@@ -124,17 +276,42 @@ export function daysRemaining(date = new Date()): number {
  * Returns false when there is no limit (unlimited) or the projection
  * is at or below the limit (strictly "over").
  */
-export function isProjectionOverLimit(spend: number, limit: number, date = new Date()): boolean {
-  return limit > 0 && projectedMonthEnd(spend, date) > limit
+export function isProjectionOverLimit(spend: number, limit: number, date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): boolean {
+  return limit > 0 && projectedMonthEnd(spend, date, model) > limit
 }
 
+/** Upper bound for the exhaustion walk, so a mostly-zero weight profile cannot loop forever. */
+export const MAX_EXHAUSTION_DAYS = 365
+
 /**
- * Days until budget exhaustion at the given daily average spend rate.
- * Returns undefined when there is no limit (unlimited) or no average.
+ * Days until budget exhaustion at the given daily average spend rate. The
+ * average is a calendar average, so it is redistributed over the model's
+ * weekday weights (which average 1) starting with tomorrow; with the calendar
+ * basis this reduces to `floor((limit - spend) / avgDailySpend)`.
+ * Returns undefined when there is no limit (unlimited) or no average, and is
+ * capped at `MAX_EXHAUSTION_DAYS`.
  */
-export function daysToExhaustion(spend: number, limit: number, avgDailySpend: number): number | undefined {
+export function daysToExhaustion(
+  spend: number,
+  limit: number,
+  avgDailySpend: number,
+  date = new Date(),
+  model: ProjectionModel = CALENDAR_PROJECTION
+): number | undefined {
   if (limit <= 0 || avgDailySpend <= 0) return undefined
-  return Math.floor((limit - spend) / avgDailySpend)
+  const remaining = limit - spend
+  if (remaining <= 0) return 0
+  let accumulated = 0
+  let days = 0
+  const cursor = new Date(date.getTime())
+  while (days < MAX_EXHAUSTION_DAYS) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+    const rate = avgDailySpend * (model.weights[cursor.getUTCDay()] ?? 0)
+    if (accumulated + rate > remaining) break
+    accumulated += rate
+    days++
+  }
+  return days
 }
 
 export type Pace = 'under' | 'on' | 'over'
@@ -143,13 +320,13 @@ export type Pace = 'under' | 'on' | 'over'
 export const PACE_TOLERANCE = 0.05
 
 /**
- * Compare spend pace to calendar pace. Only meaningful with a limit > 0;
+ * Compare spend pace to the expected pace. Only meaningful with a limit > 0;
  * returns undefined when the limit is unlimited (0 or negative).
- *   spend/limit vs dayOfMonth/daysInMonth, within PACE_TOLERANCE → "on".
+ * spend/limit vs the month's elapsed weight share, within PACE_TOLERANCE → "on".
  */
-export function paceStatus(spend: number, limit: number, date = new Date()): Pace | undefined {
+export function paceStatus(spend: number, limit: number, date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): Pace | undefined {
   if (limit <= 0) return undefined
-  const timeRatio = monthElapsedRatio(date)
+  const timeRatio = monthElapsedRatio(date, model)
   const spendRatio = spend / limit
   if (spendRatio - timeRatio > PACE_TOLERANCE) return 'over'
   if (timeRatio - spendRatio > PACE_TOLERANCE) return 'under'
@@ -182,6 +359,8 @@ export interface ProjectionParts {
   projected: number
   arrow: string
   pace: Pace | undefined
+  /** The model that produced the projection, after any fallback. */
+  basis: ProjectionBasis
 }
 
 /**
@@ -189,11 +368,16 @@ export interface ProjectionParts {
  * Returns undefined when there is no spend to project from (spend <= 0).
  * The pace arrow is empty when the limit is unlimited.
  */
-export function formatProjectionParts(spend: number, limit: number, date = new Date()): ProjectionParts | undefined {
+export function formatProjectionParts(
+  spend: number,
+  limit: number,
+  date = new Date(),
+  model: ProjectionModel = CALENDAR_PROJECTION
+): ProjectionParts | undefined {
   if (spend <= 0) return undefined
-  const projected = projectedMonthEnd(spend, date)
-  const pace = paceStatus(spend, limit, date)
-  return { projected, arrow: paceMarker(pace), pace }
+  const projected = projectedMonthEnd(spend, date, model)
+  const pace = paceStatus(spend, limit, date, model)
+  return { projected, arrow: paceMarker(pace), pace, basis: model.basis }
 }
 
 export interface MonthDeltaParts {
@@ -207,10 +391,17 @@ export interface MonthDeltaParts {
  * Compares projected month-end spend to last month's total.
  * Returns undefined when last month had no spend or no current spend to project from.
  */
-export function formatMonthDeltaParts(currentSpend: number, lastMonthSpend: number, date = new Date()): MonthDeltaParts | undefined {
+export function formatMonthDeltaParts(
+  currentSpend: number,
+  lastMonthSpend: number,
+  date = new Date(),
+  model: ProjectionModel = CALENDAR_PROJECTION
+): MonthDeltaParts | undefined {
   if (lastMonthSpend <= 0 || currentSpend <= 0) return undefined
-  const projected = projectedMonthEnd(currentSpend, date)
-  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100)
+  const projected = projectedMonthEnd(currentSpend, date, model)
+  // `|| 0` collapses the -0 that rounding a tiny negative delta produces, so a
+  // no-change month reports a plain 0 rather than a signed zero.
+  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100) || 0
   const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '→'
   const sign = pct > 0 ? '+' : ''
   return { arrow, sign, pct }

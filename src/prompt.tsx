@@ -4,6 +4,7 @@ import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { createMemo, For, type JSX, Show } from 'solid-js'
 import {
   analyticsUrl,
+  CALENDAR_PROJECTION,
   formatPercent,
   formatProjectionParts,
   formatTokenInline,
@@ -49,8 +50,9 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
     const ratio = spendRatio(spend, limit)
     const name = data?.keyInfo.name ?? ''
     const color = !data || limit <= 0 ? props.theme.textMuted : severityColor(spendSeverity(ratio, props.thresholds), props.theme)
-    const projectionParts = formatProjectionParts(spend, limit)
-    const projectionOverLimit = isProjectionOverLimit(spend, limit)
+    const projection = data?.projection ?? CALENDAR_PROJECTION
+    const projectionParts = formatProjectionParts(spend, limit, new Date(), projection)
+    const projectionOverLimit = isProjectionOverLimit(spend, limit, new Date(), projection)
 
     const parts: { text: string; color?: unknown; href?: string }[] = []
     if (data) {

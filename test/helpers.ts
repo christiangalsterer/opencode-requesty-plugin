@@ -1,7 +1,7 @@
 import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { RGBA } from '@opentui/core'
 import type { ModelUsage } from '../src/api'
-import type { SpendThresholds } from '../src/format'
+import { CALENDAR_PROJECTION, type SpendThresholds } from '../src/format'
 import type { RequestyData, RequestyStore } from '../src/state'
 
 export const THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
@@ -30,6 +30,7 @@ export function makeData(overrides: Partial<RequestyData> = {}): RequestyData {
     avg7dTokens: TOKENS,
     avg30dTokens: TOKENS,
     lastMonthSpend: 0.5,
+    projection: CALENDAR_PROJECTION,
     sessionTodaySpend: 0.5,
     sessionTotalSpend: 0.9,
     sessionTodayRequests: 3,

@@ -41,7 +41,7 @@ Before marking any task as `completed`, the following command chain must be exec
 - `src/route.ts` — pure `sessionIDFromRoute` (extracts the active session id from the host route); unit-tested.
 - `src/settings.ts` — pure `readSettings` (option parsing + clamping/bounds); unit-tested.
 - `src/api.ts` — Requesty Management API client (`apikey/self`, `apikey/self/usage`).
-- `src/format.ts` — pure formatting helpers (all unit-tested logic lives here).
+- `src/format.ts` — pure formatting helpers plus the weekday-aware month-end projection model (`ProjectionModel`, `weekdayProjection`, `monthWeights`, `projectedMonthEnd`); all unit-tested logic lives here.
 - `src/key.ts` — API key detection: reads `provider.*.options.apiKey` from the opencode provider config (incl. `{env:VAR}` interpolation and custom providers with a Requesty baseURL).
 - `bunfig.toml` — Bun config (preload for standalone dev, test settings).
 - `build.ts` — build script: pre-compiles `src/tui.tsx` → `dist/tui.js` with `@opentui/solid/bun-plugin` and runs `tsc -p tsconfig.build.json` for declarations.

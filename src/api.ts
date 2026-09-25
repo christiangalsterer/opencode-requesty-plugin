@@ -1,5 +1,7 @@
 /** Requesty Management API client. */
 
+import { emptyWeekdaySeries, type WeekdaySeries } from './format'
+
 const REQUESTY_ORIGIN = 'https://api-v2.requesty.ai/'
 const REQUEST_TIMEOUT_MS = 10_000
 
@@ -376,6 +378,25 @@ export function avgTokensLastNDays(response: UsageResponse, days: number, now = 
     output: totals.output / days,
     total: totals.total / days
   }
+}
+
+/**
+ * Bucket spend by weekday over the last `days` completed calendar days
+ * (excluding today, whose spend is still incomplete). Days without a usage
+ * entry count as 0 — a consistently quiet weekend is exactly the signal the
+ * weekday projection is built on. Returns an empty series when `days` <= 0.
+ */
+export function weekdaySpendSeries(response: UsageResponse, days: number, now = new Date()): WeekdaySeries {
+  const series = emptyWeekdaySeries()
+  if (days <= 0) return series
+  const totals = series.totals as number[]
+  const counts = series.counts as number[]
+  forEachPreviousDay(now, days, (date) => {
+    const weekday = date.getUTCDay()
+    totals[weekday] = (totals[weekday] ?? 0) + spendForDay(response, date)
+    counts[weekday] = (counts[weekday] ?? 0) + 1
+  })
+  return series
 }
 
 /** The metadata key under which Requesty records the session-affinity id. */

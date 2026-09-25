@@ -23,9 +23,11 @@ import {
   startOfUsageWindow,
   type TokenBreakdown,
   tokensForDay,
-  type UsageResponse
+  type UsageResponse,
+  weekdaySpendSeries
 } from './api'
-import { dailyAverage, formatSessionStart } from './format'
+import { dailyAverage, formatSessionStart, type ProjectionModel, resolveProjection } from './format'
+import { DEFAULT_PROJECTION_HISTORY_DAYS, type ProjectionSettings } from './settings'
 
 export type RefreshState = { status: 'idle' } | { status: 'loading' } | { status: 'ready'; fetchedAt: Date } | { status: 'error'; message: string }
 
@@ -41,6 +43,8 @@ export interface RequestyData {
   avg7dTokens: TokenBreakdown
   avg30dTokens: TokenBreakdown
   lastMonthSpend: number
+  /** Weekday-aware model used to project month-end spend (falls back to calendar). */
+  projection: ProjectionModel
   sessionTodaySpend: number
   sessionTotalSpend: number
   sessionTodayRequests: number
@@ -82,7 +86,7 @@ type SessionSnapshot = Pick<
 /** Maximum number of per-session snapshots retained (oldest evicted first). */
 const SESSION_CACHE_LIMIT = 50
 
-/** Rolling window (days) fetched for the monthly/rolling-average metrics. */
+/** Minimum rolling window (days) fetched for the monthly/rolling-average metrics. */
 const USAGE_WINDOW_DAYS = 30
 
 /**
@@ -99,6 +103,11 @@ const RENDER_REQUEST_DELAY_MS = 0
 export interface RequestyStoreOptions {
   apiKey: string
   onError?: (message: string) => void
+  /**
+   * Month-end projection configuration. Defaults to the weekday profile over
+   * `DEFAULT_PROJECTION_HISTORY_DAYS` days of history.
+   */
+  projection?: ProjectionSettings
   /**
    * Injectable Solid `createSignal`, so the store's reactive primitives are
    * created by the same Solid instance the host renders the plugin's JSX with.
@@ -153,6 +162,10 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
 
   const fetchApiKey = options.fetchApiKey ?? getApiKeySelf
   const fetchUsage = options.fetchUsage ?? getUsageSelf
+  const projectionSettings: ProjectionSettings = options.projection ?? { basis: 'weekday', historyDays: DEFAULT_PROJECTION_HISTORY_DAYS }
+  // The weekday profile needs its whole history window in the global response,
+  // so widen the fetched window when it reaches further back than the averages do.
+  const usageWindowDays = projectionSettings.basis === 'weekday' ? Math.max(USAGE_WINDOW_DAYS, projectionSettings.historyDays) : USAGE_WINDOW_DAYS
 
   let inFlight: Promise<void> | undefined
   let pending = false
@@ -217,7 +230,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
 
         const active = session()
         // One window serves the rolling averages and last month's spend.
-        const globalStart = startOfUsageWindow(USAGE_WINDOW_DAYS)
+        const globalStart = startOfUsageWindow(usageWindowDays)
         const sessionStartIso = active
           ? active.created !== undefined && Number.isFinite(active.created)
             ? new Date(active.created).toISOString()
@@ -236,6 +249,10 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const currentMonthUsage = filterUsageByMonth(usage)
         const aggregated = aggregateByModel(currentMonthUsage)
         const lastMonthSpend = lastMonthSpendFromUsage(usage)
+        const projection =
+          projectionSettings.basis === 'weekday'
+            ? resolveProjection('weekday', weekdaySpendSeries(usage, projectionSettings.historyDays))
+            : resolveProjection(projectionSettings.basis)
 
         let sessionToday: SessionSpend = emptySessionSpend()
         let sessionTotal: SessionSpend = emptySessionSpend()
@@ -295,6 +312,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           avg7dTokens: avgTokensLastNDays(usage, 7),
           avg30dTokens: avgTokensLastNDays(usage, 30),
           lastMonthSpend,
+          projection,
           ...snapshot
         })
         // Defer the repaint request to a macrotask: Solid flushes signal
