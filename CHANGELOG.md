@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.3.1...v1.4.0) (2026-09-26)
+
+
+### Features
+
+* projection modes ([#15](https://github.com/christiangalsterer/opencode-requesty-plugin/issues/15)) ([45f3e3e](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/45f3e3eeab44a88382b7fdca08b7c2fcf579ebd0))
+
 ## [1.3.1](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.3.0...v1.3.1) (2026-09-24)
 
 
