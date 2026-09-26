@@ -5,7 +5,7 @@ import { testRender } from '@opentui/solid'
 import { createSignal } from 'solid-js'
 import { createRequestyStore, type RequestyData, type RequestyStore } from '../src/state'
 import { RequestySidebarWidget, type WidgetProps } from '../src/widget'
-import { makeApi, makeData, makeStore, makeTheme, MODEL, THRESHOLDS } from './helpers'
+import { MODEL, makeApi, makeData, makeStore, makeTheme, THRESHOLDS } from './helpers'
 
 const BASE_PROPS: Omit<WidgetProps, 'store'> = {
   api: makeApi(),

@@ -64,7 +64,7 @@ describe('RequestyDetailDialog', () => {
     assert.ok(frame.includes('Model Breakdown (Current Month)'))
     assert.ok(frame.includes('gpt-5'))
     assert.ok(frame.includes('$1.25'))
-    assert.ok(frame.includes('Total: $2.50 across 1 model'))
+    assert.ok(frame.includes('Total: $2.50 (1 model)'))
   })
 
   test('shows the empty model state when no models are recorded', async () => {

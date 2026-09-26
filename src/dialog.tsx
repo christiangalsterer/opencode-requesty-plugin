@@ -315,7 +315,7 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
           </Show>
           <box paddingTop={1}>
             <text fg={props.theme.textMuted}>
-              Total: {formatUsd(monthSpend())} across {models().length} model{models().length === 1 ? '' : 's'}
+              Total: {formatUsd(monthSpend())} ({models().length} model{models().length === 1 ? '' : 's'})
             </text>
           </box>
         </box>

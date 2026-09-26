@@ -199,7 +199,7 @@ export function resolveProjection(basis: ProjectionBasis, series?: WeekdaySeries
 
 /** Short human-readable label for a projection basis, e.g. for a UI hint. */
 export function projectionBasisLabel(basis: ProjectionBasis): string {
-  if (basis === 'weekday') return 'weekday profile'
+  if (basis === 'weekday') return 'weekday'
   if (basis === 'workdays') return 'workdays'
   return 'calendar'
 }

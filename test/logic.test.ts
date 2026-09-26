@@ -61,8 +61,8 @@ import {
   spendRatio,
   spendSeverity,
   WEEKDAY_COUNT,
-  weekdayProjection,
-  WORKDAY_PROJECTION
+  WORKDAY_PROJECTION,
+  weekdayProjection
 } from '../src/format'
 
 describe('aggregateByModel', () => {
@@ -797,7 +797,7 @@ describe('weekday projection model', () => {
   test('projectionBasisLabel names each basis', () => {
     assert.equal(projectionBasisLabel('calendar'), 'calendar')
     assert.equal(projectionBasisLabel('workdays'), 'workdays')
-    assert.equal(projectionBasisLabel('weekday'), 'weekday profile')
+    assert.equal(projectionBasisLabel('weekday'), 'weekday')
   })
 
   test('formatProjectionParts reports the model basis', () => {
