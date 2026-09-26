@@ -1,11 +1,12 @@
 import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { DEFAULT_THRESHOLDS } from '../src/format'
-import { readSettings } from '../src/settings'
+import { DEFAULT_PROJECTION_HISTORY_DAYS, readSettings } from '../src/settings'
 
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
+  projection: { basis: 'weekday', historyDays: DEFAULT_PROJECTION_HISTORY_DAYS },
   sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, showSessionInfo: true, order: 50 },
   prompt: {
     enabled: true,
@@ -293,5 +294,35 @@ describe('readSettings', () => {
     assert.equal(readSettings({ prompt: { order: Infinity } }).prompt.order, DEFAULTS.prompt.order)
     assert.equal(readSettings({ prompt: { order: -Infinity } }).prompt.order, DEFAULTS.prompt.order)
     assert.equal(readSettings({ prompt: { order: undefined } }).prompt.order, DEFAULTS.prompt.order)
+  })
+
+  test('projection.basis accepts the three known bases', () => {
+    assert.equal(readSettings({ projection: { basis: 'calendar' } }).projection.basis, 'calendar')
+    assert.equal(readSettings({ projection: { basis: 'workdays' } }).projection.basis, 'workdays')
+    assert.equal(readSettings({ projection: { basis: 'weekday' } }).projection.basis, 'weekday')
+  })
+
+  test('projection.basis unknown or non-string → default', () => {
+    assert.equal(readSettings({ projection: { basis: 'lunar' } }).projection.basis, 'weekday')
+    assert.equal(readSettings({ projection: { basis: 7 } }).projection.basis, 'weekday')
+    assert.equal(readSettings({ projection: { basis: undefined } }).projection.basis, 'weekday')
+  })
+
+  test('projection.historyDays is clamped to whole days within bounds', () => {
+    assert.equal(readSettings({ projection: { historyDays: 14 } }).projection.historyDays, 14)
+    assert.equal(readSettings({ projection: { historyDays: 14.7 } }).projection.historyDays, 14)
+    assert.equal(readSettings({ projection: { historyDays: 84 } }).projection.historyDays, 84)
+  })
+
+  test('projection.historyDays out of bounds or invalid → default', () => {
+    assert.equal(readSettings({ projection: { historyDays: 6 } }).projection.historyDays, DEFAULT_PROJECTION_HISTORY_DAYS)
+    assert.equal(readSettings({ projection: { historyDays: 85 } }).projection.historyDays, DEFAULT_PROJECTION_HISTORY_DAYS)
+    assert.equal(readSettings({ projection: { historyDays: 0 } }).projection.historyDays, DEFAULT_PROJECTION_HISTORY_DAYS)
+    assert.equal(readSettings({ projection: { historyDays: 'lots' } }).projection.historyDays, DEFAULT_PROJECTION_HISTORY_DAYS)
+  })
+
+  test('projection non-object → defaults', () => {
+    assert.deepEqual(readSettings({ projection: 'nope' }).projection, DEFAULTS.projection)
+    assert.deepEqual(readSettings({ projection: null }).projection, DEFAULTS.projection)
   })
 })

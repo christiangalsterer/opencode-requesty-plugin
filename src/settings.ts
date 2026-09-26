@@ -1,4 +1,4 @@
-import { resolveThresholds, type SpendThresholds } from './format'
+import { type ProjectionBasis, resolveThresholds, type SpendThresholds } from './format'
 
 const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000
 const DEFAULT_MAX_MODELS = 5
@@ -8,6 +8,28 @@ const MIN_REFRESH_INTERVAL_MS = 10 * 1000
 const MAX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 const MIN_MAX_MODELS = 1
 const MAX_MAX_MODELS = 20
+
+/** Default projection basis: per-weekday profile measured from recent usage. */
+const DEFAULT_PROJECTION_BASIS: ProjectionBasis = 'weekday'
+
+/** Default history window (days) sampled for the weekday profile — 4 full weeks. */
+export const DEFAULT_PROJECTION_HISTORY_DAYS = 28
+
+/**
+ * Bounds for the sampled history window. The upper bound stays below the API's
+ * 90-day per-request range limit so the usage window still fits in one request
+ * (a window starting at midnight `n` days ago spans slightly more than `n` days).
+ */
+const MIN_PROJECTION_HISTORY_DAYS = 7
+const MAX_PROJECTION_HISTORY_DAYS = 84
+
+const PROJECTION_BASES: readonly ProjectionBasis[] = ['calendar', 'workdays', 'weekday']
+
+export interface ProjectionSettings {
+  basis: ProjectionBasis
+  /** Completed days of history sampled for the `weekday` basis. */
+  historyDays: number
+}
 
 export interface SidebarSettings {
   enabled: boolean
@@ -39,6 +61,7 @@ export interface DialogSettings {
 export interface PluginSettings {
   refreshIntervalMs: number
   thresholds: SpendThresholds
+  projection: ProjectionSettings
   sidebar: SidebarSettings
   prompt: PromptSettings
   dialog: DialogSettings
@@ -73,9 +96,19 @@ export function readSettings(options: Record<string, unknown> | undefined): Plug
   return {
     refreshIntervalMs: clampNumber(options?.refreshIntervalMs, MIN_REFRESH_INTERVAL_MS, MAX_REFRESH_INTERVAL_MS, DEFAULT_REFRESH_INTERVAL_MS),
     thresholds: resolveThresholds(options?.warningThreshold, options?.errorThreshold),
+    projection: readProjectionSettings(options?.projection),
     sidebar: readSidebarSettings(options?.sidebar),
     prompt: readPromptSettings(options?.prompt),
     dialog: readDialogSettings(options?.dialog)
+  }
+}
+
+function readProjectionSettings(raw: unknown): ProjectionSettings {
+  const obj = typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {}
+  const basis = PROJECTION_BASES.find((candidate) => candidate === obj.basis) ?? DEFAULT_PROJECTION_BASIS
+  return {
+    basis,
+    historyDays: Math.floor(clampNumber(obj.historyDays, MIN_PROJECTION_HISTORY_DAYS, MAX_PROJECTION_HISTORY_DAYS, DEFAULT_PROJECTION_HISTORY_DAYS))
   }
 }
 

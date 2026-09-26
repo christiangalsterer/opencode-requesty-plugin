@@ -50,6 +50,7 @@ const plugin: TuiPluginModule = {
 
     const store: RequestyStore = createRequestyStore({
       apiKey: key.apiKey,
+      projection: settings.projection,
       // Use this module's `createSignal` (the same Solid instance the widget
       // renders under) so store updates re-run the widget's memos and repaint.
       createSignal,

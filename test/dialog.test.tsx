@@ -3,6 +3,7 @@ import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { testRender } from '@opentui/solid'
 import { type DetailDialogProps, RequestyDetailDialog } from '../src/dialog'
+import { WORKDAY_PROJECTION } from '../src/format'
 import type { RequestyStore } from '../src/state'
 import { makeData, makeStore, makeTheme, THRESHOLDS } from './helpers'
 
@@ -45,6 +46,11 @@ describe('RequestyDetailDialog', () => {
     assert.ok(frame.includes('Budget Overview'))
     assert.ok(frame.includes('On track'))
     assert.ok(frame.includes('Updated:'))
+  })
+
+  test('labels the End of Month projection with the model that produced it', async () => {
+    assert.ok((await renderDialog(makeStore(makeData()))).includes('End of Month (calendar)'))
+    assert.ok((await renderDialog(makeStore(makeData({ projection: WORKDAY_PROJECTION })))).includes('End of Month (workdays)'))
   })
 
   test('renders the key name only when showKeyName is enabled', async () => {

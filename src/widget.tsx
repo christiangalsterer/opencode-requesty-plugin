@@ -118,8 +118,9 @@ function Snapshot(props: SnapshotProps): JSX.Element {
   const severity = () => spendSeverity(ratio(), props.thresholds)
   const barColor = () => severityColor(severity(), props.theme)
   const models = () => data().models.slice(0, props.maxModels)
-  const projectionParts = () => formatProjectionParts(spend(), limit())
-  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit())
+  const projection = () => data().projection
+  const projectionParts = () => formatProjectionParts(spend(), limit(), new Date(), projection())
+  const projectionOverLimit = () => isProjectionOverLimit(spend(), limit(), new Date(), projection())
   const spendRows = () => [
     { label: 'Today', spend: data().todaySpend, tokens: data().todayTokens },
     { label: 'Daily avg', spend: data().dailyAverage, tokens: data().dailyAverageTokens },

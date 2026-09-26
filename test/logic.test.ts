@@ -20,15 +20,18 @@ import {
   startOfUsageWindow,
   totalSpendFromUsage,
   type UsageResponse,
-  usageParams
+  usageParams,
+  weekdaySpendSeries
 } from '../src/api'
 import {
   analyticsUrl,
+  CALENDAR_PROJECTION,
   DEFAULT_THRESHOLDS,
   dailyAverage,
   daysInMonth,
   daysRemaining,
   daysToExhaustion,
+  emptyWeekdaySeries,
   formatLimit,
   formatMonthDeltaParts,
   formatOutputInputRatio,
@@ -40,18 +43,26 @@ import {
   formatTokens,
   formatUsd,
   isProjectionOverLimit,
+  MAX_EXHAUSTION_DAYS,
   modelAnalyticsUrl,
+  monthWeights,
   normalizeThreshold,
+  normalizeWeights,
   paceMarker,
   paceStatus,
   projectedMonthEnd,
+  projectionBasisLabel,
   renderBar,
+  resolveProjection,
   resolveThresholds,
   sessionRepaintKey,
   severityColor,
   shortModel,
   spendRatio,
-  spendSeverity
+  spendSeverity,
+  WEEKDAY_COUNT,
+  weekdayProjection,
+  WORKDAY_PROJECTION
 } from '../src/format'
 
 describe('aggregateByModel', () => {
@@ -622,12 +633,12 @@ describe('month projection', () => {
   })
 
   test('formatProjectionParts returns projected amount and pace arrow', () => {
-    assert.deepEqual(formatProjectionParts(60, 100, aug15), { projected: (60 / 15) * 31, arrow: '↑', pace: 'over' })
-    assert.deepEqual(formatProjectionParts(10, 100, aug15), { projected: (10 / 15) * 31, arrow: '↓', pace: 'under' })
+    assert.deepEqual(formatProjectionParts(60, 100, aug15), { projected: (60 / 15) * 31, arrow: '↑', pace: 'over', basis: 'calendar' })
+    assert.deepEqual(formatProjectionParts(10, 100, aug15), { projected: (10 / 15) * 31, arrow: '↓', pace: 'under', basis: 'calendar' })
   })
 
   test('formatProjectionParts omits arrow when limit is unlimited', () => {
-    assert.deepEqual(formatProjectionParts(30, 0, aug15), { projected: (30 / 15) * 31, arrow: '', pace: undefined })
+    assert.deepEqual(formatProjectionParts(30, 0, aug15), { projected: (30 / 15) * 31, arrow: '', pace: undefined, basis: 'calendar' })
   })
 
   test('formatProjectionParts is undefined when there is no spend', () => {
@@ -688,6 +699,200 @@ describe('month projection', () => {
 
   test('isProjectionOverLimit is false when there is no spend', () => {
     assert.equal(isProjectionOverLimit(0, 100, aug15), false)
+  })
+})
+
+describe('weekday projection model', () => {
+  // August 2026 starts on a Saturday and has 10 weekend days, so 21 of its
+  // 31 days are workdays. Each workday therefore weighs 7/5 = 1.4.
+  const aug15 = new Date('2026-08-15T12:00:00Z') // a Saturday
+  const aug17 = new Date('2026-08-17T12:00:00Z') // a Monday
+
+  test('normalizeWeights scales the weights to a mean of 1', () => {
+    assert.deepEqual(normalizeWeights([2, 2, 2, 2, 2, 2, 2]), [1, 1, 1, 1, 1, 1, 1])
+    // 0,1,1,1,1,1,0 sums to 5 → mean 5/7 → weekdays scale to 7/5 = 1.4
+    assert.deepEqual(normalizeWeights([0, 1, 1, 1, 1, 1, 0]), [0, 1.4, 1.4, 1.4, 1.4, 1.4, 0])
+  })
+
+  test('normalizeWeights rejects bad input', () => {
+    assert.equal(normalizeWeights([1, 1, 1]), undefined)
+    assert.equal(normalizeWeights([0, 0, 0, 0, 0, 0, 0]), undefined)
+    assert.equal(normalizeWeights([1, 1, 1, 1, 1, 1, -1]), undefined)
+    assert.equal(normalizeWeights([1, 1, 1, 1, 1, 1, NaN]), undefined)
+  })
+
+  test('monthWeights on the calendar basis counts plain days', () => {
+    assert.deepEqual(monthWeights(aug15, CALENDAR_PROJECTION), { elapsed: 15, total: 31, remaining: 16 })
+  })
+
+  test('monthWeights on the workdays basis ignores weekends', () => {
+    // Aug 1 2026 is a Saturday, so days 1–15 hold 5 weekend days (1,2,8,9,15)
+    // → 10 workdays elapsed of the month's 21, each weighing 1.4.
+    const weights = monthWeights(aug15, WORKDAY_PROJECTION)
+    assert.equal(round(weights.elapsed), round(10 * 1.4))
+    assert.equal(round(weights.total), round(21 * 1.4))
+    assert.equal(round(weights.remaining), round(11 * 1.4))
+  })
+
+  test('projectedMonthEnd on the workdays basis extrapolates over workdays only', () => {
+    // 10 of 21 workdays elapsed → $100 so far projects to 100 * 21/10 = $210,
+    // whereas the calendar basis would say 100 * 31/15 ≈ $206.67.
+    assert.equal(round(projectedMonthEnd(100, aug15, WORKDAY_PROJECTION)), 210)
+    assert.equal(round(projectedMonthEnd(100, aug15, CALENDAR_PROJECTION)), round((100 / 15) * 31))
+  })
+
+  test('projectedMonthEnd falls back to the calendar rate when no weight elapsed', () => {
+    // Aug 1 2026 is a Saturday: the workdays basis assigns it weight 0, so the
+    // projection cannot scale and must fall back to the calendar run rate.
+    const aug1 = new Date('2026-08-01T12:00:00Z')
+    assert.equal(projectedMonthEnd(10, aug1, WORKDAY_PROJECTION), 10 * 31)
+  })
+
+  test('weekdayProjection derives weights from sampled history', () => {
+    // $10 on each of 2 sampled Mondays, $0 on every other sampled weekday.
+    const series = emptyWeekdaySeries()
+    const totals = series.totals as number[]
+    const counts = series.counts as number[]
+    for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) counts[weekday] = 2
+    totals[1] = 20
+    const model = weekdayProjection(series)
+    assert.equal(model.basis, 'weekday')
+    // Monday averages $10/day, overall mean is $10/7 → Monday weight = 7.
+    assert.equal(round(model.weights[1]!), 7)
+    assert.equal(model.weights[0], 0)
+  })
+
+  test('weekdayProjection fills unsampled weekdays with the overall mean', () => {
+    const series = emptyWeekdaySeries()
+    const totals = series.totals as number[]
+    const counts = series.counts as number[]
+    // Only Mon–Fri sampled (2 days each, $10/day); Sat/Sun have no samples.
+    for (let weekday = 1; weekday <= 5; weekday++) {
+      counts[weekday] = 2
+      totals[weekday] = 20
+    }
+    const model = weekdayProjection(series)
+    // Every sampled day averaged $10, so all weights — including the
+    // mean-filled weekend — come out equal.
+    assert.deepEqual(model.weights.map(round), [1, 1, 1, 1, 1, 1, 1])
+  })
+
+  test('weekdayProjection falls back to calendar on thin or empty history', () => {
+    assert.equal(weekdayProjection(emptyWeekdaySeries()), CALENDAR_PROJECTION)
+    const thin = emptyWeekdaySeries()
+    ;(thin.counts as number[])[1] = 3
+    ;(thin.totals as number[])[1] = 30
+    // 3 sampled days is below MIN_WEEKDAY_SAMPLES (7).
+    assert.equal(weekdayProjection(thin), CALENDAR_PROJECTION)
+  })
+
+  test('resolveProjection maps a basis to a model', () => {
+    assert.equal(resolveProjection('calendar'), CALENDAR_PROJECTION)
+    assert.equal(resolveProjection('workdays'), WORKDAY_PROJECTION)
+    // The weekday basis needs history; without it, it degrades to calendar.
+    assert.equal(resolveProjection('weekday'), CALENDAR_PROJECTION)
+    assert.equal(resolveProjection('weekday', emptyWeekdaySeries()), CALENDAR_PROJECTION)
+  })
+
+  test('projectionBasisLabel names each basis', () => {
+    assert.equal(projectionBasisLabel('calendar'), 'calendar')
+    assert.equal(projectionBasisLabel('workdays'), 'workdays')
+    assert.equal(projectionBasisLabel('weekday'), 'weekday profile')
+  })
+
+  test('formatProjectionParts reports the model basis', () => {
+    assert.equal(formatProjectionParts(100, 0, aug15, WORKDAY_PROJECTION)!.basis, 'workdays')
+  })
+
+  test('paceStatus uses the model weights for the elapsed share', () => {
+    // On the workdays basis, 10/21 workdays elapsed ≈ 47.6% of the month's
+    // expected spend, so a 45% spend ratio is "on pace" — whereas the calendar
+    // basis (15/31 ≈ 48.4%) would agree here.
+    assert.equal(paceStatus(45, 100, aug15, WORKDAY_PROJECTION), 'on')
+    assert.equal(paceStatus(70, 100, aug15, WORKDAY_PROJECTION), 'over')
+    // Aug 17 (Monday): 11/21 workdays ≈ 52.4% expected, so 45% spent is under
+    // pace even though only 17/31 ≈ 54.8% of the calendar has passed.
+    assert.equal(paceStatus(45, 100, aug17, WORKDAY_PROJECTION), 'under')
+    assert.equal(paceStatus(50, 100, aug17, WORKDAY_PROJECTION), 'on')
+  })
+
+  test('formatMonthDeltaParts compares the weighted projection to last month', () => {
+    // Workdays basis projects $210 vs last month's $210 → no delta, while the
+    // calendar basis would project ≈$206.67 and report a drop.
+    assert.deepEqual(formatMonthDeltaParts(100, 210, aug15, WORKDAY_PROJECTION), { arrow: '→', sign: '', pct: 0 })
+    assert.equal(formatMonthDeltaParts(100, 210, aug15, CALENDAR_PROJECTION)!.pct < 0, true)
+  })
+
+  test('daysToExhaustion on the calendar basis matches the plain division', () => {
+    assert.equal(daysToExhaustion(30, 100, 2, aug15, CALENDAR_PROJECTION), 35)
+    assert.equal(daysToExhaustion(90, 100, 6, aug15, CALENDAR_PROJECTION), 1)
+  })
+
+  test('daysToExhaustion skips zero-weight days on the workdays basis', () => {
+    // From Saturday Aug 15 with $28 left and a $10/day calendar average
+    // (= $14 per workday): Sun 16 costs nothing, Mon 17 and Tue 18 consume the
+    // budget exactly, so 3 days fit before it would be exceeded.
+    assert.equal(daysToExhaustion(72, 100, 10, aug15, WORKDAY_PROJECTION), 3)
+  })
+
+  test('daysToExhaustion is 0 when the budget is already spent', () => {
+    assert.equal(daysToExhaustion(100, 100, 2, aug15), 0)
+    assert.equal(daysToExhaustion(120, 100, 2, aug15), 0)
+  })
+
+  test('daysToExhaustion is capped and still undefined for unlimited/no average', () => {
+    assert.equal(daysToExhaustion(0, 1_000_000, 0.01, aug15), MAX_EXHAUSTION_DAYS)
+    assert.equal(daysToExhaustion(30, 0, 2, aug15), undefined)
+    assert.equal(daysToExhaustion(30, 100, 0, aug15), undefined)
+  })
+})
+
+/** Round to 6 decimals, so weight arithmetic can be compared without FP noise. */
+function round(value: number): number {
+  return Math.round(value * 1e6) / 1e6
+}
+
+describe('weekdaySpendSeries', () => {
+  // 2026-08-17 is a Monday; the previous 7 complete days are Aug 10–16 (Mon–Sun).
+  const monday = new Date('2026-08-17T12:00:00Z')
+
+  test('buckets spend by weekday over the previous complete days', () => {
+    const response: UsageResponse = {
+      usage: {
+        '2026-08-10': { spend: 5 }, // Monday
+        '2026-08-11': { spend: 3 }, // Tuesday
+        '2026-08-16': { spend: 1 }, // Sunday
+        '2026-08-17': { spend: 99 } // today — must be excluded
+      }
+    }
+    const series = weekdaySpendSeries(response, 7, monday)
+    assert.deepEqual([...series.counts], [1, 1, 1, 1, 1, 1, 1])
+    // index 0 = Sunday … 1 = Monday, 2 = Tuesday
+    assert.deepEqual([...series.totals], [1, 5, 3, 0, 0, 0, 0])
+  })
+
+  test('counts days without a usage entry as zero spend', () => {
+    const series = weekdaySpendSeries({ usage: {} }, 14, monday)
+    assert.deepEqual([...series.counts], [2, 2, 2, 2, 2, 2, 2])
+    assert.deepEqual([...series.totals], [0, 0, 0, 0, 0, 0, 0])
+  })
+
+  test('returns an empty series for a non-positive window', () => {
+    assert.deepEqual(weekdaySpendSeries({ usage: { '2026-08-10': { spend: 5 } } }, 0, monday), emptyWeekdaySeries())
+  })
+
+  test('feeds weekdayProjection with a usable profile', () => {
+    // Four weeks where only Mon–Fri have spend → weekends get weight 0.
+    const usage: Record<string, { spend: number }> = {}
+    for (let offset = 1; offset <= 28; offset++) {
+      const date = new Date(monday)
+      date.setUTCDate(date.getUTCDate() - offset)
+      const weekday = date.getUTCDay()
+      usage[date.toISOString().slice(0, 10)] = { spend: weekday === 0 || weekday === 6 ? 0 : 10 }
+    }
+    const model = weekdayProjection(weekdaySpendSeries({ usage }, 28, monday))
+    assert.equal(model.basis, 'weekday')
+    assert.deepEqual(model.weights.map(round), WORKDAY_PROJECTION.weights.map(round))
   })
 })
 
