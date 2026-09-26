@@ -46,6 +46,7 @@
     "husky": "9.1.7",
     "lint-staged": "17.5.1",
     "prettier": "3.9.9",
+    "renovate": "44.7.2",
     "solid-js": "1.9.15",
     "typescript": "6.0.3",
     "typescript-7": "npm:typescript@7.0.2"
@@ -67,7 +68,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "ci": "bun run clean && bun install && bun test && bun run build && bun pm pack && npm i --omit=dev --dry-run *.tgz",
+    "ci": "bun run clean && bun install && bun test && bun run build && bun pm pack && npm i --omit=dev --dry-run *.tgz && bun run renovate:config",
     "biome": "biome check",
     "biome:fix": "biome check --write",
     "build": "bun run typecheck && bun run build.ts",
@@ -88,7 +89,8 @@
     "release:prepare": "bun run clean && bun install && bun run format && bun test",
     "publish-npm": "bun run ci && bun publish --access=public",
     "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "renovate:config": "npx renovate-config-validator"
   },
   "lint-staged": {
     "*": "bun run husky"

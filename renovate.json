@@ -23,6 +23,12 @@
       "prConcurrentLimit": 1,
       "automerge": true,
       "automergeType": "branch"
+    },
+    {
+      "groupName": "Exclude dependencies",
+      "groupSlug": "exclude-dependencies",
+      "matchPackageNames": ["@opencode-ai/plugin", "@opencode-ai/sdk", "@opentui/core", "@opentui/keymap", "@opentui/solid", "solid-js"],
+      "enabled": false
     }
   ]
 }
