@@ -61,7 +61,7 @@ Disable the readout with `"prompt": { "budgetIndicator": false }`.
 
 Open the dialog with `/requesty` from the command palette for the full breakdown:
 
-- KPI row: spent, limit, remaining, End of Month projection (labelled with the projection basis actually used) with a colored pace arrow, and last month's spend with a colored trend chevron
+- KPI row: spent, limit, remaining, End of Month projection (labelled with the projection method actually used) with a colored pace arrow, and last month's spend with a colored trend chevron
 - *Budget Overview* card: wide progress bar, budget-health badge, days-to-exhaustion estimate based on your 7-day average, and today/daily avg/7d/30d averages
 - *Model Breakdown (Current Month)* card: per-model table with spend, share of total spend, tokens, request count, and output/input ratio
 
@@ -134,8 +134,8 @@ Restart opencode after changing the config.
 | `refreshIntervalMs`       | number  | `300000` (5 min)             | Periodic refresh interval (safety net) |
 | `warningThreshold`        | number  | `0.7` (70%)                  | Budget usage ratio at which the bar turns yellow (accepts 0–1 or 0–100) |
 | `errorThreshold`          | number  | `0.9` (90%)                  | Budget usage ratio at which the bar turns red (accepts 0–1 or 0–100) |
-| `projection.basis`        | string  | `"weekday"`                  | How month-end spend is extrapolated: `"weekday"` (per-weekday profile from your usage history), `"workdays"` (Mon–Fri only), or `"calendar"` (every day weighs the same) |
-| `projection.historyDays`  | number  | `28`                         | Completed days of usage history sampled for the `"weekday"` basis (7–84, whole days) |
+| `projection.method`       | string  | `"weekday"`                  | How month-end spend is extrapolated: `"weekday"` (per-weekday profile from your usage history), `"workdays"` (Mon–Fri only), or `"calendar"` (every day weighs the same) |
+| `projection.historyDays`  | number  | `28`                         | Completed days of usage history sampled for the `"weekday"` method (7–84, whole days) |
 | `sidebar.enabled`         | boolean | `true`                       | Show the sidebar widget |
 | `sidebar.maxModels`       | number  | `5`                          | Number of models shown in the compact sidebar list |
 | `sidebar.showTokens`      | boolean | `true`                       | Show input/output token breakdown alongside spend in the sidebar averages block |
@@ -233,9 +233,9 @@ Coding usage is rarely spread evenly across the week, so a plain "spend so far �
 projection = spend so far ÷ (weight of days 1…today) × (weight of all days in the month)
 ```
 
-Three bases are available via `projection.basis`:
+Three methods are available via `projection.method`:
 
-| Basis | Weights | Use when |
+| Method | Weights | Use when |
 | ----- | ------- | -------- |
 | `"weekday"` (default) | Measured from your own usage: each weekday's average spend over the last `projection.historyDays` completed days | You want the projection to learn your actual rhythm |
 | `"workdays"`          | Mon–Fri count, Sat/Sun count as zero | You only work weekdays and have no usable history yet |
@@ -243,11 +243,11 @@ Three bases are available via `projection.basis`:
 
 Details:
 
-- Weights are normalized to an average of 1, so a weight of `1` means "an average day" and the `"calendar"` basis reduces exactly to the plain run rate.
-- The `"weekday"` basis needs at least 7 sampled days carrying some spend; with a shorter or empty history it silently falls back to `"calendar"`. The detail dialog's KPI label shows which basis was actually used (`End of Month (weekday profile)`, `(workdays)` or `(calendar)`).
+- Weights are normalized to an average of 1, so a weight of `1` means "an average day" and the `"calendar"` method reduces exactly to the plain run rate.
+- The `"weekday"` method needs at least 7 sampled days carrying some spend; with a shorter or empty history it silently falls back to `"calendar"`. The detail dialog's KPI label shows which method was actually used (`End of Month (weekday profile)`, `(workdays)` or `(calendar)`).
 - Days with no usage count as `$0`, which is what makes a consistently quiet weekend measurable. Today is excluded from the history sample because its spend is still incomplete.
 - The **pace marker** (↑/→/↓) and the *Budget Overview* **days-to-exhaustion** estimate use the same weights, so a weekend no longer looks like "under pace" and an exhaustion date no longer counts days you never spend on.
-- Choosing `projection.basis: "weekday"` with a `historyDays` above 30 widens the usage request window accordingly; it stays within a single API request.
+- Choosing `projection.method: "weekday"` with a `historyDays` above 30 widens the usage request window accordingly; it stays within a single API request.
 
 ## API key detection
 

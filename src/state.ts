@@ -10,8 +10,8 @@ import {
   getUsageSelf,
   lastMonthSpendFromUsage,
   MAX_USAGE_RANGE_DAYS,
-  mergeUsage,
   type ModelUsage,
+  mergeUsage,
   SESSION_AFFINITY_KEY,
   type SessionSpend,
   sessionSpendForSessionIds,
@@ -162,10 +162,10 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
 
   const fetchApiKey = options.fetchApiKey ?? getApiKeySelf
   const fetchUsage = options.fetchUsage ?? getUsageSelf
-  const projectionSettings: ProjectionSettings = options.projection ?? { basis: 'weekday', historyDays: DEFAULT_PROJECTION_HISTORY_DAYS }
+  const projectionSettings: ProjectionSettings = options.projection ?? { method: 'weekday', historyDays: DEFAULT_PROJECTION_HISTORY_DAYS }
   // The weekday profile needs its whole history window in the global response,
   // so widen the fetched window when it reaches further back than the averages do.
-  const usageWindowDays = projectionSettings.basis === 'weekday' ? Math.max(USAGE_WINDOW_DAYS, projectionSettings.historyDays) : USAGE_WINDOW_DAYS
+  const usageWindowDays = projectionSettings.method === 'weekday' ? Math.max(USAGE_WINDOW_DAYS, projectionSettings.historyDays) : USAGE_WINDOW_DAYS
 
   let inFlight: Promise<void> | undefined
   let pending = false
@@ -250,9 +250,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         const aggregated = aggregateByModel(currentMonthUsage)
         const lastMonthSpend = lastMonthSpendFromUsage(usage)
         const projection =
-          projectionSettings.basis === 'weekday'
+          projectionSettings.method === 'weekday'
             ? resolveProjection('weekday', weekdaySpendSeries(usage, projectionSettings.historyDays))
-            : resolveProjection(projectionSettings.basis)
+            : resolveProjection(projectionSettings.method)
 
         let sessionToday: SessionSpend = emptySessionSpend()
         let sessionTotal: SessionSpend = emptySessionSpend()

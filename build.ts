@@ -1,5 +1,5 @@
-import solidPlugin from '@opentui/solid/bun-plugin'
 import { rm } from 'node:fs/promises'
+import solidPlugin from '@opentui/solid/bun-plugin'
 
 await rm('dist', { recursive: true, force: true })
 
