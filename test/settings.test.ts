@@ -6,7 +6,7 @@ import { DEFAULT_PROJECTION_HISTORY_DAYS, readSettings } from '../src/settings'
 const DEFAULTS = {
   refreshIntervalMs: 300000,
   thresholds: DEFAULT_THRESHOLDS,
-  projection: { basis: 'weekday', historyDays: DEFAULT_PROJECTION_HISTORY_DAYS },
+  projection: { method: 'weekday', historyDays: DEFAULT_PROJECTION_HISTORY_DAYS },
   sidebar: { enabled: true, maxModels: 5, showTokens: true, showKeyName: false, showSessionInfo: true, order: 50 },
   prompt: {
     enabled: true,
@@ -296,16 +296,20 @@ describe('readSettings', () => {
     assert.equal(readSettings({ prompt: { order: undefined } }).prompt.order, DEFAULTS.prompt.order)
   })
 
-  test('projection.basis accepts the three known bases', () => {
-    assert.equal(readSettings({ projection: { basis: 'calendar' } }).projection.basis, 'calendar')
-    assert.equal(readSettings({ projection: { basis: 'workdays' } }).projection.basis, 'workdays')
-    assert.equal(readSettings({ projection: { basis: 'weekday' } }).projection.basis, 'weekday')
+  test('projection.method accepts the three known methods', () => {
+    assert.equal(readSettings({ projection: { method: 'calendar' } }).projection.method, 'calendar')
+    assert.equal(readSettings({ projection: { method: 'workdays' } }).projection.method, 'workdays')
+    assert.equal(readSettings({ projection: { method: 'weekday' } }).projection.method, 'weekday')
   })
 
-  test('projection.basis unknown or non-string → default', () => {
-    assert.equal(readSettings({ projection: { basis: 'lunar' } }).projection.basis, 'weekday')
-    assert.equal(readSettings({ projection: { basis: 7 } }).projection.basis, 'weekday')
-    assert.equal(readSettings({ projection: { basis: undefined } }).projection.basis, 'weekday')
+  test('projection.method unknown or non-string → default', () => {
+    assert.equal(readSettings({ projection: { method: 'lunar' } }).projection.method, 'weekday')
+    assert.equal(readSettings({ projection: { method: 7 } }).projection.method, 'weekday')
+    assert.equal(readSettings({ projection: { method: undefined } }).projection.method, 'weekday')
+  })
+
+  test('legacy projection.basis is ignored', () => {
+    assert.equal(readSettings({ projection: { basis: 'calendar' } }).projection.method, 'weekday')
   })
 
   test('projection.historyDays is clamped to whole days within bounds', () => {

@@ -104,15 +104,15 @@ export const WEEKDAY_COUNT = 7
  *   `workdays`  — only Mon–Fri are expected to produce spend.
  *   `weekday`   — per-weekday weights measured from recent usage history.
  */
-export type ProjectionBasis = 'calendar' | 'workdays' | 'weekday'
+export type ProjectionMethod = 'calendar' | 'workdays' | 'weekday'
 
 /**
  * Relative expected spend per weekday, normalized so the weights average 1
- * (a weight of 1 therefore means "an average day"). `basis` reports which
+ * (a weight of 1 therefore means "an average day"). `method` reports which
  * model actually produced the weights, after any fallback.
  */
 export interface ProjectionModel {
-  basis: ProjectionBasis
+  method: ProjectionMethod
   /** Weight per weekday, index 0 = Sunday … 6 = Saturday. */
   weights: readonly number[]
 }
@@ -120,7 +120,7 @@ export interface ProjectionModel {
 const UNIFORM_WEIGHTS: readonly number[] = [1, 1, 1, 1, 1, 1, 1]
 
 /** Every day weighs the same — the plain calendar run rate. */
-export const CALENDAR_PROJECTION: ProjectionModel = { basis: 'calendar', weights: UNIFORM_WEIGHTS }
+export const CALENDAR_PROJECTION: ProjectionModel = { method: 'calendar', weights: UNIFORM_WEIGHTS }
 
 /**
  * Normalize weekday weights so they average 1. Returns undefined when the
@@ -140,7 +140,7 @@ export function normalizeWeights(values: readonly number[]): number[] | undefine
 
 /** Mon–Fri only: weekend days are expected to produce no spend. */
 export const WORKDAY_PROJECTION: ProjectionModel = {
-  basis: 'workdays',
+  method: 'workdays',
   weights: normalizeWeights([0, 1, 1, 1, 1, 1, 0]) ?? UNIFORM_WEIGHTS
 }
 
@@ -184,23 +184,23 @@ export function weekdayProjection(series: WeekdaySeries): ProjectionModel {
   }
   const weights = normalizeWeights(averages)
   if (!weights) return CALENDAR_PROJECTION
-  return { basis: 'weekday', weights }
+  return { method: 'weekday', weights }
 }
 
 /**
- * Resolve the configured basis to a concrete model. The `weekday` basis needs
+ * Resolve the configured method to a concrete model. The `weekday` method needs
  * history and silently degrades to `calendar` when there is not enough of it.
  */
-export function resolveProjection(basis: ProjectionBasis, series?: WeekdaySeries): ProjectionModel {
-  if (basis === 'workdays') return WORKDAY_PROJECTION
-  if (basis === 'weekday') return series ? weekdayProjection(series) : CALENDAR_PROJECTION
+export function resolveProjection(method: ProjectionMethod, series?: WeekdaySeries): ProjectionModel {
+  if (method === 'workdays') return WORKDAY_PROJECTION
+  if (method === 'weekday') return series ? weekdayProjection(series) : CALENDAR_PROJECTION
   return CALENDAR_PROJECTION
 }
 
-/** Short human-readable label for a projection basis, e.g. for a UI hint. */
-export function projectionBasisLabel(basis: ProjectionBasis): string {
-  if (basis === 'weekday') return 'weekday'
-  if (basis === 'workdays') return 'workdays'
+/** Short human-readable label for a projection method, e.g. for a UI hint. */
+export function projectionMethodLabel(method: ProjectionMethod): string {
+  if (method === 'weekday') return 'weekday'
+  if (method === 'workdays') return 'workdays'
   return 'calendar'
 }
 
@@ -236,7 +236,7 @@ export function monthWeights(date = new Date(), model: ProjectionModel = CALENDA
 
 /**
  * Fraction of the month's expected spend that the elapsed days account for.
- * With the calendar basis this is simply dayOfMonth / daysInMonth.
+ * With the calendar method this is simply dayOfMonth / daysInMonth.
  */
 function monthElapsedRatio(date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): number {
   const { elapsed, total } = monthWeights(date, model)
@@ -254,7 +254,7 @@ export function dailyAverage(spend: number, date = new Date()): number {
 /**
  * Projected month-end spend, extrapolating the spend so far over the month's
  * remaining expected weight. Falls back to the calendar run rate when the
- * elapsed days carry no weight (e.g. `workdays` basis on a month's first weekend).
+ * elapsed days carry no weight (e.g. `workdays` method on a month's first weekend).
  */
 export function projectedMonthEnd(spend: number, date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): number {
   const { elapsed, total } = monthWeights(date, model)
@@ -287,7 +287,7 @@ export const MAX_EXHAUSTION_DAYS = 365
  * Days until budget exhaustion at the given daily average spend rate. The
  * average is a calendar average, so it is redistributed over the model's
  * weekday weights (which average 1) starting with tomorrow; with the calendar
- * basis this reduces to `floor((limit - spend) / avgDailySpend)`.
+ * method this reduces to `floor((limit - spend) / avgDailySpend)`.
  * Returns undefined when there is no limit (unlimited) or no average, and is
  * capped at `MAX_EXHAUSTION_DAYS`.
  */
@@ -360,7 +360,7 @@ export interface ProjectionParts {
   arrow: string
   pace: Pace | undefined
   /** The model that produced the projection, after any fallback. */
-  basis: ProjectionBasis
+  method: ProjectionMethod
 }
 
 /**
@@ -377,7 +377,7 @@ export function formatProjectionParts(
   if (spend <= 0) return undefined
   const projected = projectedMonthEnd(spend, date, model)
   const pace = paceStatus(spend, limit, date, model)
-  return { projected, arrow: paceMarker(pace), pace, basis: model.basis }
+  return { projected, arrow: paceMarker(pace), pace, method: model.method }
 }
 
 export interface MonthDeltaParts {

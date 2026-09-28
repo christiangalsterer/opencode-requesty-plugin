@@ -19,7 +19,7 @@ import {
   isProjectionOverLimit,
   modelAnalyticsUrl,
   paceColor,
-  projectionBasisLabel,
+  projectionMethodLabel,
   renderBar,
   type SpendThresholds,
   severityColor,
@@ -120,7 +120,7 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
       </Show>
       <Show when={projectionParts()}>
         <TrendMetric
-          label={`End of Month (${projectionBasisLabel(projectionParts()!.basis)})`}
+          label={`End of Month (${projectionMethodLabel(projectionParts()!.method)})`}
           value={`~${formatUsd(projectionParts()!.projected)}`}
           theme={props.theme}
           color={isProjectionOverLimit(spend(), limit(), new Date(), projection()) ? props.theme.error : props.theme.text}
