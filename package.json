@@ -46,7 +46,7 @@
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "prettier": "3.9.9",
-    "renovate": "44.115.13",
+    "renovate": "44.121.4",
     "solid-js": "1.9.15",
     "typescript": "6.0.3",
     "typescript-7": "npm:typescript@7.0.2"
