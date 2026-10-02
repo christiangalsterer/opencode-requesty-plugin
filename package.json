@@ -35,18 +35,18 @@
     "access": "public"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "@opencode-ai/plugin": "1.18.32",
     "@opencode-ai/sdk": "1.18.32",
     "@opentui/core": "0.5.12",
     "@opentui/keymap": "0.5.12",
     "@opentui/solid": "0.5.12",
     "@types/bun": "1.4.2",
-    "@types/node": "26.6.3",
+    "@types/node": "26.6.4",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "prettier": "3.9.9",
-    "renovate": "44.121.4",
+    "renovate": "44.132.2",
     "solid-js": "1.9.15",
     "typescript": "6.0.3",
     "typescript-7": "npm:typescript@7.0.2"
