@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.4.0...v1.5.0) (2026-10-09)
+
+
+### Features
+
+* upgrade to support opencode v2 ([e5f0bf0](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/e5f0bf0b33962df7c1898368c0a0547b16d61919))
+* upgrade to support opencode v2 ([5e3b0dc](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/5e3b0dc01579b37571c65739a773df6b11f7076b))
+
 ## [2.0.0] (unreleased)
 
 ### Features
