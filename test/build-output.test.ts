@@ -18,7 +18,7 @@ async function buildTui(): Promise<string> {
   assert.ok(result.success, `build failed: ${result.logs.join('\n')}`)
   const entry = result.outputs.find((output) => output.path.endsWith('tui.js'))
   assert.ok(entry, 'tui.js output not found')
-  return entry.text()
+  return (await Promise.all(result.outputs.map((output) => output.text()))).join('\n')
 }
 
 describe('build output', () => {

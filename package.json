@@ -1,6 +1,6 @@
 {
   "name": "@christiangalsterer/opencode-requesty-plugin",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "author": {
     "name": "Christian Galsterer"
   },
@@ -29,7 +29,7 @@
     "./package.json": "./package.json"
   },
   "engines": {
-    "opencode": "^1.18.16"
+    "opencode": ">=1.18.16 <3"
   },
   "publishConfig": {
     "access": "public"
@@ -38,9 +38,12 @@
     "@biomejs/biome": "2.5.15",
     "@opencode-ai/plugin": "1.18.32",
     "@opencode-ai/sdk": "1.18.32",
-    "@opentui/core": "0.5.12",
-    "@opentui/keymap": "0.5.12",
-    "@opentui/solid": "0.5.12",
+    "@opencode/client": "2.0.24",
+    "@opencode/plugin": "2.0.24",
+    "@opencode/theme": "2.0.24",
+    "@opentui/core": "0.5.14",
+    "@opentui/keymap": "0.5.14",
+    "@opentui/solid": "0.5.14",
     "@types/bun": "1.4.2",
     "@types/node": "26.6.4",
     "husky": "9.1.7",
@@ -54,10 +57,30 @@
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.18.16 <2",
     "@opencode-ai/sdk": ">=1.18.16 <2",
+    "@opencode/plugin": "^2.0.24",
+    "@opencode/client": "^2.0.24",
+    "@opencode/theme": "^2.0.24",
     "@opentui/core": ">=0.5.3 <1",
     "@opentui/keymap": ">=0.5.3 <1",
     "@opentui/solid": ">=0.5.3 <1",
     "solid-js": ">=1.9.12 <2"
+  },
+  "peerDependenciesMeta": {
+    "@opencode-ai/plugin": {
+      "optional": true
+    },
+    "@opencode-ai/sdk": {
+      "optional": true
+    },
+    "@opencode/plugin": {
+      "optional": true
+    },
+    "@opencode/client": {
+      "optional": true
+    },
+    "@opencode/theme": {
+      "optional": true
+    }
   },
   "overrides": {
     "solid-js": "$solid-js"
@@ -75,8 +98,10 @@
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && rm -rf christiangalsterer-opencode-requesty-plugin*.tgz && mkdir -p ./dist",
     "clean:deps": "rm -rf ./node_modules && bun run deps",
-    "docker:build": "docker build -t opencode-requesty-plugin .",
-    "docker:run": "docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin",
+    "docker:build:v1": "docker build -f Dockerfile.v1 -t opencode-requesty-plugin:v1 .",
+    "docker:run:v1": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui-v1.json:/home/harness/workspace/.opencode/tui.json:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v1",
+    "docker:build:v2": "docker build -f Dockerfile.v2 -t opencode-requesty-plugin:v2 .",
+    "docker:run:v2": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui.ts:/home/harness/workspace/.opencode/plugins/requesty/tui.ts:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v2",
     "deps": "bun install",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",

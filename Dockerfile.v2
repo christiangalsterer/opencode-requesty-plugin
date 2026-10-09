@@ -1,5 +1,7 @@
 FROM debian:bookworm-slim
 
+ARG OPENCODE_V2_VERSION=2.0.25
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl bash tar git \
   && rm -rf /var/lib/apt/lists/*
@@ -9,7 +11,7 @@ RUN useradd -m -s /bin/bash harness
 ENV HOME=/home/harness
 USER harness
 
-RUN curl -fsSL https://opencode.ai/v2/install | bash -s -- --no-modify-path \
+RUN curl -fsSL https://opencode.ai/v2/install | bash -s -- --version "$OPENCODE_V2_VERSION" --no-modify-path \
   && /home/harness/.opencode/bin/opencode --version
 
 ENV PATH="/home/harness/.opencode/bin:${PATH}"
@@ -18,6 +20,6 @@ RUN mkdir -p /home/harness/workspace/.opencode/plugins/requesty
 
 ENV REQUESTY_API_KEY=""
 
-WORKDIR /home/harness
+WORKDIR /home/harness/workspace
 
 ENTRYPOINT ["bash"]

@@ -9,15 +9,14 @@ RUN useradd -m -s /bin/bash harness
 ENV HOME=/home/harness
 USER harness
 
-RUN curl -fsSL https://opencode.ai/v2/install | bash -s -- --no-modify-path \
-  && /home/harness/.opencode/bin/opencode --version
+RUN curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path
 
 ENV PATH="/home/harness/.opencode/bin:${PATH}"
 
-RUN mkdir -p /home/harness/workspace/.opencode/plugins/requesty
+RUN mkdir -p /home/harness/workspace/.opencode
 
 ENV REQUESTY_API_KEY=""
 
-WORKDIR /home/harness
+WORKDIR /home/harness/workspace
 
 ENTRYPOINT ["bash"]

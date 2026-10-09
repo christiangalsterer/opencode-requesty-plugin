@@ -1,4 +1,5 @@
-import type { TuiRouteCurrent } from '@opencode-ai/plugin/tui'
+export type TuiRouteCurrent =
+  { name: 'home' } | { name: 'session'; params: { sessionID: string } } | { name: string; params?: Record<string, unknown> }
 
 /** Extract the session id from the host route; undefined for home/plugin routes. */
 export function sessionIDFromRoute(route: TuiRouteCurrent): string | undefined {

@@ -1,6 +1,5 @@
 /** @jsxImportSource @opentui/solid */
 
-import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { createMemo, For, type JSX, Show } from 'solid-js'
 import {
   analyticsUrl,
@@ -18,12 +17,13 @@ import {
   spendSeverity
 } from './format'
 import type { RequestyStore } from './state'
+import type { RequestyTheme, RequestyWidgetHost } from './ui-types'
 
 export interface PromptProps {
   store: RequestyStore
-  api: TuiPluginApi
+  api: RequestyWidgetHost
   sessionID: string
-  theme: TuiThemeCurrent
+  theme: RequestyTheme
   thresholds: SpendThresholds
   todaySpend: boolean
   dailyAvg: boolean
@@ -41,7 +41,7 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
     // Reading the message *content* (not just length) makes the slot repaint on
     // every message.updated — content mutates in place while the array length
     // stays constant, so a length-only hook would only fire on session start.
-    sessionRepaintKey(props.api.state.session.messages(props.sessionID))
+    sessionRepaintKey(props.api.sessionMessages(props.sessionID))
 
     const data = props.store.data()
     const status = props.store.state().status

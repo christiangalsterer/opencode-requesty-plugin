@@ -1,8 +1,8 @@
-import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { RGBA } from '@opentui/core'
 import type { ModelUsage } from '../src/api'
 import { CALENDAR_PROJECTION, type SpendThresholds } from '../src/format'
 import type { RequestyData, RequestyStore } from '../src/state'
+import type { RequestyTheme, RequestyWidgetHost } from '../src/ui-types'
 
 export const THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
 
@@ -59,11 +59,11 @@ export function makeStore(
   } as unknown as RequestyStore
 }
 
-export function makeApi(): TuiPluginApi {
-  return { state: { session: { messages: () => [] } } } as unknown as TuiPluginApi
+export function makeApi(): RequestyWidgetHost {
+  return { sessionMessages: () => [] }
 }
 
-export function makeTheme(): TuiThemeCurrent {
+export function makeTheme(): RequestyTheme {
   return {
     text: RGBA.fromHex('#ffffff'),
     textMuted: RGBA.fromHex('#888888'),
@@ -72,5 +72,5 @@ export function makeTheme(): TuiThemeCurrent {
     success: RGBA.fromHex('#00ff00'),
     primary: RGBA.fromHex('#00aaff'),
     background: RGBA.fromHex('#000000')
-  } as unknown as TuiThemeCurrent
+  } as RequestyTheme
 }

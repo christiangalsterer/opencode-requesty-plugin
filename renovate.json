@@ -27,7 +27,17 @@
     {
       "groupName": "Exclude dependencies",
       "groupSlug": "exclude-dependencies",
-      "matchPackageNames": ["@opencode-ai/plugin", "@opencode-ai/sdk", "@opentui/core", "@opentui/keymap", "@opentui/solid", "solid-js"],
+      "matchPackageNames": [
+        "@opencode-ai/plugin",
+        "@opencode-ai/sdk",
+        "@opencode/plugin",
+        "@opencode/client",
+        "@opencode/theme",
+        "@opentui/core",
+        "@opentui/keymap",
+        "@opentui/solid",
+        "solid-js"
+      ],
       "enabled": false
     }
   ]

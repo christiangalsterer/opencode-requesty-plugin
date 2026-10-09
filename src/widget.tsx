@@ -1,6 +1,5 @@
 /** @jsxImportSource @opentui/solid */
 
-import type { TuiPluginApi, TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { createMemo, createSignal, For, type JSX, Show } from 'solid-js'
 import {
   analyticsUrl,
@@ -22,15 +21,16 @@ import {
   spendSeverity
 } from './format'
 import type { RequestyStore } from './state'
+import type { RequestyTheme, RequestyWidgetHost } from './ui-types'
 
 /** Width of the budget progress bar in the sidebar. */
 const SIDEBAR_BAR_WIDTH = 24
 
 export interface WidgetProps {
   store: RequestyStore
-  api: TuiPluginApi
+  api: RequestyWidgetHost
   sessionID: string
-  theme: TuiThemeCurrent
+  theme: RequestyTheme
   /** Max number of models listed in the compact sidebar view. */
   maxModels: number
   /** Budget usage thresholds for bar coloring. */
@@ -50,7 +50,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     // Reading the message *content* (not just length) makes the slot repaint on
     // every message.updated — content mutates in place while the array length
     // stays constant, so a length-only hook would only fire on session start.
-    sessionRepaintKey(props.api.state.session.messages(props.sessionID))
+    sessionRepaintKey(props.api.sessionMessages(props.sessionID))
     return props.store.data()
   })
   const snapshotProps = (stale?: boolean) => ({
@@ -102,7 +102,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
 
 interface SnapshotProps {
   store: RequestyStore
-  theme: TuiThemeCurrent
+  theme: RequestyTheme
   maxModels: number
   thresholds: SpendThresholds
   showTokens: boolean

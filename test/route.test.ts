@@ -1,7 +1,6 @@
 import { describe, test } from 'bun:test'
 import assert from 'node:assert/strict'
-import type { TuiRouteCurrent } from '@opencode-ai/plugin/tui'
-import { sessionIDFromRoute } from '../src/route'
+import { sessionIDFromRoute, type TuiRouteCurrent } from '../src/route'
 
 describe('sessionIDFromRoute', () => {
   test('returns undefined for the home route', () => {

@@ -1,6 +1,5 @@
 /** @jsxImportSource @opentui/solid */
 
-import type { TuiThemeCurrent } from '@opencode-ai/plugin/tui'
 import { For, type JSX, Show } from 'solid-js'
 import type { ModelUsage, TokenBreakdown } from './api'
 import {
@@ -28,6 +27,7 @@ import {
   spendSeverity
 } from './format'
 import type { RequestyStore } from './state'
+import type { RequestyTheme } from './ui-types'
 
 /** Model rows shown in the scrollbox before it scrolls. */
 const MODEL_SCROLL_ROWS = 5
@@ -37,7 +37,7 @@ const DIALOG_BAR_WIDTH = 40
 
 export interface DetailDialogProps {
   store: RequestyStore
-  theme: TuiThemeCurrent
+  theme: RequestyTheme
   thresholds: SpendThresholds
   showKeyName: boolean
 }
@@ -81,7 +81,7 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
   )
 }
 
-function Title(props: { store: RequestyStore; theme: TuiThemeCurrent; showKeyName: boolean }): JSX.Element {
+function Title(props: { store: RequestyStore; theme: RequestyTheme; showKeyName: boolean }): JSX.Element {
   return (
     <text fg={props.theme.text}>
       <Show when={props.store.data()} fallback={<strong>Requesty</strong>}>
@@ -93,7 +93,7 @@ function Title(props: { store: RequestyStore; theme: TuiThemeCurrent; showKeyNam
   )
 }
 
-function CenteredMessage(props: { children: string; theme: TuiThemeCurrent; error?: boolean }): JSX.Element {
+function CenteredMessage(props: { children: string; theme: RequestyTheme; error?: boolean }): JSX.Element {
   return (
     <box flexDirection="column" alignItems="center" justifyContent="center" paddingY={2}>
       <text fg={props.error ? props.theme.error : props.theme.textMuted}>{props.children}</text>
@@ -101,7 +101,7 @@ function CenteredMessage(props: { children: string; theme: TuiThemeCurrent; erro
   )
 }
 
-function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; thresholds: SpendThresholds }): JSX.Element {
+function KpiRow(props: { store: RequestyStore; theme: RequestyTheme; thresholds: SpendThresholds }): JSX.Element {
   const data = () => props.store.data()!
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
@@ -145,13 +145,7 @@ function KpiRow(props: { store: RequestyStore; theme: TuiThemeCurrent; threshold
   )
 }
 
-function Metric(props: {
-  label: string
-  value: string
-  theme: TuiThemeCurrent
-  color: TuiThemeCurrent['text']
-  tokens?: TokenBreakdown
-}): JSX.Element {
+function Metric(props: { label: string; value: string; theme: RequestyTheme; color: RequestyTheme['text']; tokens?: TokenBreakdown }): JSX.Element {
   return (
     <box flexDirection="column" flexGrow={1} flexBasis={0}>
       <text fg={props.color}>
@@ -166,8 +160,8 @@ function Metric(props: {
 function TrendMetric(props: {
   label: string
   value: string
-  theme: TuiThemeCurrent
-  color: TuiThemeCurrent['text']
+  theme: RequestyTheme
+  color: RequestyTheme['text']
   indicator?: { text: string; color: unknown }
 }): JSX.Element {
   return (
@@ -186,7 +180,7 @@ function TrendMetric(props: {
   )
 }
 
-function BudgetSection(props: { store: RequestyStore; theme: TuiThemeCurrent; thresholds: SpendThresholds }): JSX.Element {
+function BudgetSection(props: { store: RequestyStore; theme: RequestyTheme; thresholds: SpendThresholds }): JSX.Element {
   const data = () => props.store.data()!
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
@@ -253,7 +247,7 @@ function BudgetSection(props: { store: RequestyStore; theme: TuiThemeCurrent; th
   )
 }
 
-function StatusBadge(props: { overBudget: boolean; theme: TuiThemeCurrent }): JSX.Element {
+function StatusBadge(props: { overBudget: boolean; theme: RequestyTheme }): JSX.Element {
   return (
     <box paddingX={1} backgroundColor={props.overBudget ? props.theme.error : props.theme.success}>
       <text fg={props.theme.text}>{props.overBudget ? 'Over budget' : 'On track'}</text>
@@ -261,7 +255,7 @@ function StatusBadge(props: { overBudget: boolean; theme: TuiThemeCurrent }): JS
   )
 }
 
-function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): JSX.Element {
+function ModelSection(props: { store: RequestyStore; theme: RequestyTheme }): JSX.Element {
   const data = () => props.store.data()!
   const models = () => data().models
   const totalSpend = () => models().reduce((sum, model) => sum + model.spend, 0)
@@ -324,7 +318,7 @@ function ModelSection(props: { store: RequestyStore; theme: TuiThemeCurrent }): 
   )
 }
 
-function TableHeader(props: { theme: TuiThemeCurrent }): JSX.Element {
+function TableHeader(props: { theme: RequestyTheme }): JSX.Element {
   return (
     <text fg={props.theme.textMuted}>
       <strong>
@@ -337,7 +331,7 @@ function TableHeader(props: { theme: TuiThemeCurrent }): JSX.Element {
   )
 }
 
-function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: string; theme: TuiThemeCurrent }): JSX.Element {
+function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: string; theme: RequestyTheme }): JSX.Element {
   const share = props.totalSpend > 0 ? formatPercent(props.model.spend / props.totalSpend) : '—'
   return (
     <text fg={props.theme.text}>
@@ -349,7 +343,7 @@ function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: strin
   )
 }
 
-function Footer(props: { fetchedAt: string; theme: TuiThemeCurrent }): JSX.Element {
+function Footer(props: { fetchedAt: string; theme: RequestyTheme }): JSX.Element {
   return (
     <box flexDirection="row" border borderStyle="single" borderColor={props.theme.textMuted} paddingX={1} alignItems="center">
       <box flexDirection="row" gap={1}>
