@@ -113,7 +113,6 @@ For a project-specific installation, add the package to that project's `opencode
 }
 ```
 
-V2 loads the package's `setup` implementation using its CLI plugin API. Since this package exposes a TUI component, OpenCode 2 loads it from the `plugins` list in `opencode.json`; it does not need to be added to `cli.json`. V1 `tui.json` configuration remains for OpenCode 1.x. The v2 prompt indicator is appended to the prompt footer status area, while the usage widget remains in the sidebar.
 
 ## Updating
 

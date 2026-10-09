@@ -1,17 +1,18 @@
 /** @jsxImportSource @opentui/solid */
 
-import type { ProviderInfo, SessionInfo } from '@opencode/client'
+import type { SessionInfo } from '@opencode/client'
 import type { Context } from '@opencode/plugin/tui/context'
 import { createSignal } from 'solid-js'
 import { setApiLogger } from './api'
-import { descendantSessionIDs, rootSessionID } from './descendants'
+import { createRequestyHostStore } from './host-store'
 import { RequestyDetailDialog } from './dialog'
 import { detectApiKey } from './key'
 import { RequestyPromptWidget } from './prompt'
 import { readSettings } from './settings'
-import { createRequestyStore, type RequestyStore } from './state'
+import type { RequestyStore } from './state'
 import { RequestySidebarWidget } from './widget'
 import type { RequestyTheme, RequestyWidgetHost } from './ui-types'
+import { normalizeV2ConfigDocuments, type V2ConfigDocument } from './v2-config'
 
 const REFRESH_DEBOUNCE_MS = 2000
 const REFRESH_SESSION_TYPES = new Set([
@@ -24,17 +25,6 @@ const REFRESH_SESSION_TYPES = new Set([
   'session.usage.updated',
   'session.usage.recorded'
 ])
-
-interface V2ConfigDocument {
-  info?: {
-    providers?: Record<string, ProviderInfo | Record<string, unknown>>
-    provider?: Record<string, Record<string, unknown>>
-  }
-}
-
-interface V2Config {
-  providers?: Record<string, { options?: { apiKey?: unknown; baseURL?: unknown } }>
-}
 
 function themeFor(context: Context): RequestyTheme {
   const theme = context.theme
@@ -49,37 +39,10 @@ function themeFor(context: Context): RequestyTheme {
   }
 }
 
-function configForKey(entries: readonly V2ConfigDocument[]): V2Config {
-  const providers: Record<string, Record<string, unknown>> = {}
-  for (const entry of entries) {
-    const info = entry.info
-    for (const [id, provider] of Object.entries(info?.provider ?? {})) {
-      providers[id] = { ...providers[id], ...provider }
-    }
-    for (const [id, provider] of Object.entries(info?.providers ?? {})) {
-      const candidate = provider as Record<string, unknown>
-      providers[id] = {
-        ...providers[id],
-        env: candidate.env,
-        options: {
-          ...(providers[id]?.options as Record<string, unknown> | undefined),
-          ...(candidate.settings as Record<string, unknown> | undefined)
-        }
-      }
-    }
-  }
-  return { providers }
-}
-
 function sessionCostHost(context: Context): RequestyWidgetHost {
   return {
     sessionMessages: (sessionID) => context.data.session.message.list(sessionID)
   }
-}
-
-function rootSession(context: Context, sessionID: string): SessionInfo | undefined {
-  const rootID = context.data.session.root(sessionID)
-  return context.data.session.get(rootID)
 }
 
 function sessionChildren(context: Context, sessionID: string): Promise<string[]> {
@@ -90,15 +53,14 @@ async function runV2(context: Context): Promise<(() => void) | undefined> {
   const settings = readSettings(context.options)
   setApiLogger(undefined)
 
-  let config: V2Config = {}
+  let config: readonly V2ConfigDocument[] = []
   try {
-    const entries = (await context.client.config.get()) as readonly V2ConfigDocument[]
-    config = configForKey(entries)
+    config = (await context.client.config.get()) as V2ConfigDocument[]
   } catch {
     // A config lookup failure is reported as the normal missing-key state.
   }
 
-  const key = detectApiKey(config)
+  const key = detectApiKey(normalizeV2ConfigDocuments(config))
   if (!key.ok) {
     if (settings.sidebar.enabled) {
       context.ui.slot({
@@ -116,18 +78,14 @@ async function runV2(context: Context): Promise<(() => void) | undefined> {
     return undefined
   }
 
-  const activeSession = (sessionID: string) => {
-    const session = rootSession(context, sessionID)
-    return { id: context.data.session.root(sessionID), created: session?.time.created }
-  }
-
-  const store: RequestyStore = createRequestyStore({
+  const store: RequestyStore = createRequestyHostStore({
     apiKey: key.apiKey,
     projection: settings.projection,
     createSignal,
+    getSessionParentID: (sessionID) => context.data.session.get(sessionID)?.parentID,
+    getSessionCreatedAt: (sessionID) => context.data.session.get(context.data.session.root(sessionID))?.time.created,
+    fetchSessionChildren: (sessionID) => sessionChildren(context, sessionID),
     onError: (message) => context.ui.toast.show({ variant: 'error', title: 'Requesty', message }),
-    activeSession,
-    fetchSessionChildren: (id) => descendantSessionIDs(id, (parentID) => sessionChildren(context, parentID)),
     onRender: () => context.renderer.requestRender()
   })
   const widgetHost = sessionCostHost(context)

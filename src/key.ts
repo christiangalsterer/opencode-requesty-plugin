@@ -66,7 +66,7 @@ function environmentKey(provider: ProviderConfig): string | undefined {
 }
 
 function fromConfig(config: SdkConfigLike | undefined): string | undefined {
-  const providers = config?.provider ?? config?.providers
+  const providers = { ...config?.provider, ...config?.providers }
   if (!providers) return undefined
   // Prefer the canonical provider id, then any custom Requesty provider.
   const names = Object.keys(providers).sort((a, b) => (a === 'requesty' ? -1 : b === 'requesty' ? 1 : a.localeCompare(b)))

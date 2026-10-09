@@ -91,7 +91,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run renovate:config && bun pm pack && npm i --omit=dev --dry-run *.tgz",
+    "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run package:check && bun run renovate:config && bun pm pack --ignore-scripts && npm i --omit=dev --dry-run *.tgz",
     "biome": "biome check",
     "biome:fix": "biome check --write",
     "build": "bun run typecheck && bun run build.ts",
@@ -110,6 +110,7 @@
     "test": "bun run typecheck && bun test",
     "test:coverage": "bun run typecheck && bun test --coverage",
     "release:prepare": "bun run clean && bun install && bun run format && bun test",
+    "package:check": "bun scripts/check-package-artifact.ts",
     "publish-npm": "bun run ci && bun publish --access=public",
     "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run",
     "prepare": "husky",

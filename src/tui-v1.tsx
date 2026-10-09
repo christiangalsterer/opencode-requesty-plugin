@@ -2,13 +2,13 @@
 import type { TuiPluginApi } from '@opencode-ai/plugin/tui'
 import { createSignal } from 'solid-js'
 import { setApiLogger } from './api'
-import { descendantSessionIDs, rootSessionID } from './descendants'
 import { RequestyDetailDialog } from './dialog'
+import { createRequestyHostStore } from './host-store'
 import { detectApiKey } from './key'
 import { RequestyPromptWidget } from './prompt'
 import { sessionIDFromRoute } from './route'
 import { readSettings } from './settings'
-import { createRequestyStore, type RequestyStore } from './state'
+import type { RequestyStore } from './state'
 import { RequestySidebarWidget } from './widget'
 
 const COMMAND_OPEN = 'requesty.open'
@@ -45,7 +45,7 @@ export function runV1(api: TuiPluginApi, rawOptions: Record<string, unknown> | u
     return
   }
 
-  const store: RequestyStore = createRequestyStore({
+  const store: RequestyStore = createRequestyHostStore({
     apiKey: key.apiKey,
     projection: settings.projection,
     // Use this module's `createSignal` (the same Solid instance the widget
@@ -54,18 +54,9 @@ export function runV1(api: TuiPluginApi, rawOptions: Record<string, unknown> | u
     onError: (message) => {
       api.ui.toast({ variant: 'error', title: 'Requesty', message })
     },
-    activeSession: (sessionID) => {
-      const rootID = rootSessionID(sessionID, (id) => api.state.session.get(id)?.parentID)
-      const session = api.state.session.get(rootID)
-      if (!session) {
-        return { id: rootID, created: undefined }
-      }
-      return { id: rootID, created: session.time?.created }
-    },
-    fetchSessionChildren: (sessionID) =>
-      descendantSessionIDs(sessionID, (id) =>
-        api.client.session.children({ sessionID: id }).then((result) => (result.data ?? []).map((child) => child.id))
-      ),
+    getSessionParentID: (sessionID) => api.state.session.get(sessionID)?.parentID,
+    getSessionCreatedAt: (sessionID) => api.state.session.get(sessionID)?.time?.created,
+    fetchSessionChildren: (sessionID) => api.client.session.children({ sessionID }).then((result) => (result.data ?? []).map((child) => child.id)),
     onRender: () => api.renderer.requestRender()
   })
 
