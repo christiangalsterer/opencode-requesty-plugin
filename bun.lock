@@ -15,11 +15,11 @@
         "@opentui/keymap": "0.5.14",
         "@opentui/solid": "0.5.14",
         "@types/bun": "1.4.2",
-        "@types/node": "26.6.4",
+        "@types/node": "26.6.5",
         "husky": "9.1.7",
         "lint-staged": "17.6.0",
-        "prettier": "3.9.9",
-        "renovate": "44.145.1",
+        "prettier": "3.9.10",
+        "renovate": "44.149.2",
         "solid-js": "1.9.15",
         "typescript": "6.0.3",
         "typescript-7": "npm:typescript@7.0.2",
@@ -204,7 +204,7 @@
 
     "@cdktf/hcl2json": ["@cdktf/hcl2json@0.21.0", "", { "dependencies": { "fs-extra": "11.3.0" } }, "sha512-cwX3i/mSJI/cRrtqwEPRfawB7pXgNioriSlkvou8LWiCrrcDe9ZtTbAbu8W1tEJQpe1pnX9VEgpzf/BbM7xF8Q=="],
 
-    "@containerbase/base": ["@containerbase/base@14.29.0", "", { "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-5bSi1+8i6l9CwmKuXiIPZ3t7y2N5t7Y+2L13XLkPf9zu19I/Q6WAZb478PS1tmLbTw268v34bSb/aAwisIzE4g=="],
+    "@containerbase/base": ["@containerbase/base@14.31.0", "", { "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-EALZw+nZZGasgeSYWykt3FiHu7w/TE5G2xpI1A3SgnMIMn0DPaStliBhFP89LC+wcUG+0+lE4ag7N6H3IBxw/w=="],
 
     "@effect/opentelemetry": ["@effect/opentelemetry@4.0.0-rc.112", "", { "peerDependencies": { "@opentelemetry/api": ">=1.9.0 <2.0.0", "@opentelemetry/api-logs": ">=0.203.0 <0.300.0", "@opentelemetry/resources": ">=2.0.0 <3.0.0", "@opentelemetry/sdk-logs": ">=0.203.0 <0.300.0", "@opentelemetry/sdk-metrics": ">=2.0.0 <3.0.0", "@opentelemetry/sdk-trace-base": ">=2.0.0 <3.0.0", "@opentelemetry/sdk-trace-node": ">=2.0.0 <3.0.0", "@opentelemetry/sdk-trace-web": ">=2.0.0 <3.0.0", "@opentelemetry/semantic-conventions": ">=1.33.0 <2.0.0", "effect": "^4.0.0-rc.112" }, "optionalPeers": ["@opentelemetry/api", "@opentelemetry/api-logs", "@opentelemetry/resources", "@opentelemetry/sdk-logs", "@opentelemetry/sdk-metrics", "@opentelemetry/sdk-trace-base", "@opentelemetry/sdk-trace-node", "@opentelemetry/sdk-trace-web"] }, "sha512-OTRv1DxTHUmnakgJ6XVM8wVgF1KgZH4UXnOemwSLUwUjXO+RCikzF8oR/rlVmOGq81KtQzj1URM4M4nchlQOuQ=="],
 
@@ -438,7 +438,7 @@
 
     "@redis/time-series": ["@redis/time-series@6.3.0", "", { "peerDependencies": { "@redis/client": "^6.3.0" } }, "sha512-+fJOB8mN1z5WRakCJNh5lVdz1KqvHGSOistsKeitD24QsCtPwyRQXWC0iq6T/i/ubLE/YcguZqPm8F598MKk4A=="],
 
-    "@renovatebot/base-image": ["@renovatebot/base-image@13.116.1", "", { "dependencies": { "@containerbase/base": "14.29.0" }, "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-UcDjpM8nbG2srcEWavsFGVOkBnPKhWfN0CNRGCmCfRHWIUANgRWOMPL9PBgOPKVGGLvzylvpBPTmx6ideevRNQ=="],
+    "@renovatebot/base-image": ["@renovatebot/base-image@13.118.1", "", { "dependencies": { "@containerbase/base": "14.31.0" }, "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-KG38mjrLmRhbkm3vbJxlfkquO55B7Cn5cmXUFEKJL51RYvHaBVGoQNa5gjquFicw0mErxKRxyITbnfDqY8uS0Q=="],
 
     "@renovatebot/detect-tools": ["@renovatebot/detect-tools@4.0.21", "", { "dependencies": { "fs-extra": "^11.4.1", "toml-eslint-parser": "^1.0.3", "upath": "^3.0.8", "zod": "^4.6.5" } }, "sha512-1+yfO/pivwJu1m8180pfxHSVlx9ByZVDUa9xcvRLBraAFTn+ziDeOBoKVqpr4lElYwZ6kBNfE945dCVewz6edQ=="],
 
@@ -470,7 +470,7 @@
 
     "@simple-git/args-pathspec": ["@simple-git/args-pathspec@1.0.4", "", {}, "sha512-EtMX6XjRWSastG2SdkmSQByPtJ9dx/NIjnHbpQPCYt62j4RmSx5rgLTGpw0YCjF5h191gZOmBfheOT23cRSFdw=="],
 
-    "@simple-git/argv-parser": ["@simple-git/argv-parser@1.1.1", "", { "dependencies": { "@simple-git/args-pathspec": "^1.0.3" } }, "sha512-Q9lBcfQ+VQCpQqGJFHe5yooOS5hGdLFFbJ5R+R5aDsnkPCahtn1hSkMcORX65J2Z5lxSkD0lQorMsncuBQxYUw=="],
+    "@simple-git/argv-parser": ["@simple-git/argv-parser@2.0.1", "", { "dependencies": { "@simple-git/args-pathspec": "^1.0.4" } }, "sha512-M++IaVWrN+vYalilOHfwvT2IL3wYZtVEBQpmX6DLSOJLtxbZ+SUeIDE3IiPogzhPACLajwtxfa5rp+ZX1FczzQ=="],
 
     "@sindresorhus/is": ["@sindresorhus/is@8.1.0", "", {}, "sha512-2SX/1jW6CIMAiebvVv5ZInoCEuWQmMyBoJXXGC6Vjakjp/fpxP5eHs7/V6WKuPEIbuK06+VpjH+vjLQhr98rDQ=="],
 
@@ -542,7 +542,7 @@
 
     "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
-    "@types/node": ["@types/node@26.6.4", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg=="],
+    "@types/node": ["@types/node@26.6.5", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg=="],
 
     "@types/parse-path": ["@types/parse-path@7.1.0", "", { "dependencies": { "parse-path": "*" } }, "sha512-EULJ8LApcVEPbrfND0cRQqutIOdiIgJ1Mgrhpy755r14xMohPTEpkV/k28SJvuOs9bHRFW8x+KeDAEPiGQPB9Q=="],
 
@@ -934,7 +934,7 @@
 
     "gtoken": ["gtoken@8.0.0", "", { "dependencies": { "gaxios": "^7.0.0", "jws": "^4.0.0" } }, "sha512-+CqsMbHPiSTdtSO14O51eMNlrp9N79gmeqmXeouJOhfucAedHw9noVe/n5uJk3tbKE6a+6ZCQg3RPhVhHByAIw=="],
 
-    "handlebars": ["handlebars@4.7.9", "", { "dependencies": { "minimist": "^1.2.5", "neo-async": "^2.6.2", "source-map": "^0.6.1", "wordwrap": "^1.0.0" }, "optionalDependencies": { "uglify-js": "^3.1.4" }, "bin": { "handlebars": "bin/handlebars" } }, "sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ=="],
+    "handlebars": ["handlebars@4.7.10", "", { "dependencies": { "minimist": "^1.2.8", "neo-async": "^2.6.2", "source-map": "^0.6.1", "wordwrap": "^1.0.0" }, "optionalDependencies": { "uglify-js": "^3.1.4" }, "bin": { "handlebars": "bin/handlebars" } }, "sha512-P5VJMVM7qgBn6vjXMw8WG9uVI+ncf2pi72j4de4yz5ZULLj2RGqLYaKOYGsgyrViQ0tePOVlN1tDCCXXtFqXKg=="],
 
     "has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
 
@@ -966,7 +966,7 @@
 
     "iconv-lite": ["iconv-lite@0.7.3", "", { "dependencies": { "safer-buffer": ">= 2.1.2 < 3.0.0" } }, "sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ=="],
 
-    "ignore": ["ignore@7.0.11", "", {}, "sha512-YChdK5txDjwGUvgR7oCJcLGkwi3LDh8Zx8tS7ndYciLEg/oOCL26VUBSUEtgS7EjiybcBqFxh5j0rAdDX7/bbg=="],
+    "ignore": ["ignore@7.0.12", "", {}, "sha512-/8UvqAPU9DGTI9k4mxtf49U37Isfwr8Uts96+SBHIkFxPJnHS0Ew4f00sM4Scd8V8EjM0jUNtVDdv1kPdt35lg=="],
 
     "ignore-walk": ["ignore-walk@8.0.0", "", { "dependencies": { "minimatch": "^10.0.3" } }, "sha512-FCeMZT4NiRQGh+YkeKMtWrOmBgWjHjMJ26WQWrRQyoyzqevdaGSakUaJW5xQYmjLlUVk2qUnCjYVBax9EKKg8A=="],
 
@@ -1342,7 +1342,7 @@
 
     "powershell-utils": ["powershell-utils@0.2.1", "", {}, "sha512-C+y9x90UElAddDZmV4qOx9W53B61PO7cIqWz2dQsWlwswuq4mr8NEwytdGKboYbQlGZ3awrkTeNvcZiZNHnQ8A=="],
 
-    "prettier": ["prettier@3.9.9", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg=="],
+    "prettier": ["prettier@3.9.10", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA=="],
 
     "pretty-ms": ["pretty-ms@9.3.1", "", { "dependencies": { "parse-ms": "^4.0.0" } }, "sha512-HzMy3Geq23nVALD/M2LliU+F+M+gVNsvkQWWqeBZ8HDiCgzo6YPJ/Omrmtq24EFrIsk0a3EkQGEd7bDOo+IhGA=="],
 
@@ -1390,7 +1390,7 @@
 
     "remark-stringify": ["remark-stringify@11.0.0", "", { "dependencies": { "@types/mdast": "^4.0.0", "mdast-util-to-markdown": "^2.0.0", "unified": "^11.0.0" } }, "sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw=="],
 
-    "renovate": ["renovate@44.145.1", "", { "dependencies": { "@aws-sdk/client-codecommit": "3.1139.0", "@aws-sdk/client-ec2": "3.1139.0", "@aws-sdk/client-ecr": "3.1139.0", "@aws-sdk/client-eks": "3.1139.0", "@aws-sdk/client-rds": "3.1139.0", "@aws-sdk/client-s3": "3.1139.0", "@aws-sdk/credential-providers": "3.1139.0", "@baszalmstra/rattler": "0.2.1", "@breejs/later": "4.2.0", "@cdktf/hcl2json": "0.21.0", "@opentelemetry/api": "1.9.1", "@opentelemetry/context-async-hooks": "2.11.0", "@opentelemetry/exporter-trace-otlp-grpc": "0.222.0", "@opentelemetry/exporter-trace-otlp-http": "0.222.0", "@opentelemetry/exporter-trace-otlp-proto": "0.222.0", "@opentelemetry/instrumentation": "0.222.0", "@opentelemetry/instrumentation-bunyan": "0.67.0", "@opentelemetry/instrumentation-http": "0.222.0", "@opentelemetry/instrumentation-redis": "0.70.0", "@opentelemetry/otlp-transformer": "0.222.0", "@opentelemetry/resource-detector-aws": "2.22.0", "@opentelemetry/resource-detector-azure": "0.30.0", "@opentelemetry/resource-detector-gcp": "0.57.0", "@opentelemetry/resource-detector-github": "0.32.0", "@opentelemetry/resources": "2.11.0", "@opentelemetry/sdk-trace-base": "2.11.0", "@opentelemetry/sdk-trace-node": "2.11.0", "@opentelemetry/semantic-conventions": "1.43.0", "@pnpm/parse-overrides": "1001.0.4", "@qnighy/marshal": "0.1.3", "@redis/client": "6.3.0", "@renovatebot/base-image": "13.116.1", "@renovatebot/detect-tools": "4.0.21", "@renovatebot/good-enough-parser": "2.0.1", "@renovatebot/osv-offline": "3.0.12", "@renovatebot/pep440": "5.0.1", "@renovatebot/pgp": "2.0.2", "@renovatebot/ruby-semver": "5.0.0", "@sindresorhus/is": "8.1.0", "@yarnpkg/core": "4.9.1", "@yarnpkg/parsers": "3.1.0", "adm-zip": "0.6.1", "ae-cvss-calculator": "1.0.13", "agentkeepalive": "4.6.0", "async-mutex": "0.5.0", "aws4": "1.13.2", "azure-devops-node-api": "17.0.1", "bunyan": "1.8.15", "cacache": "20.0.4", "changelog-filename-regex": "2.0.1", "clean-git-ref": "2.0.1", "commander": "15.0.0", "common-tags": "1.8.2", "croner": "10.0.1", "cronstrue": "3.27.0", "deepmerge": "4.3.1", "dequal": "2.0.3", "detect-indent": "7.0.2", "diff": "9.0.0", "editorconfig": "3.0.2", "email-addresses": "5.0.0", "emoji-regex": "10.6.0", "emojibase": "17.0.0", "emojibase-regex": "17.0.0", "execa": "10.0.1", "find-packages": "10.0.4", "find-up": "8.0.0", "fs-extra": "11.4.1", "git-url-parse": "16.1.0", "github-url-from-git": "1.5.0", "glob": "13.0.6", "global-agent": "3.0.0", "google-auth-library": "11.1.0", "got": "16.0.0", "graph-data-structure": "4.5.0", "handlebars": "4.7.9", "ignore": "7.0.11", "ini": "6.0.0", "json-dup-key-validator": "1.0.3", "json-stringify-pretty-compact": "4.0.0", "json5": "2.2.3", "jsonata": "2.2.1", "jsonc-weaver": "0.3.1", "klona": "2.0.6", "lru-cache": "11.5.3", "luxon": "3.7.2", "markdown-it": "15.0.2", "markdown-table": "3.0.4", "minimatch": "10.2.6", "moo": "0.5.3", "ms": "2.1.3", "neotraverse": "1.0.1", "node-html-parser": "9.0.4", "p-all": "5.0.1", "p-map": "7.0.8", "p-queue": "9.3.3", "p-throttle": "8.1.1", "parse-link-header": "2.0.0", "prettier": "3.9.9", "protobufjs": "8.8.0", "punycode": "2.3.1", "remark": "15.0.1", "remark-gfm": "4.0.1", "remark-github": "12.0.0", "safe-stable-stringify": "2.5.0", "sax": "1.6.1", "semver": "7.8.5", "semver-stable": "3.0.0", "semver-utils": "1.1.4", "shlex": "3.0.0", "simple-git": "3.36.0", "slugify": "1.6.9", "source-map-support": "0.5.21", "strip-json-comments": "5.0.3", "tar": "7.5.22", "toml-eslint-parser": "1.0.3", "tslib": "2.8.1", "upath": "3.0.8", "url-join": "5.0.0", "validate-npm-package-name": "7.0.2", "xmldoc": "3.0.0", "yaml": "2.9.1", "yauzl": "3.4.0", "zod": "4.6.5" }, "optionalDependencies": { "openpgp": "6.3.2", "re2": "1.27.0" }, "bin": { "renovate": "dist/renovate.js", "renovate-config-validator": "dist/config-validator.js" } }, "sha512-dXN+NZTNCTSa3wr5J+Bify4IEUqlMe5UMPkCORjU1jYjhwOTvNSj8nSMhJjLVGAbeK/JDa22vqNH+/CcC3C8pA=="],
+    "renovate": ["renovate@44.149.2", "", { "dependencies": { "@aws-sdk/client-codecommit": "3.1139.0", "@aws-sdk/client-ec2": "3.1139.0", "@aws-sdk/client-ecr": "3.1139.0", "@aws-sdk/client-eks": "3.1139.0", "@aws-sdk/client-rds": "3.1139.0", "@aws-sdk/client-s3": "3.1139.0", "@aws-sdk/credential-providers": "3.1139.0", "@baszalmstra/rattler": "0.2.1", "@breejs/later": "4.2.0", "@cdktf/hcl2json": "0.21.0", "@opentelemetry/api": "1.9.1", "@opentelemetry/context-async-hooks": "2.11.0", "@opentelemetry/exporter-trace-otlp-grpc": "0.222.0", "@opentelemetry/exporter-trace-otlp-http": "0.222.0", "@opentelemetry/exporter-trace-otlp-proto": "0.222.0", "@opentelemetry/instrumentation": "0.222.0", "@opentelemetry/instrumentation-bunyan": "0.67.0", "@opentelemetry/instrumentation-http": "0.222.0", "@opentelemetry/instrumentation-redis": "0.70.0", "@opentelemetry/otlp-transformer": "0.222.0", "@opentelemetry/resource-detector-aws": "2.22.0", "@opentelemetry/resource-detector-azure": "0.30.0", "@opentelemetry/resource-detector-gcp": "0.57.0", "@opentelemetry/resource-detector-github": "0.32.0", "@opentelemetry/resources": "2.11.0", "@opentelemetry/sdk-trace-base": "2.11.0", "@opentelemetry/sdk-trace-node": "2.11.0", "@opentelemetry/semantic-conventions": "1.43.0", "@pnpm/parse-overrides": "1001.0.4", "@qnighy/marshal": "0.1.3", "@redis/client": "6.3.0", "@renovatebot/base-image": "13.118.1", "@renovatebot/detect-tools": "4.0.21", "@renovatebot/good-enough-parser": "2.0.1", "@renovatebot/osv-offline": "3.0.12", "@renovatebot/pep440": "5.0.1", "@renovatebot/pgp": "2.0.2", "@renovatebot/ruby-semver": "5.0.0", "@sindresorhus/is": "8.1.0", "@yarnpkg/core": "4.9.1", "@yarnpkg/parsers": "3.1.0", "adm-zip": "0.6.1", "ae-cvss-calculator": "1.0.13", "agentkeepalive": "4.6.0", "async-mutex": "0.5.0", "aws4": "1.13.2", "azure-devops-node-api": "17.0.1", "bunyan": "1.8.15", "cacache": "20.0.4", "changelog-filename-regex": "2.0.1", "clean-git-ref": "2.0.1", "commander": "15.0.0", "common-tags": "1.8.2", "croner": "10.0.1", "cronstrue": "3.27.0", "deepmerge": "4.3.1", "dequal": "2.0.3", "detect-indent": "7.0.2", "diff": "9.0.0", "editorconfig": "3.0.2", "email-addresses": "5.0.0", "emoji-regex": "10.6.0", "emojibase": "17.0.0", "emojibase-regex": "17.0.0", "execa": "10.0.1", "find-packages": "10.0.4", "find-up": "8.0.0", "fs-extra": "11.4.1", "git-url-parse": "16.1.0", "github-url-from-git": "1.5.0", "glob": "13.0.6", "global-agent": "3.0.0", "google-auth-library": "11.1.0", "got": "16.0.0", "graph-data-structure": "4.5.0", "handlebars": "4.7.10", "ignore": "7.0.12", "ini": "6.0.0", "json-dup-key-validator": "1.0.3", "json-stringify-pretty-compact": "4.0.0", "json5": "2.2.3", "jsonata": "2.2.1", "jsonc-weaver": "0.3.1", "klona": "2.0.6", "lru-cache": "11.5.3", "luxon": "3.7.2", "markdown-it": "15.0.2", "markdown-table": "3.0.4", "minimatch": "10.2.6", "moo": "0.5.3", "ms": "2.1.3", "neotraverse": "1.0.1", "node-html-parser": "9.0.4", "p-all": "5.0.1", "p-map": "7.0.8", "p-queue": "9.3.3", "p-throttle": "8.1.1", "parse-link-header": "2.0.0", "prettier": "3.9.9", "protobufjs": "8.8.0", "punycode": "2.3.1", "remark": "15.0.1", "remark-gfm": "4.0.1", "remark-github": "12.0.0", "safe-stable-stringify": "2.5.0", "sax": "1.6.1", "semver": "7.8.5", "semver-stable": "3.0.0", "semver-utils": "1.1.4", "shlex": "3.0.0", "simple-git": "4.0.2", "slugify": "1.6.9", "source-map-support": "0.5.21", "strip-json-comments": "5.0.3", "tar": "7.5.22", "toml-eslint-parser": "1.0.3", "tslib": "2.8.1", "upath": "3.0.8", "url-join": "5.0.0", "validate-npm-package-name": "7.0.2", "xmldoc": "3.0.0", "yaml": "2.9.1", "yauzl": "3.4.0", "zod": "4.6.5" }, "optionalDependencies": { "openpgp": "6.3.2", "re2": "1.27.0" }, "bin": { "renovate": "dist/renovate.js", "renovate-config-validator": "dist/config-validator.js" } }, "sha512-au1se2M3ROUrDAvHAXBPLUbsbAXxtxb3a/VArzwWsfPOiKaHAnUJ6KNo61mEQzppAVbT7hzRmaj2QBaJik9tOw=="],
 
     "require-directory": ["require-directory@2.1.1", "", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
 
@@ -1458,7 +1458,7 @@
 
     "sigstore": ["sigstore@4.1.1", "", { "dependencies": { "@sigstore/bundle": "^4.0.0", "@sigstore/core": "^3.2.1", "@sigstore/protobuf-specs": "^0.5.0", "@sigstore/sign": "^4.1.1", "@sigstore/tuf": "^4.0.2", "@sigstore/verify": "^3.1.1" } }, "sha512-endqECJkfhozrXMK5ngu/UAA0xVcVEFdnHJCElGaExypjW+HK5i6zu3NteLoaX/iFbRUbC3+DjttQs0GARr+5w=="],
 
-    "simple-git": ["simple-git@3.36.0", "", { "dependencies": { "@kwsites/file-exists": "^1.1.1", "@kwsites/promise-deferred": "^1.1.1", "@simple-git/args-pathspec": "^1.0.3", "@simple-git/argv-parser": "^1.1.0", "debug": "^4.4.0" } }, "sha512-cGQjLjK8bxJw4QuYT7gxHw3/IouVESbhahSsHrX97MzCL1gu2u7oy38W6L2ZIGECEfIBG4BabsWDPjBxJENv9Q=="],
+    "simple-git": ["simple-git@4.0.2", "", { "dependencies": { "@kwsites/file-exists": "^1.1.1", "@kwsites/promise-deferred": "^1.1.1", "@simple-git/args-pathspec": "1.0.4", "@simple-git/argv-parser": "2.0.1", "debug": "^4.4.0" } }, "sha512-l0sIsv9VrPwovKELFDBOj/lhmIcbMvxBk2B+hRhsMM4/VL3gKtuZvYnBNixVo+N/0HnqQx2cBdLvxnAbygHpqA=="],
 
     "slugify": ["slugify@1.6.9", "", {}, "sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg=="],
 
@@ -1797,6 +1797,8 @@
     "path-scurry/lru-cache": ["lru-cache@11.5.2", "", {}, "sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g=="],
 
     "pkg-up/find-up": ["find-up@3.0.0", "", { "dependencies": { "locate-path": "^3.0.0" } }, "sha512-1yD6RmLI1XBfxugvORwlck6f75tYL+iR0jqwsOrOxMZyGYqUuDhJ0l4AXdO1iX/FTs9cBAMEk1gWSEx1kSbylg=="],
+
+    "renovate/prettier": ["prettier@3.9.9", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg=="],
 
     "renovate/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
 
