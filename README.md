@@ -87,7 +87,7 @@ Or install into the current project:
 opencode plugin @christiangalsterer/opencode-requesty-plugin
 ```
 
-OpenCode 1.x stores TUI plugin configuration in `tui.json`. The install command adds the package there; plugin options can be set in the project `.opencode/tui.json` or global `~/.config/opencode/tui.json`.
+OpenCode 1.x stores TUI plugin configuration in `tui.json`. The install command adds the package there. Plugin options can be set in the project `.opencode/tui.json` or global `~/.config/opencode/tui.json`.
 
 ### OpenCode 2.x
 
@@ -147,7 +147,9 @@ Use the matching example below. Do not combine the v1 `plugin`/tuple shape with 
 
 ### OpenCode 1.x
 
-```json title=".opencode/tui.json or ~/.config/opencode/tui.json"
+For OpenCode 1.x, find the project configuration at `.opencode/tui.json` or the global configuration at `~/.config/opencode/tui.json`.
+
+```json
 {
   "$schema": "https://opencode.ai/tui.json",
   "plugin": [
@@ -322,7 +324,55 @@ Example for enabling key identification:
 }
 ```
 
-For OpenCode 2.x, use the complete `opencode.json` example above; v2 does not read this v1 `tui.json` shape.
+### Complete OpenCode 2.x configuration example
+
+Place this in the project `opencode.json` (or `opencode.jsonc`). For global use, add the plugin to your global OpenCode configuration instead.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": [
+    {
+      "package": "@christiangalsterer/opencode-requesty-plugin",
+      "options": {
+        "refreshIntervalMs": 300000,
+        "warningThreshold": 0.7,
+        "errorThreshold": 0.9,
+        "sidebar": {
+          "enabled": true,
+          "maxModels": 5,
+          "showTokens": true,
+          "showKeyName": true,
+          "showSessionInfo": true
+        },
+        "prompt": {
+          "enabled": true,
+          "budgetIndicator": true,
+          "todaySpend": true,
+          "dailyAvg": false,
+          "7dAvg": false,
+          "30dAvg": false,
+          "showTokens": true,
+          "showKeyName": true,
+          "showSessionInfo": true,
+          "monthlyProjection": true
+        },
+        "dialog": {
+          "showKeyName": true
+        }
+      }
+    }
+  ],
+  "providers": {
+    "requesty": {
+      "settings": {
+        "apiKey": "{env:REQUESTY_API_KEY}",
+        "baseURL": "https://api-v2.requesty.ai/v1"
+      }
+    }
+  }
+}
+```
 
 Data is refreshed on startup, on a configurable periodic interval, when a new session is created, and when messages are updated.
 
@@ -363,7 +413,7 @@ Details:
 
 ## API key detection
 
-The plugin prefers `REQUESTY_API_KEY` from the plugin process environment. Otherwise, it reads the Requesty API key from OpenCode provider config, including `{env:VAR}` interpolation. OpenCode 1.x uses `provider.requesty.options.apiKey`; OpenCode 2.x uses `providers.requesty.settings.apiKey`. Custom provider entries are supported when their `baseURL` points to a Requesty host; provider-declared `env` variables are also checked for the canonical Requesty provider.
+The plugin resolves credentials in this order: an explicit API key in a Requesty provider configuration, an environment variable declared by a matching Requesty provider, then `REQUESTY_API_KEY` from the plugin process environment. `{env:VAR}` values are interpolated. OpenCode 1.x uses `provider.requesty.options.apiKey`; OpenCode 2.x uses `providers.requesty.settings.apiKey`. Custom provider entries are supported when their `baseURL` points to a Requesty host.
 
 ```json
 {
@@ -404,8 +454,6 @@ Or via an environment variable:
 
 If no key is found, the widget shows a short setup hint instead of failing.
 
-For Docker runs, the helper scripts pass `REQUESTY_API_KEY` into the container, and the plugin uses it directly. This works even when OpenCode authenticates to Requesty through a saved provider credential rather than an explicit `apiKey` field in `opencode.json`.
-
 ## Development
 
 ### Local development install
@@ -440,12 +488,14 @@ bun run build
 
 Build the version-specific image, then start its interactive Bash shell with the checked-out plugin mounted into the container. Each run script builds `dist/tui.js` first; no tarball or registry installation is needed.
 
+**OpenCode 1.x**
 ```sh
-# OpenCode 1.x
 bun run docker:build:v1
 REQUESTY_API_KEY=your-requesty-api-key bun run docker:run:v1
+```
 
-# OpenCode 2.x
+**OpenCode 2.x**
+```sh
 bun run docker:build:v2
 REQUESTY_API_KEY=your-requesty-api-key bun run docker:run:v2
 ```

@@ -65,24 +65,25 @@ function environmentKey(provider: ProviderConfig): string | undefined {
   return undefined
 }
 
-function fromConfig(config: SdkConfigLike | undefined): string | undefined {
+function requestyProviders(config: SdkConfigLike | undefined): ProviderConfig[] {
   const providers = { ...config?.provider, ...config?.providers }
-  if (!providers) return undefined
-  // Prefer the canonical provider id, then any custom Requesty provider.
+  // Preserve stable ordering, preferring the canonical provider when keys tie.
   const names = Object.keys(providers).sort((a, b) => (a === 'requesty' ? -1 : b === 'requesty' ? 1 : a.localeCompare(b)))
+  const matches: ProviderConfig[] = []
   for (const name of names) {
     const provider = providers[name]
-    if (!isRequestyProvider(name, provider)) continue
-    const apiKey = resolveValue(provider.options?.apiKey ?? provider.settings?.apiKey)
-    if (apiKey) return apiKey
-    const envKey = environmentKey(provider)
-    if (envKey) return envKey
+    if (isRequestyProvider(name, provider)) {
+      matches.push(provider)
+    }
   }
-  return undefined
+  return matches
 }
 
 export function detectApiKey(config: SdkConfigLike | undefined): KeyResult {
-  const apiKey = resolveValue('{env:REQUESTY_API_KEY}') ?? fromConfig(config)
+  const providers = requestyProviders(config)
+  const configuredKey = providers.map((provider) => resolveValue(provider.options?.apiKey ?? provider.settings?.apiKey)).find(Boolean)
+  const providerEnvironmentKey = providers.map(environmentKey).find(Boolean)
+  const apiKey = configuredKey ?? providerEnvironmentKey ?? resolveValue('{env:REQUESTY_API_KEY}')
   if (apiKey) return { ok: true, apiKey }
 
   return {

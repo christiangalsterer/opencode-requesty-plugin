@@ -97,7 +97,7 @@ describe('detectApiKey', () => {
     assert.equal(result.apiKey, 'sk-provider-env')
   })
 
-  test('resolves REQUESTY_API_KEY as the Docker-friendly fallback', () => {
+  test('resolves REQUESTY_API_KEY when provider configuration has no key', () => {
     process.env.REQUESTY_API_KEY = 'sk-docker-env'
     const result = detectApiKey({})
     assert.equal(result.ok, true)
@@ -105,7 +105,7 @@ describe('detectApiKey', () => {
     assert.equal(result.apiKey, 'sk-docker-env')
   })
 
-  test('prefers REQUESTY_API_KEY over configured provider credentials', () => {
+  test('prefers configured provider credentials over REQUESTY_API_KEY', () => {
     process.env.REQUESTY_API_KEY = 'sk-explicit-env'
     const result = detectApiKey({
       provider: {
@@ -119,7 +119,23 @@ describe('detectApiKey', () => {
     })
     assert.equal(result.ok, true)
     if (!result.ok) return
-    assert.equal(result.apiKey, 'sk-explicit-env')
+    assert.equal(result.apiKey, 'sk-config')
+  })
+
+  test('prefers provider-declared env credentials over REQUESTY_API_KEY', () => {
+    process.env.REQUESTY_API_KEY = 'sk-global-env'
+    process.env.REQUESTY_PROVIDER_KEY = 'sk-provider-env'
+    const result = detectApiKey({
+      provider: {
+        requesty: {
+          env: ['REQUESTY_PROVIDER_KEY'],
+          options: { baseURL: 'https://api-v2.requesty.ai/v1' }
+        }
+      }
+    })
+    assert.equal(result.ok, true)
+    if (!result.ok) return
+    assert.equal(result.apiKey, 'sk-provider-env')
   })
 
   test('does not use another provider env key as a Requesty key', () => {
