@@ -208,7 +208,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     if (cached) {
       setData((previous) => (previous ? { ...previous, ...cached } : previous))
     }
-    void refresh()
+    refresh().catch(() => undefined)
   }
 
   function syncActiveSession(id: string): void {
@@ -218,7 +218,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     setActiveSession(id)
   }
 
-  async function refresh(): Promise<void> {
+  function refresh(): Promise<void> {
     if (inFlight) {
       pending = true
       return inFlight
@@ -330,7 +330,7 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
         inFlight = undefined
         if (pending) {
           pending = false
-          void refresh()
+          refresh().catch(() => undefined)
         }
       }
     })()

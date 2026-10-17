@@ -486,7 +486,7 @@ describe('createRequestyStore', () => {
     assert.equal(data!.sessionTotalSpend, 1.2)
   })
 
-  test('setSessionID with the same id does not schedule extra work', async () => {
+  test('setSessionID with the same id does not schedule extra work', () => {
     const sessionId = 'ses_test'
     let calls = 0
     const store = createStore({
