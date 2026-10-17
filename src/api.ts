@@ -80,7 +80,7 @@ export interface UsageResponse {
 export class RequestyApiError extends Error {
   readonly status: number
 
-  constructor(status: number, message: string, options?: ErrorOptions) {
+  constructor(message: string, options: ErrorOptions | undefined, status: number) {
     super(message, options)
     this.name = 'RequestyApiError'
     this.status = status
@@ -110,9 +110,11 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
     })
   } catch (error) {
     if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
-      throw new RequestyApiError(HTTP_REQUEST_TIMEOUT_STATUS, `Request timed out after ${REQUEST_TIMEOUT_MS / MILLISECONDS_PER_SECOND}s`, {
-        cause: error
-      })
+      throw new RequestyApiError(
+        `Request timed out after ${REQUEST_TIMEOUT_MS / MILLISECONDS_PER_SECOND}s`,
+        { cause: error },
+        HTTP_REQUEST_TIMEOUT_STATUS
+      )
     }
     throw error
   }
@@ -125,7 +127,7 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
     } catch {
       logWarn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, API_ERROR_BODY_PREVIEW_LENGTH)}`)
     }
-    throw new RequestyApiError(response.status, message)
+    throw new RequestyApiError(message, undefined, response.status)
   }
   return (await response.json()) as T
 }

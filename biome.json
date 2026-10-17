@@ -83,7 +83,6 @@
         "noYodaExpression": "error",
         "useArrayLiterals": "error",
         "useAsConstAssertion": "error",
-        "useBlockStatements": "error",
         "useCollapsedElseIf": "error",
         "useConsistentArrayType": { "level": "error", "options": { "syntax": "shorthand" } },
         "useConsistentArrowReturn": "error",

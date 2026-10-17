@@ -73,7 +73,7 @@ function settle(): Promise<void> {
 
 describe('createRequestyStore', () => {
   test('refresh populates data and sets state to ready', async () => {
-    const onRender = mock(() => {})
+    const onRender = mock(() => undefined)
     const store = createStore({ onRender })
     assert.equal(store.state().status, 'idle')
     await store.refresh()
@@ -130,7 +130,7 @@ describe('createRequestyStore', () => {
   })
 
   test('error sets state to error and calls onError', async () => {
-    const onError = mock((_message: string) => {})
+    const onError = mock((_message: string) => undefined)
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error('boom')),
       onError
@@ -162,7 +162,7 @@ describe('createRequestyStore', () => {
   })
 
   test('repeated identical errors call onError each time', async () => {
-    const onError = mock((_message: string) => {})
+    const onError = mock((_message: string) => undefined)
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error('same')),
       onError
@@ -174,7 +174,7 @@ describe('createRequestyStore', () => {
   })
 
   test('a different error calls onError again', async () => {
-    const onError = mock((_message: string) => {})
+    const onError = mock((_message: string) => undefined)
     let err = 'first'
     const store = createStore({
       fetchApiKey: () => Promise.reject(new Error(err)),

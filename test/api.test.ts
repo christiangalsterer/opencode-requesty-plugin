@@ -120,7 +120,7 @@ describe('api client data coercion', () => {
 
 describe('api client logging', () => {
   const fetchMock = mock(() => Promise.resolve(new Response(JSON.stringify({}), { status: 200 })))
-  const logger = mock((_level: 'debug' | 'info' | 'warn' | 'error', _message: string) => {})
+  const logger = mock((_level: 'debug' | 'info' | 'warn' | 'error', _message: string) => undefined)
 
   beforeEach(() => {
     global.fetch = fetchMock as any

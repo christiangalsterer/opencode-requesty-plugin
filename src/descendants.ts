@@ -29,23 +29,27 @@ export function rootSessionID(sessionID: string, getParent: (sessionID: string) 
 export async function descendantSessionIDs(rootID: string, fetchChildren: (sessionID: string) => Promise<string[]>): Promise<string[]> {
   const found: string[] = []
   const seen = new Set<string>([rootID])
-  const queue: string[] = [rootID]
 
-  while (queue.length > 0 && found.length < MAX_DESCENDANTS) {
-    const parentID = queue.shift()!
-    try {
-      const children = await fetchChildren(parentID)
-      for (const childID of children) {
-        if (found.length >= MAX_DESCENDANTS) break
-        if (seen.has(childID)) continue
-        seen.add(childID)
-        found.push(childID)
-        queue.push(childID)
+  function visit(parents: string[]): Promise<void> {
+    if (parents.length === 0 || found.length >= MAX_DESCENDANTS) return Promise.resolve()
+
+    return Promise.all(parents.map((parentID) => fetchChildren(parentID).catch(() => undefined))).then((childLists) => {
+      const nextParents: string[] = []
+      for (const children of childLists) {
+        if (!children) break
+        for (const childID of children) {
+          if (found.length >= MAX_DESCENDANTS) break
+          if (seen.has(childID)) continue
+          seen.add(childID)
+          found.push(childID)
+          nextParents.push(childID)
+        }
       }
-    } catch {
-      break
-    }
+      return visit(nextParents)
+    })
   }
+
+  await visit([rootID])
 
   return found
 }

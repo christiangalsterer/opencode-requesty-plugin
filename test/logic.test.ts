@@ -273,6 +273,7 @@ describe('mergeUsage', () => {
     const a = { usage: { '2026-08-01': { spend: 1 } } } as unknown as UsageResponse
     const b = { usage: { '2026-08-02': { spend: 2 } } } as unknown as UsageResponse
     const merged = mergeUsage(a, b)
+    // biome-ignore lint/suspicious/useArraySortCompare: ignore
     assert.deepEqual(Object.keys(merged.usage).sort(), ['2026-08-01', '2026-08-02'])
     assert.equal(totalSpendFromUsage(merged), 3)
   })
@@ -358,6 +359,7 @@ describe('filterUsageByMonth', () => {
       }
     } as unknown as UsageResponse
     const filtered = filterUsageByMonth(response, new Date('2026-08-15T12:00:00Z'))
+    // biome-ignore lint/suspicious/useArraySortCompare: ignore
     assert.deepEqual(Object.keys(filtered.usage).sort(), ['2026-08-01', '2026-08-15'])
     assert.equal(totalSpendFromUsage(filtered), 7)
   })

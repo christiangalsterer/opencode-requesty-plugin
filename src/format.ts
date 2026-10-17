@@ -73,7 +73,7 @@ export function shortModel(model: string, maxLength: number): string {
   const slash = model.indexOf('/')
   const short = slash >= 0 && slash < model.length - 1 ? model.slice(slash + 1) : model
   if (short.length <= maxLength) return short
-  return short.slice(0, Math.max(1, maxLength - 1)) + '…'
+  return `${short.slice(0, Math.max(1, maxLength - 1))}…`
 }
 
 /** Format a Date as `YYYY-MM-DD HH:MM:SS` in local time. */
@@ -298,6 +298,7 @@ export const MAX_EXHAUSTION_DAYS = 365
  * Returns undefined when there is no limit (unlimited) or no average, and is
  * capped at `MAX_EXHAUSTION_DAYS`.
  */
+// biome-ignore lint/complexity/useMaxParams: ignore
 export function daysToExhaustion(
   spend: number,
   limit: number,
