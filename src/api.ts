@@ -4,6 +4,17 @@ import { emptyWeekdaySeries, type WeekdaySeries } from './format'
 
 const REQUESTY_ORIGIN = 'https://api-v2.requesty.ai/'
 const REQUEST_TIMEOUT_MS = 10_000
+const HTTP_REQUEST_TIMEOUT_STATUS = 408
+const API_ERROR_BODY_PREVIEW_LENGTH = 200
+const PREVIOUS_MONTH_OFFSET = 1
+const FIRST_DAY_OF_MONTH = 1
+const MILLISECONDS_PER_SECOND = 1000
+const SECONDS_PER_MINUTE = 60
+const MINUTES_PER_HOUR = 60
+const HOURS_PER_DAY = 24
+const MILLISECONDS_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
+const MONTH_KEY_LENGTH = 7
+const DATE_KEY_LENGTH = 10
 
 export type ApiLogger = (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void
 
@@ -69,8 +80,8 @@ export interface UsageResponse {
 export class RequestyApiError extends Error {
   readonly status: number
 
-  constructor(status: number, message: string) {
-    super(message)
+  constructor(status: number, message: string, options?: ErrorOptions) {
+    super(message, options)
     this.name = 'RequestyApiError'
     this.status = status
   }
@@ -99,7 +110,9 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
     })
   } catch (error) {
     if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
-      throw new RequestyApiError(408, `Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`)
+      throw new RequestyApiError(HTTP_REQUEST_TIMEOUT_STATUS, `Request timed out after ${REQUEST_TIMEOUT_MS / MILLISECONDS_PER_SECOND}s`, {
+        cause: error
+      })
     }
     throw error
   }
@@ -110,7 +123,7 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
       const body = JSON.parse(raw) as { error?: { message?: string } }
       if (body?.error?.message) message = body.error.message
     } catch {
-      logWarn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, 200)}`)
+      logWarn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, API_ERROR_BODY_PREVIEW_LENGTH)}`)
     }
     throw new RequestyApiError(response.status, message)
   }
@@ -217,7 +230,7 @@ export function totalSpendFromUsage(response: UsageResponse): number {
 
 /** RFC3339 timestamp for the start of the previous calendar month (UTC). */
 export function startOfLastMonth(now = new Date()): string {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString()
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - PREVIOUS_MONTH_OFFSET, FIRST_DAY_OF_MONTH)).toISOString()
 }
 
 /** RFC3339 timestamp for `days` days ago at midnight UTC. */
@@ -242,8 +255,8 @@ export function startOfUsageWindow(days: number, now = new Date()): string {
 
 /** Sum spend for the previous calendar month from a day-keyed usage response. */
 export function lastMonthSpendFromUsage(response: UsageResponse, now = new Date()): number {
-  const previous = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
-  const prefix = dayKey(previous).slice(0, 7)
+  const previous = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - PREVIOUS_MONTH_OFFSET, FIRST_DAY_OF_MONTH))
+  const prefix = dayKey(previous).slice(0, MONTH_KEY_LENGTH)
   let total = 0
   for (const [key, entry] of Object.entries(response.usage ?? {})) {
     if (key.startsWith(prefix)) total += toNumber(entry.spend, 'spend')
@@ -274,7 +287,7 @@ export function splitUsageWindow(start: string, now = new Date(), maxDays = MAX_
   const startMs = new Date(start).getTime()
   if (!Number.isFinite(startMs)) return [{ start, end: now.toISOString() }]
   const spanMs = now.getTime() - startMs
-  const maxMs = maxDays * 24 * 60 * 60 * 1000
+  const maxMs = maxDays * MILLISECONDS_PER_DAY
   if (spanMs <= maxMs) return [{ start, end: now.toISOString() }]
   const windows: { start: string; end: string }[] = []
   let cursor = startMs
@@ -288,7 +301,7 @@ export function splitUsageWindow(start: string, now = new Date(), maxDays = MAX_
 
 /** Keep only usage entries that fall within the current calendar month. */
 export function filterUsageByMonth(response: UsageResponse, now = new Date()): UsageResponse {
-  const prefix = dayKey(now).slice(0, 7)
+  const prefix = dayKey(now).slice(0, MONTH_KEY_LENGTH)
   const filtered: Record<string, UsageEntry> = {}
   for (const [key, entry] of Object.entries(response.usage ?? {})) {
     if (key.startsWith(prefix)) filtered[key] = entry
@@ -298,7 +311,7 @@ export function filterUsageByMonth(response: UsageResponse, now = new Date()): U
 
 /** Format a Date as a `YYYY-MM-DD` key matching the usage response (UTC). */
 export function dayKey(now = new Date()): string {
-  return now.toISOString().slice(0, 10)
+  return now.toISOString().slice(0, DATE_KEY_LENGTH)
 }
 
 /**

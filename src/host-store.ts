@@ -1,6 +1,6 @@
-import type { ProjectionSettings } from './settings'
-import { createRequestyStore, type ActiveSession, type RequestyStore } from './state'
 import { descendantSessionIDs, rootSessionID } from './descendants'
+import type { ProjectionSettings } from './settings'
+import { type ActiveSession, createRequestyStore, type RequestyStore } from './state'
 
 export interface RequestyHostStoreOptions {
   apiKey: string

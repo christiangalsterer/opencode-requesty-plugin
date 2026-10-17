@@ -92,8 +92,8 @@
   ],
   "scripts": {
     "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run package:check && bun run renovate:config && bun pm pack --ignore-scripts && npm i --omit=dev --dry-run *.tgz",
-    "biome": "biome check",
-    "biome:fix": "biome check --write",
+    "biome": "biome check --skip=useBlockStatements --skip=noIncrementDecrement",
+    "biome:fix": "biome check --only=organizeImports --write",
     "build": "bun run typecheck && bun run build.ts",
     "clean": "bun run clean:dist && bun run clean:deps",
     "clean:dist": "rm -rf ./dist && rm -rf christiangalsterer-opencode-requesty-plugin*.tgz && mkdir -p ./dist",

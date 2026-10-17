@@ -34,6 +34,12 @@ const MODEL_SCROLL_ROWS = 5
 
 /** Width of the budget progress bar in the detail dialog. */
 const DIALOG_BAR_WIDTH = 40
+const MODEL_COLUMN_WIDTH = 24
+const SPEND_COLUMN_WIDTH = 9
+const SHARE_COLUMN_WIDTH = 6
+const TOKEN_COLUMN_WIDTH = 22
+const REQUEST_COLUMN_WIDTH = 6
+const MODEL_LINK_MAX_LENGTH = MODEL_COLUMN_WIDTH - 1
 
 export interface DetailDialogProps {
   store: RequestyStore
@@ -323,8 +329,8 @@ function TableHeader(props: { theme: RequestyTheme }): JSX.Element {
     <text fg={props.theme.textMuted}>
       <strong>
         <u>
-          {'Model'.padEnd(24)} {'Spend'.padStart(9)} {'Share'.padStart(6)} {'Tokens (↑In ↓Out)'.padEnd(22)} {'Reqs'.padStart(6)}{' '}
-          {'Out/In'.padStart(6)}
+          {'Model'.padEnd(MODEL_COLUMN_WIDTH)} {'Spend'.padStart(SPEND_COLUMN_WIDTH)} {'Share'.padStart(SHARE_COLUMN_WIDTH)}{' '}
+          {'Tokens (↑In ↓Out)'.padEnd(TOKEN_COLUMN_WIDTH)} {'Reqs'.padStart(REQUEST_COLUMN_WIDTH)} {'Out/In'.padStart(REQUEST_COLUMN_WIDTH)}
         </u>
       </strong>
     </text>
@@ -335,10 +341,15 @@ function ModelRow(props: { model: ModelUsage; totalSpend: number; keyName: strin
   const share = props.totalSpend > 0 ? formatPercent(props.model.spend / props.totalSpend) : '—'
   return (
     <text fg={props.theme.text}>
-      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>{shortModel(props.model.model, 23).padEnd(24)}</a>{' '}
-      {formatUsd(props.model.spend).padStart(9)} {share.padStart(6)}{' '}
-      {`${formatTokens(props.model.totalTokens)} ${formatTokenBreakdown(props.model.inputTokens, props.model.outputTokens)}`.padEnd(22)}{' '}
-      {formatTokens(props.model.requests).padStart(6)} {formatOutputInputRatio(props.model.inputTokens, props.model.outputTokens).padStart(6)}
+      <a href={modelAnalyticsUrl(props.keyName, props.model.model)}>
+        {shortModel(props.model.model, MODEL_LINK_MAX_LENGTH).padEnd(MODEL_COLUMN_WIDTH)}
+      </a>{' '}
+      {formatUsd(props.model.spend).padStart(SPEND_COLUMN_WIDTH)} {share.padStart(SHARE_COLUMN_WIDTH)}{' '}
+      {`${formatTokens(props.model.totalTokens)} ${formatTokenBreakdown(props.model.inputTokens, props.model.outputTokens)}`.padEnd(
+        TOKEN_COLUMN_WIDTH
+      )}{' '}
+      {formatTokens(props.model.requests).padStart(REQUEST_COLUMN_WIDTH)}{' '}
+      {formatOutputInputRatio(props.model.inputTokens, props.model.outputTokens).padStart(REQUEST_COLUMN_WIDTH)}
     </text>
   )
 }

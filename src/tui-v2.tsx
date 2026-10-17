@@ -4,15 +4,15 @@ import type { SessionInfo } from '@opencode/client'
 import type { Context } from '@opencode/plugin/tui/context'
 import { createSignal } from 'solid-js'
 import { setApiLogger } from './api'
-import { createRequestyHostStore } from './host-store'
 import { RequestyDetailDialog } from './dialog'
+import { createRequestyHostStore } from './host-store'
 import { detectApiKey } from './key'
 import { RequestyPromptWidget } from './prompt'
 import { readSettings } from './settings'
 import type { RequestyStore } from './state'
-import { RequestySidebarWidget } from './widget'
 import type { RequestyTheme, RequestyWidgetHost } from './ui-types'
 import { normalizeV2ConfigDocuments, type V2ConfigDocument } from './v2-config'
+import { RequestySidebarWidget } from './widget'
 
 const REFRESH_DEBOUNCE_MS = 2000
 const REFRESH_SESSION_TYPES = new Set([

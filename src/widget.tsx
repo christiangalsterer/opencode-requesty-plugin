@@ -25,6 +25,12 @@ import type { RequestyTheme, RequestyWidgetHost } from './ui-types'
 
 /** Width of the budget progress bar in the sidebar. */
 const SIDEBAR_BAR_WIDTH = 24
+const SPEND_LABEL_WIDTH = 9
+const SPEND_VALUE_WIDTH = 10
+const SESSION_LABEL_WIDTH = 27
+const SESSION_SPEND_WIDTH = 8
+const MODEL_NAME_WIDTH = 27
+const MODEL_NAME_MAX_LENGTH = MODEL_NAME_WIDTH - 1
 
 export interface WidgetProps {
   store: RequestyStore
@@ -181,7 +187,7 @@ function Snapshot(props: SnapshotProps): JSX.Element {
               {(row) => (
                 <box flexDirection="row" justifyContent="space-between">
                   <text fg={props.theme.textMuted}>
-                    {row.label.padEnd(9)} {formatUsd(row.spend).padStart(10)}
+                    {row.label.padEnd(SPEND_LABEL_WIDTH)} {formatUsd(row.spend).padStart(SPEND_VALUE_WIDTH)}
                   </text>
                   <text fg={props.theme.textMuted}>{formatTokenInline(row.tokens.input, row.tokens.output)}</text>
                 </box>
@@ -213,8 +219,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           <Show when={sessionLoaded()} fallback={<text fg={props.theme.textMuted}> Session cost loading…</text>}>
             <box flexDirection="column">
               <text fg={props.theme.text}>
-                {'Today'.padEnd(27)}
-                {formatUsd(data().sessionTodaySpend).padStart(8)}
+                {'Today'.padEnd(SESSION_LABEL_WIDTH)}
+                {formatUsd(data().sessionTodaySpend).padStart(SESSION_SPEND_WIDTH)}
               </text>
               <text fg={props.theme.textMuted}>
                 {'  '}
@@ -222,8 +228,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
                 {formatTokenBreakdown(data().sessionTodayTokens.input, data().sessionTodayTokens.output)}
               </text>
               <text fg={props.theme.text}>
-                {`Since ${data().sessionStartLabel ?? '…'}`.padEnd(27)}
-                {formatUsd(data().sessionTotalSpend).padStart(8)}
+                {`Since ${data().sessionStartLabel ?? '…'}`.padEnd(SESSION_LABEL_WIDTH)}
+                {formatUsd(data().sessionTotalSpend).padStart(SESSION_SPEND_WIDTH)}
               </text>
               <text fg={props.theme.textMuted}>
                 {'  '}
@@ -252,8 +258,8 @@ function Snapshot(props: SnapshotProps): JSX.Element {
             {(model) => (
               <box flexDirection="column">
                 <text fg={props.theme.text}>
-                  {shortModel(model.model, 26).padEnd(27)}
-                  {formatUsd(model.spend).padStart(8)}
+                  {shortModel(model.model, MODEL_NAME_MAX_LENGTH).padEnd(MODEL_NAME_WIDTH)}
+                  {formatUsd(model.spend).padStart(SESSION_SPEND_WIDTH)}
                 </text>
                 <text fg={props.theme.textMuted}>
                   {'  '}

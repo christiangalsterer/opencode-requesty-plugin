@@ -86,8 +86,12 @@ type SessionSnapshot = Pick<
 /** Maximum number of per-session snapshots retained (oldest evicted first). */
 const SESSION_CACHE_LIMIT = 50
 
+/** Rolling-average windows (days). */
+const AVG_7D_WINDOW_DAYS = 7
+const AVG_30D_WINDOW_DAYS = 30
+
 /** Minimum rolling window (days) fetched for the monthly/rolling-average metrics. */
-const USAGE_WINDOW_DAYS = 30
+const USAGE_WINDOW_DAYS = AVG_30D_WINDOW_DAYS
 
 /**
  * Fallback session window (days) when the session's creation time is unknown.
@@ -301,16 +305,16 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
           models: aggregated.models,
           todaySpend: spendForDay(usage),
           dailyAverage: dailyAverage(keyInfo.monthly_spend),
-          avg7d: avgSpendLastNDays(usage, 7),
-          avg30d: avgSpendLastNDays(usage, 30),
+          avg7d: avgSpendLastNDays(usage, AVG_7D_WINDOW_DAYS),
+          avg30d: avgSpendLastNDays(usage, AVG_30D_WINDOW_DAYS),
           todayTokens: tokensForDay(usage),
           dailyAverageTokens: {
             input: dailyAverage(aggregated.inputTokens),
             output: dailyAverage(aggregated.outputTokens),
             total: dailyAverage(aggregated.totalTokens)
           },
-          avg7dTokens: avgTokensLastNDays(usage, 7),
-          avg30dTokens: avgTokensLastNDays(usage, 30),
+          avg7dTokens: avgTokensLastNDays(usage, AVG_7D_WINDOW_DAYS),
+          avg30dTokens: avgTokensLastNDays(usage, AVG_30D_WINDOW_DAYS),
           lastMonthSpend,
           projection,
           ...snapshot

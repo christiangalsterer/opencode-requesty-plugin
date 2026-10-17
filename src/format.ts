@@ -1,5 +1,12 @@
 /** Shared formatting helpers for the Requesty widget and dialog. */
 
+const TOKENS_PER_THOUSAND = 1_000
+const TOKENS_PER_MILLION = TOKENS_PER_THOUSAND * TOKENS_PER_THOUSAND
+const TOKENS_PER_BILLION = TOKENS_PER_MILLION * TOKENS_PER_THOUSAND
+const TOKEN_DISPLAY_DECIMAL_PLACES = 1
+const PERCENTAGE_SCALE = 100
+const YEAR_PAD_WIDTH = 4
+
 /** Format a USD amount rounded to 2 decimal places. */
 export function formatUsd(amount: number): string {
   return `$${amount.toFixed(2)}`
@@ -16,14 +23,14 @@ export function formatLimit(limit: number): string {
 }
 
 export function formatTokens(count: number): string {
-  if (count >= 1_000_000_000) return `${(count / 1_000_000_000).toFixed(1)}B`
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}k`
+  if (count >= TOKENS_PER_BILLION) return `${(count / TOKENS_PER_BILLION).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}B`
+  if (count >= TOKENS_PER_MILLION) return `${(count / TOKENS_PER_MILLION).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}M`
+  if (count >= TOKENS_PER_THOUSAND) return `${(count / TOKENS_PER_THOUSAND).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}k`
   return `${count}`
 }
 
 export function formatPercent(ratio: number): string {
-  return `${Math.round(ratio * 100)}%`
+  return `${Math.round(ratio * PERCENTAGE_SCALE)}%`
 }
 
 /**
@@ -71,7 +78,7 @@ export function shortModel(model: string, maxLength: number): string {
 
 /** Format a Date as `YYYY-MM-DD HH:MM:SS` in local time. */
 export function formatTimestamp(date: Date): string {
-  const yyyy = String(date.getFullYear()).padStart(4, '0')
+  const yyyy = String(date.getFullYear()).padStart(YEAR_PAD_WIDTH, '0')
   const mm = String(date.getMonth() + 1).padStart(2, '0')
   const dd = String(date.getDate()).padStart(2, '0')
   const hh = String(date.getHours()).padStart(2, '0')
@@ -401,7 +408,7 @@ export function formatMonthDeltaParts(
   const projected = projectedMonthEnd(currentSpend, date, model)
   // `|| 0` collapses the -0 that rounding a tiny negative delta produces, so a
   // no-change month reports a plain 0 rather than a signed zero.
-  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * 100) || 0
+  const pct = Math.round(((projected - lastMonthSpend) / lastMonthSpend) * PERCENTAGE_SCALE) || 0
   const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '→'
   const sign = pct > 0 ? '+' : ''
   return { arrow, sign, pct }
@@ -443,7 +450,7 @@ export function spendSeverity(ratio: number, thresholds: SpendThresholds = DEFAU
 /** Normalize a user-provided threshold (0–1 ratio or 0–100 percent) to a ratio. */
 export function normalizeThreshold(value: unknown): number | undefined {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return undefined
-  return value > 1 ? value / 100 : value
+  return value > 1 ? value / PERCENTAGE_SCALE : value
 }
 
 /**
@@ -482,7 +489,7 @@ export interface MessageRepaintFields {
 }
 
 const HASH_PRIME = 31
-const HASH_MOD = 2 ** 53
+const HASH_MOD = Number.MAX_SAFE_INTEGER + 1
 
 function hashMix(seed: number, value: number): number {
   return (seed * HASH_PRIME + value) % HASH_MOD

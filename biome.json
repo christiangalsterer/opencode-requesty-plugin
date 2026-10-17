@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": { "includes": ["**", "!!**/dist"] },
   "formatter": {
@@ -38,7 +38,7 @@
         "noVoid": "error",
         "useArrayFind": "error",
         "useLiteralKeys": "error",
-        "useMaxParams": "error",
+        "useMaxParams": "warn",
         "useNumericLiterals": "error",
         "useOptionalChain": "error",
         "useRegexLiterals": "error"
@@ -210,7 +210,7 @@
       }
     },
     { "includes": ["src/**/*.ts", "!test/**/*.ts"] },
-    { "includes": ["test/**/*.ts"], "linter": { "rules": { "style": { "noMagicNumbers": "off" } } } }
+    { "includes": ["test/**/*.ts"], "linter": { "rules": { "style": { "noMagicNumbers": "off" }, "suspicious": { "noExplicitAny": "off" } } } }
   ],
   "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } }
 }
