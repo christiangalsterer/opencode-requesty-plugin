@@ -6,15 +6,7 @@
   },
   "license": "MIT",
   "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, in the session prompt and with a detail dialog via the /requesty command",
-  "keywords": [
-    "opencode",
-    "opencode-plugin",
-    "opencode-tui",
-    "opencode-tui-plugin",
-    "requesty",
-    "tui",
-    "cost-tracking"
-  ],
+  "keywords": ["opencode", "opencode-plugin", "opencode-tui", "opencode-tui-plugin", "requesty", "tui", "cost-tracking"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/christiangalsterer/opencode-requesty-plugin.git"
@@ -85,12 +77,7 @@
   "overrides": {
     "solid-js": "$solid-js"
   },
-  "files": [
-    "dist",
-    "!dist/**/*.map",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "!dist/**/*.map", "README.md", "LICENSE"],
   "scripts": {
     "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run package:check && bun run renovate:config && bun pm pack --ignore-scripts && npm i --omit=dev --dry-run *.tgz",
     "biome": "biome check --skip=useBlockStatements --skip=noIncrementDecrement --skip=noNonNullAssertion",
@@ -106,7 +93,7 @@
     "deps": "bun install",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "husky": "bun run format:fix",
+    "husky": "biome format --fix",
     "typecheck": "tsc --noEmit",
     "test": "bun run typecheck && bun test",
     "test:coverage": "bun run typecheck && bun test --coverage",
