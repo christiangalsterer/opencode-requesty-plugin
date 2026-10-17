@@ -1,7 +1,13 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!!**/dist"] },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!!**/dist"]
+  },
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
@@ -68,8 +74,13 @@
         "useValidTypeof": "error",
         "useYield": "error"
       },
-      "performance": { "noAwaitInLoops": "error" },
-      "security": { "noGlobalEval": "error", "noScriptUrl": "error" },
+      "performance": {
+        "noAwaitInLoops": "error"
+      },
+      "security": {
+        "noGlobalEval": "error",
+        "noScriptUrl": "error"
+      },
       "style": {
         "noCommonJs": "error",
         "noIncrementDecrement": "error",
@@ -84,7 +95,12 @@
         "useArrayLiterals": "error",
         "useAsConstAssertion": "error",
         "useCollapsedElseIf": "error",
-        "useConsistentArrayType": { "level": "error", "options": { "syntax": "shorthand" } },
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "shorthand"
+          }
+        },
         "useConsistentArrowReturn": "error",
         "useConsistentBuiltinInstantiation": "error",
         "useConsistentEnumValueType": "error",
@@ -154,7 +170,13 @@
         "useAwait": "error",
         "useDefaultSwitchClauseLast": "error",
         "useGuardForIn": "error",
-        "useIterableCallbackReturn": { "level": "error", "options": { "checkForEach": false, "allowImplicit": false } },
+        "useIterableCallbackReturn": {
+          "level": "error",
+          "options": {
+            "checkForEach": false,
+            "allowImplicit": false
+          }
+        },
         "useNamespaceKeyword": "error"
       }
     },
@@ -174,13 +196,20 @@
     },
     "globals": []
   },
-  "html": { "formatter": { "indentScriptAndStyle": false, "selfCloseVoidElements": "always" } },
+  "html": {
+    "formatter": {
+      "indentScriptAndStyle": false,
+      "selfCloseVoidElements": "always"
+    }
+  },
   "overrides": [
     {
       "includes": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
       "linter": {
         "rules": {
-          "complexity": { "noArguments": "error" },
+          "complexity": {
+            "noArguments": "error"
+          },
           "correctness": {
             "noConstAssign": "off",
             "noGlobalObjectCalls": "off",
@@ -191,7 +220,10 @@
             "noUnreachable": "off",
             "noUnreachableSuper": "off"
           },
-          "style": { "useConst": "error", "useSpreadOverApply": "error" },
+          "style": {
+            "useConst": "error",
+            "useSpreadOverApply": "error"
+          },
           "suspicious": {
             "noClassAssign": "off",
             "noDuplicateClassMembers": "off",
@@ -208,8 +240,29 @@
         }
       }
     },
-    { "includes": ["src/**/*.ts", "!test/**/*.ts"] },
-    { "includes": ["test/**/*.ts"], "linter": { "rules": { "style": { "noMagicNumbers": "off" }, "suspicious": { "noExplicitAny": "off" } } } }
+    {
+      "includes": ["src/**/*.ts", "!test/**/*.ts"]
+    },
+    {
+      "includes": ["test/**/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noMagicNumbers": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    }
   ],
-  "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } }
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
 }
