@@ -27,6 +27,12 @@ try {
   }
 
   const packageRoot = path.join(temporary, 'package')
+  const packagedFiles = await readdir(path.join(packageRoot, 'dist'), { recursive: true })
+  const packagedSourceMaps = packagedFiles.filter((file) => file.endsWith('.map'))
+  if (packagedSourceMaps.length > 0) {
+    throw new Error(`Package must not include source maps: ${packagedSourceMaps.join(', ')}`)
+  }
+
   const manifest = JSON.parse(await readFile(path.join(packageRoot, 'package.json'), 'utf8')) as {
     exports?: { './tui'?: { import?: string } }
   }
