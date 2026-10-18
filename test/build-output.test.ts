@@ -53,10 +53,9 @@ describe('build output', () => {
     const build = await buildTui()
     const components = build.outputs.find((output) => output.text.includes('function RequestySidebarWidget'))
     assert.ok(components, 'shared widget component chunk not found')
-    // The lazy (Babel) transform wraps the deref in a memo inside a `get children()`
-    // accessor; the eager (Bun native) transform inlines it into a plain array
-    // literal with no memo wrapper.
-    assert.ok(components.text.includes('_$memo(() => formatTokenInline(props.tokens.input'))
+    // Show narrows its value to `tokens`; the reactive transform memoizes the
+    // token breakdown so it stays lazy rather than running while JSX is built.
+    assert.ok(components.text.includes('_$memo(() => formatTokenInline(tokens().input, tokens().output))'))
   })
 
   test('emits both lazy host adapters and includes their referenced chunks', async () => {
