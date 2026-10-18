@@ -22,7 +22,7 @@
   },
   "files": ["dist", "!dist/**/*.map", "README.md", "LICENSE"],
   "scripts": {
-    "biome": "biome check --skip=noNonNullAssertion",
+    "biome": "biome check",
     "biome:fix": "biome check --fix",
     "build": "bun run typecheck && bun run build.ts",
     "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run package:check && bun run renovate:config && bun pm pack --ignore-scripts && npm i --omit=dev --dry-run *.tgz",

@@ -20,7 +20,7 @@ import {
   spendRatio,
   spendSeverity
 } from './format'
-import type { RequestyStore } from './state'
+import type { RequestyData, RequestyStore } from './state'
 import type { RequestyTheme, RequestyWidgetHost } from './ui-types'
 
 /** Width of the budget progress bar in the sidebar. */
@@ -73,9 +73,11 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
     <box flexDirection="column" paddingTop={1}>
       <text fg={theme().text}>
         <Show when={snapshot()} fallback={<strong>Requesty</strong>}>
-          <a href={analyticsUrl(snapshot()!.keyInfo.name)}>
-            <strong>Requesty{props.showKeyName ? ` (${snapshot()!.keyInfo.name})` : ''}</strong>
-          </a>
+          {(data) => (
+            <a href={analyticsUrl(data().keyInfo.name)}>
+              <strong>Requesty{props.showKeyName ? ` (${data().keyInfo.name})` : ''}</strong>
+            </a>
+          )}
         </Show>
       </text>
       <box flexDirection="column" paddingTop={1}>
@@ -84,9 +86,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
           fallback={
             <box flexDirection="column">
               <text fg={theme().error}>Requesty: {props.store.errorMessage() ?? ''}</text>
-              <Show when={snapshot()}>
-                <Snapshot {...snapshotProps(true)} />
-              </Show>
+              <Show when={snapshot()}>{(data) => <Snapshot {...snapshotProps(true)} data={data()} />}</Show>
             </box>
           }
         >
@@ -98,7 +98,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
               </text>
             }
           >
-            <Snapshot {...snapshotProps()} />
+            {(data) => <Snapshot {...snapshotProps()} data={data()} />}
           </Show>
         </Show>
       </box>
@@ -108,6 +108,7 @@ export function RequestySidebarWidget(props: WidgetProps): JSX.Element {
 
 interface SnapshotProps {
   store: RequestyStore
+  data: RequestyData
   theme: RequestyTheme
   maxModels: number
   thresholds: SpendThresholds
@@ -117,7 +118,7 @@ interface SnapshotProps {
 }
 
 function Snapshot(props: SnapshotProps): JSX.Element {
-  const data = () => props.store.data()!
+  const data = () => props.data
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
@@ -154,12 +155,16 @@ function Snapshot(props: SnapshotProps): JSX.Element {
           <Show when={projectionParts() || props.stale}>
             <box flexDirection="row">
               <Show when={projectionParts()}>
-                <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
-                  ~{formatUsd(projectionParts()!.projected)} EOM{' '}
-                  <Show when={projectionParts()!.arrow}>
-                    <span style={{ fg: paceColor(projectionParts()!.pace, props.theme) }}>{projectionParts()!.arrow}</span>
-                  </Show>
-                </text>
+                <Show when={projectionParts()}>
+                  {(parts) => (
+                    <text fg={projectionOverLimit() ? props.theme.error : props.theme.textMuted}>
+                      ~{formatUsd(parts().projected)} EOM{' '}
+                      <Show when={parts().arrow}>
+                        <span style={{ fg: paceColor(parts().pace, props.theme) }}>{parts().arrow}</span>
+                      </Show>
+                    </text>
+                  )}
+                </Show>
               </Show>
               <Show when={props.stale}>
                 <text fg={props.theme.textMuted}> (stale)</text>

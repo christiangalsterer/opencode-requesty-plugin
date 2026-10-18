@@ -26,7 +26,7 @@ import {
   spendRatio,
   spendSeverity
 } from './format'
-import type { RequestyStore } from './state'
+import type { RequestyData, RequestyStore } from './state'
 import type { RequestyTheme } from './ui-types'
 
 /** Model rows shown in the scrollbox before it scrolls. */
@@ -75,9 +75,13 @@ export function RequestyDetailDialog(props: DetailDialogProps): JSX.Element {
             when={data()}
             fallback={<CenteredMessage theme={theme()}>{state().status === 'loading' ? 'Loading Requesty usage…' : 'No data yet.'}</CenteredMessage>}
           >
-            <KpiRow store={props.store} theme={theme()} thresholds={props.thresholds} />
-            <BudgetSection store={props.store} theme={theme()} thresholds={props.thresholds} />
-            <ModelSection store={props.store} theme={theme()} />
+            {(snapshot) => (
+              <>
+                <KpiRow data={snapshot()} theme={theme()} thresholds={props.thresholds} />
+                <BudgetSection data={snapshot()} theme={theme()} thresholds={props.thresholds} />
+                <ModelSection data={snapshot()} theme={theme()} />
+              </>
+            )}
           </Show>
         </box>
       </box>
@@ -91,9 +95,11 @@ function Title(props: { store: RequestyStore; theme: RequestyTheme; showKeyName:
   return (
     <text fg={props.theme.text}>
       <Show when={props.store.data()} fallback={<strong>Requesty</strong>}>
-        <a href={analyticsUrl(props.store.data()!.keyInfo.name)}>
-          <strong>Requesty{props.showKeyName ? ` (${props.store.data()!.keyInfo.name})` : ''}</strong>
-        </a>
+        {(data) => (
+          <a href={analyticsUrl(data().keyInfo.name)}>
+            <strong>Requesty{props.showKeyName ? ` (${data().keyInfo.name})` : ''}</strong>
+          </a>
+        )}
       </Show>
     </text>
   )
@@ -107,8 +113,8 @@ function CenteredMessage(props: { children: string; theme: RequestyTheme; error?
   )
 }
 
-function KpiRow(props: { store: RequestyStore; theme: RequestyTheme; thresholds: SpendThresholds }): JSX.Element {
-  const data = () => props.store.data()!
+function KpiRow(props: { data: RequestyData; theme: RequestyTheme; thresholds: SpendThresholds }): JSX.Element {
+  const data = () => props.data
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
@@ -125,27 +131,29 @@ function KpiRow(props: { store: RequestyStore; theme: RequestyTheme; thresholds:
         <Metric label="Remaining" value={formatUsd(limit() - spend())} theme={props.theme} color={severityColor(severity(), props.theme)} />
       </Show>
       <Show when={projectionParts()}>
-        <TrendMetric
-          label={`End of Month (${projectionMethodLabel(projectionParts()!.method)})`}
-          value={`~${formatUsd(projectionParts()!.projected)}`}
-          theme={props.theme}
-          color={isProjectionOverLimit(spend(), limit(), new Date(), projection()) ? props.theme.error : props.theme.text}
-          indicator={
-            projectionParts()!.arrow ? { text: projectionParts()!.arrow, color: paceColor(projectionParts()!.pace, props.theme) } : undefined
-          }
-        />
+        {(parts) => (
+          <TrendMetric
+            label={`End of Month (${projectionMethodLabel(parts().method)})`}
+            value={`~${formatUsd(parts().projected)}`}
+            theme={props.theme}
+            color={isProjectionOverLimit(spend(), limit(), new Date(), projection()) ? props.theme.error : props.theme.text}
+            indicator={parts().arrow ? { text: parts().arrow, color: paceColor(parts().pace, props.theme) } : undefined}
+          />
+        )}
       </Show>
       <Show when={monthDelta()}>
-        <TrendMetric
-          label="last month"
-          value={formatUsd(data().lastMonthSpend)}
-          theme={props.theme}
-          color={props.theme.text}
-          indicator={{
-            text: `${monthDelta()!.arrow} ${monthDelta()!.sign}${monthDelta()!.pct}%`,
-            color: monthDelta()!.pct > 0 ? props.theme.error : monthDelta()!.pct < 0 ? props.theme.success : props.theme.textMuted
-          }}
-        />
+        {(delta) => (
+          <TrendMetric
+            label="last month"
+            value={formatUsd(data().lastMonthSpend)}
+            theme={props.theme}
+            color={props.theme.text}
+            indicator={{
+              text: `${delta().arrow} ${delta().sign}${delta().pct}%`,
+              color: delta().pct > 0 ? props.theme.error : delta().pct < 0 ? props.theme.success : props.theme.textMuted
+            }}
+          />
+        )}
       </Show>
     </box>
   )
@@ -156,7 +164,7 @@ function Metric(props: { label: string; value: string; theme: RequestyTheme; col
     <box flexDirection="column" flexGrow={1} flexBasis={0}>
       <text fg={props.color}>
         <strong>{props.value}</strong>
-        <Show when={props.tokens}> {formatTokenInline(props.tokens!.input, props.tokens!.output)}</Show>
+        <Show when={props.tokens}>{(tokens) => <> {formatTokenInline(tokens().input, tokens().output)}</>}</Show>
       </text>
       <text fg={props.theme.textMuted}>{props.label}</text>
     </box>
@@ -178,16 +186,20 @@ function TrendMetric(props: {
       <text fg={props.theme.textMuted}>
         {props.label}
         <Show when={props.indicator}>
-          {' '}
-          <span style={{ fg: props.indicator!.color }}>{props.indicator!.text}</span>
+          {(indicator) => (
+            <>
+              {' '}
+              <span style={{ fg: indicator().color }}>{indicator().text}</span>
+            </>
+          )}
         </Show>
       </text>
     </box>
   )
 }
 
-function BudgetSection(props: { store: RequestyStore; theme: RequestyTheme; thresholds: SpendThresholds }): JSX.Element {
-  const data = () => props.store.data()!
+function BudgetSection(props: { data: RequestyData; theme: RequestyTheme; thresholds: SpendThresholds }): JSX.Element {
+  const data = () => props.data
   const limit = () => data().keyInfo.monthly_limit
   const spend = () => data().keyInfo.monthly_spend
   const ratio = () => spendRatio(spend(), limit())
@@ -261,8 +273,8 @@ function StatusBadge(props: { overBudget: boolean; theme: RequestyTheme }): JSX.
   )
 }
 
-function ModelSection(props: { store: RequestyStore; theme: RequestyTheme }): JSX.Element {
-  const data = () => props.store.data()!
+function ModelSection(props: { data: RequestyData; theme: RequestyTheme }): JSX.Element {
+  const data = () => props.data
   const models = () => data().models
   const totalSpend = () => models().reduce((sum, model) => sum + model.spend, 0)
   const monthSpend = () => data().keyInfo.monthly_spend

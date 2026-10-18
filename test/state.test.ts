@@ -12,7 +12,7 @@ import {
 } from '../src/api'
 import { CALENDAR_PROJECTION, dailyAverage, WORKDAY_PROJECTION } from '../src/format'
 import type { ProjectionSettings } from '../src/settings'
-import { createRequestyStore } from '../src/state'
+import { createRequestyStore, type RequestyData } from '../src/state'
 
 const KEY_INFO: ApiKeyInfo = {
   id: 'key-1',
@@ -71,6 +71,12 @@ function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 20))
 }
 
+function expectData(store: ReturnType<typeof createRequestyStore>): RequestyData {
+  const data = store.data()
+  assert.ok(data)
+  return data
+}
+
 describe('createRequestyStore', () => {
   test('refresh populates data and sets state to ready', async () => {
     const onRender = mock(() => undefined)
@@ -83,32 +89,32 @@ describe('createRequestyStore', () => {
     assert.equal(onRender.mock.calls.length, 1)
     const data = store.data()
     assert.ok(data)
-    assert.equal(data!.keyInfo.name, 'test-key')
-    assert.equal(data!.models.length, 1)
-    assert.equal(data!.models[0].model, 'openai/gpt-5')
-    assert.equal(data!.todaySpend, 8)
-    assert.equal(data!.dailyAverage, dailyAverage(KEY_INFO.monthly_spend))
+    assert.equal(data.keyInfo.name, 'test-key')
+    assert.equal(data.models.length, 1)
+    assert.equal(data.models[0].model, 'openai/gpt-5')
+    assert.equal(data.todaySpend, 8)
+    assert.equal(data.dailyAverage, dailyAverage(KEY_INFO.monthly_spend))
     // avg7d/avg30d and the 7d token window exclude today.
-    assert.equal(data!.avg7d, avgSpendLastNDays(USAGE, 7))
-    assert.equal(data!.avg30d, avgSpendLastNDays(USAGE, 30))
-    assert.deepEqual(data!.todayTokens, { input: 100, output: 50, total: 150 })
-    assert.deepEqual(data!.dailyAverageTokens, {
-      input: dailyAverage(data!.models.reduce((sum, model) => sum + model.inputTokens, 0)),
-      output: dailyAverage(data!.models.reduce((sum, model) => sum + model.outputTokens, 0)),
-      total: dailyAverage(data!.models.reduce((sum, model) => sum + model.totalTokens, 0))
+    assert.equal(data.avg7d, avgSpendLastNDays(USAGE, 7))
+    assert.equal(data.avg30d, avgSpendLastNDays(USAGE, 30))
+    assert.deepEqual(data.todayTokens, { input: 100, output: 50, total: 150 })
+    assert.deepEqual(data.dailyAverageTokens, {
+      input: dailyAverage(data.models.reduce((sum, model) => sum + model.inputTokens, 0)),
+      output: dailyAverage(data.models.reduce((sum, model) => sum + model.outputTokens, 0)),
+      total: dailyAverage(data.models.reduce((sum, model) => sum + model.totalTokens, 0))
     })
-    assert.deepEqual(data!.avg7dTokens, { input: 0, output: 0, total: 0 })
-    assert.deepEqual(data!.avg30dTokens, avgTokensLastNDays(USAGE, 30))
-    assert.equal(data!.lastMonthSpend, 0)
+    assert.deepEqual(data.avg7dTokens, { input: 0, output: 0, total: 0 })
+    assert.deepEqual(data.avg30dTokens, avgTokensLastNDays(USAGE, 30))
+    assert.equal(data.lastMonthSpend, 0)
     // No session id → session metrics are all zero with no start label.
-    assert.equal(data!.sessionTodaySpend, 0)
-    assert.equal(data!.sessionTotalSpend, 0)
-    assert.equal(data!.sessionTodayRequests, 0)
-    assert.equal(data!.sessionTotalRequests, 0)
-    assert.deepEqual(data!.sessionTodayTokens, { input: 0, output: 0, total: 0 })
-    assert.deepEqual(data!.sessionTotalTokens, { input: 0, output: 0, total: 0 })
-    assert.equal(data!.sessionStartLabel, undefined)
-    assert.equal(data!.sessionId, undefined)
+    assert.equal(data.sessionTodaySpend, 0)
+    assert.equal(data.sessionTotalSpend, 0)
+    assert.equal(data.sessionTodayRequests, 0)
+    assert.equal(data.sessionTotalRequests, 0)
+    assert.deepEqual(data.sessionTodayTokens, { input: 0, output: 0, total: 0 })
+    assert.deepEqual(data.sessionTotalTokens, { input: 0, output: 0, total: 0 })
+    assert.equal(data.sessionStartLabel, undefined)
+    assert.equal(data.sessionId, undefined)
     assert.equal(store.activeSessionID(), undefined)
   })
 
@@ -230,8 +236,8 @@ describe('createRequestyStore', () => {
     const data = store.data()
     assert.ok(data)
     const todayKey = now.toISOString().slice(0, 10)
-    assert.equal(data!.todaySpend, spendByDay.get(todayKey))
-    assert.equal(data!.dailyAverage, dailyAverage(KEY_INFO.monthly_spend))
+    assert.equal(data.todaySpend, spendByDay.get(todayKey))
+    assert.equal(data.dailyAverage, dailyAverage(KEY_INFO.monthly_spend))
 
     let expected7d = 0
     for (let offset = 1; offset <= 7; offset++) {
@@ -251,15 +257,15 @@ describe('createRequestyStore', () => {
     }
     expected30d /= 30
 
-    assert.equal(data!.avg7d, expected7d)
-    assert.equal(data!.avg30d, expected30d)
+    assert.equal(data.avg7d, expected7d)
+    assert.equal(data.avg30d, expected30d)
 
     const currentMonthPrefix = todayKey.slice(0, 7)
     const expectedMonthSpend = [...spendByDay.entries()]
       .filter(([key]) => key.startsWith(currentMonthPrefix))
       .reduce((sum, [, spend]) => sum + spend, 0)
     assert.equal(
-      data!.models.reduce((sum, model) => sum + model.spend, 0),
+      data.models.reduce((sum, model) => sum + model.spend, 0),
       expectedMonthSpend
     )
 
@@ -278,13 +284,13 @@ describe('createRequestyStore', () => {
       return { input: input / days, output: output / days, total: total / days }
     }
 
-    assert.deepEqual(data!.todayTokens, {
+    assert.deepEqual(data.todayTokens, {
       input: inputTokensByDay.get(todayKey),
       output: outputTokensByDay.get(todayKey),
       total: totalTokensByDay.get(todayKey)
     })
-    assert.deepEqual(data!.avg7dTokens, avgTokensForDays(7))
-    assert.deepEqual(data!.avg30dTokens, avgTokensForDays(30))
+    assert.deepEqual(data.avg7dTokens, avgTokensForDays(7))
+    assert.deepEqual(data.avg30dTokens, avgTokensForDays(30))
 
     const expectedMonthInputTokens = [...inputTokensByDay.entries()]
       .filter(([key]) => key.startsWith(currentMonthPrefix))
@@ -295,7 +301,7 @@ describe('createRequestyStore', () => {
     const expectedMonthTotalTokens = [...totalTokensByDay.entries()]
       .filter(([key]) => key.startsWith(currentMonthPrefix))
       .reduce((sum, [, tokens]) => sum + tokens, 0)
-    assert.deepEqual(data!.dailyAverageTokens, {
+    assert.deepEqual(data.dailyAverageTokens, {
       input: dailyAverage(expectedMonthInputTokens),
       output: dailyAverage(expectedMonthOutputTokens),
       total: dailyAverage(expectedMonthTotalTokens)
@@ -341,11 +347,11 @@ describe('createRequestyStore', () => {
       .reduce((sum, [, spend]) => sum + spend, 0)
 
     assert.equal(
-      data!.models.reduce((sum, model) => sum + model.spend, 0),
+      data.models.reduce((sum, model) => sum + model.spend, 0),
       expectedMonthSpend
     )
     // avg30d averages the 30 completed days before today, all $10
-    assert.equal(data!.avg30d, 10)
+    assert.equal(data.avg30d, 10)
   })
 
   test('populates session cost metrics from a session-created start', async () => {
@@ -391,14 +397,14 @@ describe('createRequestyStore', () => {
 
     const data = store.data()
     assert.ok(data)
-    assert.equal(data!.sessionStartLabel, yesterdayKey)
-    assert.equal(data!.sessionTodaySpend, 2.5)
-    assert.equal(data!.sessionTodayRequests, 7)
-    assert.deepEqual(data!.sessionTodayTokens, { input: 200, output: 100, total: 300 })
-    assert.equal(data!.sessionTotalSpend, 3.5)
-    assert.equal(data!.sessionTotalRequests, 12)
-    assert.deepEqual(data!.sessionTotalTokens, { input: 300, output: 150, total: 450 })
-    assert.equal(data!.sessionId, sessionId)
+    assert.equal(data.sessionStartLabel, yesterdayKey)
+    assert.equal(data.sessionTodaySpend, 2.5)
+    assert.equal(data.sessionTodayRequests, 7)
+    assert.deepEqual(data.sessionTodayTokens, { input: 200, output: 100, total: 300 })
+    assert.equal(data.sessionTotalSpend, 3.5)
+    assert.equal(data.sessionTotalRequests, 12)
+    assert.deepEqual(data.sessionTotalTokens, { input: 300, output: 150, total: 450 })
+    assert.equal(data.sessionId, sessionId)
     assert.equal(store.activeSessionID(), sessionId)
   })
 
@@ -430,10 +436,10 @@ describe('createRequestyStore', () => {
 
     const data = store.data()
     assert.ok(data)
-    assert.ok(data!.sessionStartLabel)
-    assert.equal(data!.sessionStartLabel!.length, 10)
-    assert.equal(data!.sessionTodaySpend, 0.75)
-    assert.equal(data!.sessionTotalSpend, 0.75)
+    assert.ok(data.sessionStartLabel)
+    assert.equal(data.sessionStartLabel.length, 10)
+    assert.equal(data.sessionTodaySpend, 0.75)
+    assert.equal(data.sessionTotalSpend, 0.75)
   })
 
   test('session metrics stay zero when no session id is set', async () => {
@@ -443,9 +449,9 @@ describe('createRequestyStore', () => {
     await store.refresh()
     const data = store.data()
     assert.ok(data)
-    assert.equal(data!.sessionStartLabel, undefined)
-    assert.equal(data!.sessionTotalSpend, 0)
-    assert.equal(data!.sessionTodayRequests, 0)
+    assert.equal(data.sessionStartLabel, undefined)
+    assert.equal(data.sessionTotalSpend, 0)
+    assert.equal(data.sessionTodayRequests, 0)
   })
 
   test('setSessionID triggers a refresh that populates session metrics', async () => {
@@ -474,16 +480,16 @@ describe('createRequestyStore', () => {
     })
     // No session id at startup → session section remains hidden.
     await store.refresh()
-    assert.equal(store.data()!.sessionStartLabel, undefined)
+    assert.equal(expectData(store).sessionStartLabel, undefined)
 
     // Setting the id triggers an automatic refresh that populates it.
     store.setSessionID(sessionId)
     await store.refresh()
     const data = store.data()
     assert.ok(data)
-    assert.equal(data!.sessionStartLabel, todayKey)
-    assert.equal(data!.sessionTodaySpend, 1.2)
-    assert.equal(data!.sessionTotalSpend, 1.2)
+    assert.equal(data.sessionStartLabel, todayKey)
+    assert.equal(data.sessionTodaySpend, 1.2)
+    assert.equal(data.sessionTotalSpend, 1.2)
   })
 
   test('setSessionID with the same id does not schedule extra work', () => {
@@ -522,7 +528,7 @@ describe('createRequestyStore', () => {
     store.setSessionID(sessionId)
     await new Promise((resolve) => setTimeout(resolve, 10))
     assert.equal(calls, 1)
-    assert.notEqual(store.data()!.sessionStartLabel, expectedStartLabel)
+    assert.notEqual(expectData(store).sessionStartLabel, expectedStartLabel)
 
     // Same id, still no created → no extra work.
     store.setSessionID(sessionId)
@@ -533,7 +539,7 @@ describe('createRequestyStore', () => {
     store.setSessionID(sessionId)
     assert.equal(calls, 2)
     await new Promise((resolve) => setTimeout(resolve, 10))
-    assert.equal(store.data()!.sessionStartLabel, expectedStartLabel)
+    assert.equal(expectData(store).sessionStartLabel, expectedStartLabel)
   })
 
   test('syncActiveSession ignores an update for an unrelated session', async () => {
@@ -585,7 +591,7 @@ describe('createRequestyStore', () => {
     store.syncActiveSession(sessionId)
     assert.equal(calls, 2)
     await new Promise((resolve) => setTimeout(resolve, 10))
-    assert.equal(store.data()!.sessionStartLabel, expectedStartLabel)
+    assert.equal(expectData(store).sessionStartLabel, expectedStartLabel)
   })
 
   test('syncActiveSession maps a child update to its root session', async () => {
@@ -666,17 +672,17 @@ describe('createRequestyStore', () => {
     // Load session A so its snapshot lands in the cache.
     store.setSessionID(sessionA)
     await store.refresh()
-    assert.equal(store.data()!.sessionId, sessionA)
-    assert.equal(store.data()!.sessionTotalSpend, 1.2)
+    assert.equal(expectData(store).sessionId, sessionA)
+    assert.equal(expectData(store).sessionTotalSpend, 1.2)
 
     // Switch to an uncached session B → stale id, still loading.
     store.setSessionID(sessionB)
-    assert.equal(store.data()!.sessionId, sessionA)
+    assert.equal(expectData(store).sessionId, sessionA)
 
     // Revisit A → cached figures published synchronously, before any refresh resolves.
     store.setSessionID(sessionA)
-    assert.equal(store.data()!.sessionId, sessionA)
-    assert.equal(store.data()!.sessionTotalSpend, 1.2)
+    assert.equal(expectData(store).sessionId, sessionA)
+    assert.equal(expectData(store).sessionTotalSpend, 1.2)
   })
 
   test('an uncached session keeps the stale session id until its refresh resolves', async () => {
@@ -688,14 +694,14 @@ describe('createRequestyStore', () => {
     await store.refresh()
     store.setSessionID(sessionA)
     await settle()
-    assert.equal(store.data()!.sessionId, sessionA)
+    assert.equal(expectData(store).sessionId, sessionA)
 
     // B has never been fetched → no cached snapshot, so the id stays stale
     // until the refresh chain (including any pending follow-up) settles.
     store.setSessionID(sessionB)
-    assert.equal(store.data()!.sessionId, sessionA)
+    assert.equal(expectData(store).sessionId, sessionA)
     await settle()
-    assert.equal(store.data()!.sessionId, sessionB)
+    assert.equal(expectData(store).sessionId, sessionB)
   })
 
   test('folds descendant sub-agent cost into the session totals', async () => {
@@ -738,11 +744,11 @@ describe('createRequestyStore', () => {
     const data = store.data()
     assert.ok(data)
     // Parent + child combined; the unrelated row is excluded.
-    assert.equal(data!.subagentCount, 1)
-    assert.equal(data!.sessionTodaySpend, 3.5)
-    assert.equal(data!.sessionTodayRequests, 5)
-    assert.deepEqual(data!.sessionTodayTokens, { input: 100, output: 50, total: 150 })
-    assert.equal(data!.sessionTotalSpend, 3.5)
+    assert.equal(data.subagentCount, 1)
+    assert.equal(data.sessionTodaySpend, 3.5)
+    assert.equal(data.sessionTodayRequests, 5)
+    assert.deepEqual(data.sessionTodayTokens, { input: 100, output: 50, total: 150 })
+    assert.equal(data.sessionTotalSpend, 3.5)
   })
 
   test('a rejected fetchSessionChildren resolves zero subagents without failing the refresh', async () => {
@@ -776,8 +782,8 @@ describe('createRequestyStore', () => {
     const data = store.data()
     assert.ok(data)
     assert.equal(store.state().status, 'ready')
-    assert.equal(data!.subagentCount, 0)
-    assert.equal(data!.sessionTodaySpend, 1.0)
+    assert.equal(data.subagentCount, 0)
+    assert.equal(data.sessionTodaySpend, 1.0)
   })
 
   test('uses the injected createSignal for its reactive primitives', async () => {
@@ -870,7 +876,7 @@ describe('createRequestyStore', () => {
     } as unknown as UsageResponse
     const store = createStore({ fetchUsage: () => Promise.resolve(usage) })
     await store.refresh()
-    assert.equal(store.data()!.lastMonthSpend, 4.25)
+    assert.equal(expectData(store).lastMonthSpend, 4.25)
   })
 
   test('defaults to the weekday projection method', async () => {
@@ -878,17 +884,17 @@ describe('createRequestyStore', () => {
     // weekday method degrades to the calendar model.
     const store = createStore({})
     await store.refresh()
-    assert.deepEqual(store.data()!.projection, CALENDAR_PROJECTION)
+    assert.deepEqual(expectData(store).projection, CALENDAR_PROJECTION)
   })
 
   test('the configured method selects a static model without needing history', async () => {
     const store = createStore({ projection: { method: 'workdays', historyDays: 28 } })
     await store.refresh()
-    assert.deepEqual(store.data()!.projection, WORKDAY_PROJECTION)
+    assert.deepEqual(expectData(store).projection, WORKDAY_PROJECTION)
 
     const calendar = createStore({ projection: { method: 'calendar', historyDays: 28 } })
     await calendar.refresh()
-    assert.deepEqual(calendar.data()!.projection, CALENDAR_PROJECTION)
+    assert.deepEqual(expectData(calendar).projection, CALENDAR_PROJECTION)
   })
 
   test('the weekday method derives its weights from the fetched history', async () => {
@@ -903,7 +909,7 @@ describe('createRequestyStore', () => {
     }
     const store = createStore({ projection: { method: 'weekday', historyDays: 28 }, fetchUsage: () => Promise.resolve({ usage }) })
     await store.refresh()
-    const projection = store.data()!.projection
+    const projection = expectData(store).projection
     assert.equal(projection.method, 'weekday')
     assert.deepEqual(
       projection.weights.map((weight) => Math.round(weight * 1e6) / 1e6),

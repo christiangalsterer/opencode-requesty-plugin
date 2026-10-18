@@ -764,7 +764,9 @@ describe('weekday projection model', () => {
     const model = weekdayProjection(series)
     assert.equal(model.method, 'weekday')
     // Monday averages $10/day, overall mean is $10/7 → Monday weight = 7.
-    assert.equal(round(model.weights[1]!), 7)
+    const mondayWeight = model.weights[1]
+    assert.ok(mondayWeight !== undefined)
+    assert.equal(round(mondayWeight), 7)
     assert.equal(model.weights[0], 0)
   })
 
@@ -807,7 +809,9 @@ describe('weekday projection model', () => {
   })
 
   test('formatProjectionParts reports the model method', () => {
-    assert.equal(formatProjectionParts(100, 0, aug15, WORKDAY_PROJECTION)!.method, 'workdays')
+    const projection = formatProjectionParts(100, 0, aug15, WORKDAY_PROJECTION)
+    assert.ok(projection)
+    assert.equal(projection.method, 'workdays')
   })
 
   test('paceStatus uses the model weights for the elapsed share', () => {
@@ -826,7 +830,9 @@ describe('weekday projection model', () => {
     // Workdays method projects $210 vs last month's $210 → no delta, while the
     // calendar method would project ≈$206.67 and report a drop.
     assert.deepEqual(formatMonthDeltaParts(100, 210, aug15, WORKDAY_PROJECTION), { arrow: '→', sign: '', pct: 0 })
-    assert.equal(formatMonthDeltaParts(100, 210, aug15, CALENDAR_PROJECTION)!.pct < 0, true)
+    const delta = formatMonthDeltaParts(100, 210, aug15, CALENDAR_PROJECTION)
+    assert.ok(delta)
+    assert.equal(delta.pct < 0, true)
   })
 
   test('daysToExhaustion on the calendar method matches the plain division', () => {
@@ -1049,7 +1055,8 @@ describe('sessionRepaintKey', () => {
   test('changes when tokens mutate in place with a constant array length', () => {
     const before = assistant()
     const after = assistant({ tokens: { input: 100, output: 250, reasoning: 10, cache: { read: 5, write: 2 } } })
-    assert.equal(before.tokens!.output, 50)
+    assert.ok(before.tokens)
+    assert.equal(before.tokens.output, 50)
     assert.notEqual(sessionRepaintKey([before]), sessionRepaintKey([after]))
   })
 

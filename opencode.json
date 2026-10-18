@@ -10,7 +10,9 @@
       "bun run format *": "allow",
       "bun run format:fix *": "allow",
       "bun run test *": "allow",
-      "bun run build *": "allow"
+      "bun run build *": "allow",
+      "bunx biome check *": "allow",
+      "bunx biome format *": "allow"
     }
   }
 }

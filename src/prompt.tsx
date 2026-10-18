@@ -108,9 +108,11 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
       <For each={segments().parts}>
         {(seg) => (
           <Show when={seg.href} fallback={<span style={{ fg: seg.color }}>{seg.text}</span>}>
-            <a href={seg.href!} style={{ fg: seg.color }}>
-              {seg.text}
-            </a>
+            {(href) => (
+              <a href={href()} style={{ fg: seg.color }}>
+                {seg.text}
+              </a>
+            )}
           </Show>
         )}
       </For>

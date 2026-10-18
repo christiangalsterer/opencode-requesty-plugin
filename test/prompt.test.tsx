@@ -26,7 +26,7 @@ async function renderPrompt(store: RequestyStore, overrides: Partial<PromptProps
   const setup = await testRender(() => <RequestyPromptWidget {...BASE_PROPS} store={store} {...overrides} />, { width: 100, height: 2 })
   try {
     await setup.flush()
-    return setup.captureCharFrame().split('\n')[0]!.replace(/\s+/g, ' ').trim()
+    return (setup.captureCharFrame().split('\n')[0] ?? '').replace(/\s+/g, ' ').trim()
   } finally {
     setup.renderer.destroy()
   }
