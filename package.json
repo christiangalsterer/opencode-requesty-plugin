@@ -1,30 +1,57 @@
 {
   "name": "@christiangalsterer/opencode-requesty-plugin",
   "version": "2.0.1",
-  "author": {
-    "name": "Christian Galsterer"
-  },
-  "license": "MIT",
   "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, in the session prompt and with a detail dialog via the /requesty command",
   "keywords": ["opencode", "opencode-plugin", "opencode-tui", "opencode-tui-plugin", "requesty", "tui", "cost-tracking"],
+  "homepage": "https://github.com/christiangalsterer/opencode-requesty-plugin#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/christiangalsterer/opencode-requesty-plugin.git"
   },
-  "homepage": "https://github.com/christiangalsterer/opencode-requesty-plugin#readme",
+  "license": "MIT",
+  "author": {
+    "name": "Christian Galsterer"
+  },
   "type": "module",
   "exports": {
     "./tui": {
-      "import": "./dist/tui.js",
-      "types": "./dist/tui.d.ts"
+      "types": "./dist/tui.d.ts",
+      "import": "./dist/tui.js"
     },
     "./package.json": "./package.json"
   },
-  "engines": {
-    "opencode": ">=1.18.16 <3"
+  "files": ["dist", "!dist/**/*.map", "README.md", "LICENSE"],
+  "scripts": {
+    "biome": "biome check --skip=useBlockStatements --skip=noIncrementDecrement --skip=noNonNullAssertion",
+    "biome:fix": "biome check --fix",
+    "build": "bun run typecheck && bun run build.ts",
+    "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run package:check && bun run renovate:config && bun pm pack --ignore-scripts && npm i --omit=dev --dry-run *.tgz",
+    "clean": "bun run clean:dist && bun run clean:deps",
+    "clean:deps": "rm -rf ./node_modules && bun run deps",
+    "clean:dist": "rm -rf ./dist && rm -rf christiangalsterer-opencode-requesty-plugin*.tgz && mkdir -p ./dist",
+    "deps": "bun install",
+    "docker:build:v1": "docker build -f Dockerfile.v1 -t opencode-requesty-plugin:v1 .",
+    "docker:build:v2": "docker build -f Dockerfile.v2 -t opencode-requesty-plugin:v2 .",
+    "docker:run:v1": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui-v1.json:/home/harness/workspace/.opencode/tui.json:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v1",
+    "docker:run:v2": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui.ts:/home/harness/workspace/.opencode/plugins/requesty/tui.ts:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v2",
+    "format": "biome format",
+    "format:fix": "biome format --fix",
+    "husky": "biome format --fix",
+    "package:check": "bun scripts/check-package-artifact.ts",
+    "prepare": "husky",
+    "publish-npm": "bun run ci && bun publish --access=public",
+    "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run",
+    "release:prepare": "bun run clean && bun install && bun run format && bun test",
+    "renovate:config": "npx renovate-config-validator",
+    "test": "bun run typecheck && bun test",
+    "test:coverage": "bun run typecheck && bun test --coverage",
+    "typecheck": "tsc --noEmit"
   },
-  "publishConfig": {
-    "access": "public"
+  "lint-staged": {
+    "*": "bun run husky"
+  },
+  "overrides": {
+    "solid-js": "$solid-js"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
@@ -49,8 +76,8 @@
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.18.16 <2",
     "@opencode-ai/sdk": ">=1.18.16 <2",
-    "@opencode/plugin": "^2.0.24",
     "@opencode/client": "^2.0.24",
+    "@opencode/plugin": "^2.0.24",
     "@opencode/theme": "^2.0.24",
     "@opentui/core": ">=0.5.3 <1",
     "@opentui/keymap": ">=0.5.3 <1",
@@ -64,47 +91,20 @@
     "@opencode-ai/sdk": {
       "optional": true
     },
-    "@opencode/plugin": {
+    "@opencode/client": {
       "optional": true
     },
-    "@opencode/client": {
+    "@opencode/plugin": {
       "optional": true
     },
     "@opencode/theme": {
       "optional": true
     }
   },
-  "overrides": {
-    "solid-js": "$solid-js"
+  "engines": {
+    "opencode": ">=1.18.16 <3"
   },
-  "files": ["dist", "!dist/**/*.map", "README.md", "LICENSE"],
-  "scripts": {
-    "ci": "bun run clean && bun install --frozen-lockfile && bun test && bun run build && bun run package:check && bun run renovate:config && bun pm pack --ignore-scripts && npm i --omit=dev --dry-run *.tgz",
-    "biome": "biome check --skip=useBlockStatements --skip=noIncrementDecrement --skip=noNonNullAssertion",
-    "biome:fix": "biome check --fix",
-    "build": "bun run typecheck && bun run build.ts",
-    "clean": "bun run clean:dist && bun run clean:deps",
-    "clean:dist": "rm -rf ./dist && rm -rf christiangalsterer-opencode-requesty-plugin*.tgz && mkdir -p ./dist",
-    "clean:deps": "rm -rf ./node_modules && bun run deps",
-    "docker:build:v1": "docker build -f Dockerfile.v1 -t opencode-requesty-plugin:v1 .",
-    "docker:run:v1": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui-v1.json:/home/harness/workspace/.opencode/tui.json:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v1",
-    "docker:build:v2": "docker build -f Dockerfile.v2 -t opencode-requesty-plugin:v2 .",
-    "docker:run:v2": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui.ts:/home/harness/workspace/.opencode/plugins/requesty/tui.ts:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v2",
-    "deps": "bun install",
-    "format": "biome format",
-    "format:fix": "biome format --fix",
-    "husky": "biome format --fix",
-    "typecheck": "tsc --noEmit",
-    "test": "bun run typecheck && bun test",
-    "test:coverage": "bun run typecheck && bun test --coverage",
-    "release:prepare": "bun run clean && bun install && bun run format && bun test",
-    "package:check": "bun scripts/check-package-artifact.ts",
-    "publish-npm": "bun run ci && bun publish --access=public",
-    "publish-npm:dry-run": "bun run ci && bun publish --access=public --dry-run",
-    "prepare": "husky",
-    "renovate:config": "npx renovate-config-validator"
-  },
-  "lint-staged": {
-    "*": "bun run husky"
+  "publishConfig": {
+    "access": "public"
   }
 }
