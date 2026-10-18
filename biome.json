@@ -83,7 +83,6 @@
       },
       "style": {
         "noCommonJs": "error",
-        "noIncrementDecrement": "error",
         "noInferrableTypes": "error",
         "noMagicNumbers": "error",
         "noMultilineString": "error",
