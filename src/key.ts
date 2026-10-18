@@ -34,7 +34,9 @@ interface SdkConfigLike {
 }
 
 function resolveValue(raw: unknown): string | undefined {
-  if (typeof raw !== 'string' || raw.trim().length === 0) return undefined
+  if (typeof raw !== 'string' || raw.trim().length === 0) {
+    return undefined
+  }
   const match = ENV_INTERPOLATION.exec(raw.trim())
   if (match) {
     const value = process.env[match[1]]
@@ -44,9 +46,13 @@ function resolveValue(raw: unknown): string | undefined {
 }
 
 function isRequestyProvider(name: string, provider: ProviderConfig): boolean {
-  if (name === 'requesty') return true
+  if (name === 'requesty') {
+    return true
+  }
   const baseURL = provider.options?.baseURL ?? provider.settings?.baseURL
-  if (typeof baseURL !== 'string') return false
+  if (typeof baseURL !== 'string') {
+    return false
+  }
   try {
     return REQUESTY_HOST.test(new URL(baseURL).hostname)
   } catch {
@@ -56,11 +62,17 @@ function isRequestyProvider(name: string, provider: ProviderConfig): boolean {
 
 function environmentKey(provider: ProviderConfig): string | undefined {
   const configured = provider.env ?? provider.options?.env ?? provider.settings?.env
-  if (!Array.isArray(configured)) return undefined
+  if (!Array.isArray(configured)) {
+    return undefined
+  }
   for (const name of configured) {
-    if (typeof name !== 'string') continue
+    if (typeof name !== 'string') {
+      continue
+    }
     const value = resolveValue(`{env:${name}}`)
-    if (value) return value
+    if (value) {
+      return value
+    }
   }
   return undefined
 }
@@ -84,7 +96,9 @@ export function detectApiKey(config: SdkConfigLike | undefined): KeyResult {
   const configuredKey = providers.map((provider) => resolveValue(provider.options?.apiKey ?? provider.settings?.apiKey)).find(Boolean)
   const providerEnvironmentKey = providers.map(environmentKey).find(Boolean)
   const apiKey = configuredKey ?? providerEnvironmentKey ?? resolveValue('{env:REQUESTY_API_KEY}')
-  if (apiKey) return { ok: true, apiKey }
+  if (apiKey) {
+    return { ok: true, apiKey }
+  }
 
   return {
     ok: false,

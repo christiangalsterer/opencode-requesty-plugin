@@ -29,7 +29,9 @@ describe('detectApiKey', () => {
       provider: { requesty: { options: { apiKey: 'sk-test', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-test')
   })
 
@@ -45,7 +47,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-custom')
   })
 
@@ -61,7 +65,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-v2')
   })
 
@@ -78,7 +84,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-v2-env')
   })
 
@@ -93,7 +101,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-provider-env')
   })
 
@@ -101,7 +111,9 @@ describe('detectApiKey', () => {
     process.env.REQUESTY_API_KEY = 'sk-docker-env'
     const result = detectApiKey({})
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-docker-env')
   })
 
@@ -118,7 +130,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-config')
   })
 
@@ -134,7 +148,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-provider-env')
   })
 
@@ -170,7 +186,9 @@ describe('detectApiKey', () => {
       provider: { requesty: { options: { apiKey: '  sk-padded  ', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-padded')
   })
 
@@ -180,7 +198,9 @@ describe('detectApiKey', () => {
       provider: { requesty: { options: { apiKey: '{env:REQUESTY_TEST_KEY}', baseURL: 'https://api.requesty.ai' } } }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-from-env')
   })
 
@@ -226,7 +246,9 @@ describe('detectApiKey', () => {
       }
     })
     assert.equal(result.ok, true)
-    if (!result.ok) return
+    if (!result.ok) {
+      return
+    }
     assert.equal(result.apiKey, 'sk-canonical')
   })
 })

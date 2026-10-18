@@ -45,13 +45,21 @@ export interface ApiKeyInfo {
 
 /** The API serializes decimal fields as strings — coerce them to numbers. */
 function toNumber(value: unknown, field?: string): number {
-  if (value === undefined || value === null) return 0
-  if (typeof value === 'number') return value
+  if (value === undefined || value === null) {
+    return 0
+  }
+  if (typeof value === 'number') {
+    return value
+  }
   if (typeof value === 'string') {
     const parsed = Number(value)
-    if (Number.isFinite(parsed)) return parsed
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
   }
-  if (field) logWarn(`Failed to coerce field "${field}" to number: ${JSON.stringify(value)}`)
+  if (field) {
+    logWarn(`Failed to coerce field "${field}" to number: ${JSON.stringify(value)}`)
+  }
   return 0
 }
 
@@ -93,7 +101,9 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
     // Array values are emitted as repeated query params (e.g. `group_by=a&group_by=b`),
     // which is how the Requesty API accepts multiple group_by dimensions.
     if (Array.isArray(value)) {
-      for (const item of value) url.searchParams.append(key, item)
+      for (const item of value) {
+        url.searchParams.append(key, item)
+      }
     } else {
       url.searchParams.set(key, value)
     }
@@ -123,7 +133,9 @@ async function request<T>(apiKey: string, path: string, init?: { params?: Record
     const raw = await response.text()
     try {
       const body = JSON.parse(raw) as { error?: { message?: string } }
-      if (body?.error?.message) message = body.error.message
+      if (body?.error?.message) {
+        message = body.error.message
+      }
     } catch {
       logWarn(`Failed to parse API error body (HTTP ${response.status}): ${raw.slice(0, API_ERROR_BODY_PREVIEW_LENGTH)}`)
     }
@@ -154,9 +166,15 @@ export interface UsageQuery {
 /** Build the query params for a usage request (pure; array values become repeated params). */
 export function usageParams(query: UsageQuery): Record<string, string | string[]> {
   const params: Record<string, string | string[]> = { start: query.start }
-  if (query.end) params.end = query.end
-  if (query.groupBy && query.groupBy.length > 0) params.group_by = [...query.groupBy]
-  if (query.resolution) params.resolution = query.resolution
+  if (query.end) {
+    params.end = query.end
+  }
+  if (query.groupBy && query.groupBy.length > 0) {
+    params.group_by = [...query.groupBy]
+  }
+  if (query.resolution) {
+    params.resolution = query.resolution
+  }
   return params
 }
 
@@ -261,7 +279,9 @@ export function lastMonthSpendFromUsage(response: UsageResponse, now = new Date(
   const prefix = dayKey(previous).slice(0, MONTH_KEY_LENGTH)
   let total = 0
   for (const [key, entry] of Object.entries(response.usage ?? {})) {
-    if (key.startsWith(prefix)) total += toNumber(entry.spend, 'spend')
+    if (key.startsWith(prefix)) {
+      total += toNumber(entry.spend, 'spend')
+    }
   }
   return total
 }
@@ -287,10 +307,14 @@ export const MAX_USAGE_RANGE_DAYS = 90
  */
 export function splitUsageWindow(start: string, now = new Date(), maxDays = MAX_USAGE_RANGE_DAYS): { start: string; end: string }[] {
   const startMs = new Date(start).getTime()
-  if (!Number.isFinite(startMs)) return [{ start, end: now.toISOString() }]
+  if (!Number.isFinite(startMs)) {
+    return [{ start, end: now.toISOString() }]
+  }
   const spanMs = now.getTime() - startMs
   const maxMs = maxDays * MILLISECONDS_PER_DAY
-  if (spanMs <= maxMs) return [{ start, end: now.toISOString() }]
+  if (spanMs <= maxMs) {
+    return [{ start, end: now.toISOString() }]
+  }
   const windows: { start: string; end: string }[] = []
   let cursor = startMs
   while (cursor < now.getTime()) {
@@ -306,7 +330,9 @@ export function filterUsageByMonth(response: UsageResponse, now = new Date()): U
   const prefix = dayKey(now).slice(0, MONTH_KEY_LENGTH)
   const filtered: Record<string, UsageEntry> = {}
   for (const [key, entry] of Object.entries(response.usage ?? {})) {
-    if (key.startsWith(prefix)) filtered[key] = entry
+    if (key.startsWith(prefix)) {
+      filtered[key] = entry
+    }
   }
   return { usage: filtered }
 }
@@ -323,7 +349,9 @@ export function dayKey(now = new Date()): string {
 export function spendForDay(response: UsageResponse, now = new Date()): number {
   const key = dayKey(now)
   const entry = response.usage?.[key]
-  if (!entry) return 0
+  if (!entry) {
+    return 0
+  }
   return toNumber(entry.spend, 'spend')
 }
 
@@ -341,7 +369,9 @@ function forEachPreviousDay(now: Date, days: number, fn: (date: Date) => void): 
  * Days with no usage entry count as 0. Returns 0 when `days` <= 0.
  */
 export function avgSpendLastNDays(response: UsageResponse, days: number, now = new Date()): number {
-  if (days <= 0) return 0
+  if (days <= 0) {
+    return 0
+  }
   let total = 0
   forEachPreviousDay(now, days, (date) => {
     total += spendForDay(response, date)
@@ -359,7 +389,9 @@ export interface TokenBreakdown {
 export function tokensForDay(response: UsageResponse, now = new Date()): TokenBreakdown {
   const key = dayKey(now)
   const entry = response.usage?.[key]
-  if (!entry) return { input: 0, output: 0, total: 0 }
+  if (!entry) {
+    return { input: 0, output: 0, total: 0 }
+  }
   if (entry.grouped_data && entry.grouped_data.length > 0) {
     return entry.grouped_data.reduce(
       (acc, group) => {
@@ -380,7 +412,9 @@ export function tokensForDay(response: UsageResponse, now = new Date()): TokenBr
 
 /** Average input/output/total tokens over the last `days` completed calendar days (excluding today). */
 export function avgTokensLastNDays(response: UsageResponse, days: number, now = new Date()): TokenBreakdown {
-  if (days <= 0) return { input: 0, output: 0, total: 0 }
+  if (days <= 0) {
+    return { input: 0, output: 0, total: 0 }
+  }
   const totals: TokenBreakdown = { input: 0, output: 0, total: 0 }
   forEachPreviousDay(now, days, (date) => {
     const day = tokensForDay(response, date)
@@ -403,7 +437,9 @@ export function avgTokensLastNDays(response: UsageResponse, days: number, now = 
  */
 export function weekdaySpendSeries(response: UsageResponse, days: number, now = new Date()): WeekdaySeries {
   const series = emptyWeekdaySeries()
-  if (days <= 0) return series
+  if (days <= 0) {
+    return series
+  }
   const totals = series.totals as number[]
   const counts = series.counts as number[]
   forEachPreviousDay(now, days, (date) => {
@@ -442,7 +478,9 @@ export function sessionSpendTokens(session: SessionSpend): TokenBreakdown {
 /** Fold matching rows of a single day's `grouped_data` into `total`. */
 function accumulateSessionGroups(groups: readonly UsageGroupedEntry[], sessionIds: ReadonlySet<string>, total: SessionSpend): SessionSpend {
   for (const group of groups) {
-    if (!sessionGroupValue(group, sessionIds)) continue
+    if (!sessionGroupValue(group, sessionIds)) {
+      continue
+    }
     total.spend += toNumber(group.spend, 'spend')
     total.requests += toNumber(group.completions_requests, 'completions_requests')
     total.inputTokens += toNumber(group.input_tokens, 'input_tokens')
@@ -472,6 +510,8 @@ export function sessionSpendForSessionIds(response: UsageResponse, sessionIds: R
  */
 export function sessionSpendForSessionIdsForDay(response: UsageResponse, sessionIds: ReadonlySet<string>, now = new Date()): SessionSpend {
   const entry = response.usage?.[dayKey(now)]
-  if (!entry) return emptySessionSpend()
+  if (!entry) {
+    return emptySessionSpend()
+  }
   return accumulateSessionGroups(entry.grouped_data ?? [], sessionIds, emptySessionSpend())
 }

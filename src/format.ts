@@ -23,9 +23,15 @@ export function formatLimit(limit: number): string {
 }
 
 export function formatTokens(count: number): string {
-  if (count >= TOKENS_PER_BILLION) return `${(count / TOKENS_PER_BILLION).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}B`
-  if (count >= TOKENS_PER_MILLION) return `${(count / TOKENS_PER_MILLION).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}M`
-  if (count >= TOKENS_PER_THOUSAND) return `${(count / TOKENS_PER_THOUSAND).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}k`
+  if (count >= TOKENS_PER_BILLION) {
+    return `${(count / TOKENS_PER_BILLION).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}B`
+  }
+  if (count >= TOKENS_PER_MILLION) {
+    return `${(count / TOKENS_PER_MILLION).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}M`
+  }
+  if (count >= TOKENS_PER_THOUSAND) {
+    return `${(count / TOKENS_PER_THOUSAND).toFixed(TOKEN_DISPLAY_DECIMAL_PLACES)}k`
+  }
   return `${count}`
 }
 
@@ -54,7 +60,9 @@ export function formatTokenInline(inputTokens: number, outputTokens: number): st
  * Returns "—" when input is 0 (avoids division by zero).
  */
 export function formatOutputInputRatio(inputTokens: number, outputTokens: number): string {
-  if (inputTokens <= 0) return '—'
+  if (inputTokens <= 0) {
+    return '—'
+  }
   return (outputTokens / inputTokens).toFixed(2)
 }
 
@@ -72,7 +80,9 @@ export function renderBar(ratio: number, width = BAR_WIDTH): string {
 export function shortModel(model: string, maxLength: number): string {
   const slash = model.indexOf('/')
   const short = slash >= 0 && slash < model.length - 1 ? model.slice(slash + 1) : model
-  if (short.length <= maxLength) return short
+  if (short.length <= maxLength) {
+    return short
+  }
   return `${short.slice(0, Math.max(1, maxLength - 1))}…`
 }
 
@@ -134,13 +144,19 @@ export const CALENDAR_PROJECTION: ProjectionModel = { method: 'calendar', weight
  * input is not a usable 7-slot, non-negative, non-zero-sum weight array.
  */
 export function normalizeWeights(values: readonly number[]): number[] | undefined {
-  if (values.length !== WEEKDAY_COUNT) return undefined
+  if (values.length !== WEEKDAY_COUNT) {
+    return undefined
+  }
   let sum = 0
   for (const value of values) {
-    if (!Number.isFinite(value) || value < 0) return undefined
+    if (!Number.isFinite(value) || value < 0) {
+      return undefined
+    }
     sum += value
   }
-  if (sum <= 0) return undefined
+  if (sum <= 0) {
+    return undefined
+  }
   const mean = sum / WEEKDAY_COUNT
   return values.map((value) => value / mean)
 }
@@ -175,14 +191,18 @@ export function emptyWeekdaySeries(): WeekdaySeries {
  * `CALENDAR_PROJECTION` when the history is too short or carries no spend.
  */
 export function weekdayProjection(series: WeekdaySeries): ProjectionModel {
-  if (series.totals.length !== WEEKDAY_COUNT || series.counts.length !== WEEKDAY_COUNT) return CALENDAR_PROJECTION
+  if (series.totals.length !== WEEKDAY_COUNT || series.counts.length !== WEEKDAY_COUNT) {
+    return CALENDAR_PROJECTION
+  }
   let totalSpend = 0
   let totalDays = 0
   for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) {
     totalSpend += series.totals[weekday] ?? 0
     totalDays += series.counts[weekday] ?? 0
   }
-  if (totalDays < MIN_WEEKDAY_SAMPLES || totalSpend <= 0) return CALENDAR_PROJECTION
+  if (totalDays < MIN_WEEKDAY_SAMPLES || totalSpend <= 0) {
+    return CALENDAR_PROJECTION
+  }
   const overallMean = totalSpend / totalDays
   const averages: number[] = []
   for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) {
@@ -190,7 +210,9 @@ export function weekdayProjection(series: WeekdaySeries): ProjectionModel {
     averages.push(count > 0 ? (series.totals[weekday] ?? 0) / count : overallMean)
   }
   const weights = normalizeWeights(averages)
-  if (!weights) return CALENDAR_PROJECTION
+  if (!weights) {
+    return CALENDAR_PROJECTION
+  }
   return { method: 'weekday', weights }
 }
 
@@ -199,15 +221,23 @@ export function weekdayProjection(series: WeekdaySeries): ProjectionModel {
  * history and silently degrades to `calendar` when there is not enough of it.
  */
 export function resolveProjection(method: ProjectionMethod, series?: WeekdaySeries): ProjectionModel {
-  if (method === 'workdays') return WORKDAY_PROJECTION
-  if (method === 'weekday') return series ? weekdayProjection(series) : CALENDAR_PROJECTION
+  if (method === 'workdays') {
+    return WORKDAY_PROJECTION
+  }
+  if (method === 'weekday') {
+    return series ? weekdayProjection(series) : CALENDAR_PROJECTION
+  }
   return CALENDAR_PROJECTION
 }
 
 /** Short human-readable label for a projection method, e.g. for a UI hint. */
 export function projectionMethodLabel(method: ProjectionMethod): string {
-  if (method === 'weekday') return 'weekday'
-  if (method === 'workdays') return 'workdays'
+  if (method === 'weekday') {
+    return 'weekday'
+  }
+  if (method === 'workdays') {
+    return 'workdays'
+  }
   return 'calendar'
 }
 
@@ -236,7 +266,9 @@ export function monthWeights(date = new Date(), model: ProjectionModel = CALENDA
   for (let day = 1; day <= days; day++) {
     const weight = model.weights[(firstWeekday + day - 1) % WEEKDAY_COUNT] ?? 0
     total += weight
-    if (day <= today) elapsed += weight
+    if (day <= today) {
+      elapsed += weight
+    }
   }
   return { elapsed, total, remaining: total - elapsed }
 }
@@ -247,7 +279,9 @@ export function monthWeights(date = new Date(), model: ProjectionModel = CALENDA
  */
 function monthElapsedRatio(date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): number {
   const { elapsed, total } = monthWeights(date, model)
-  if (total > 0 && elapsed > 0) return elapsed / total
+  if (total > 0 && elapsed > 0) {
+    return elapsed / total
+  }
   const days = daysInMonth(date)
   return days > 0 ? dayOfMonth(date) / days : 0
 }
@@ -268,7 +302,9 @@ export function projectedMonthEnd(spend: number, date = new Date(), model: Proje
   // Divide by the elapsed weight before scaling: with uniform weights this is
   // bit-identical to the plain `(spend / dayOfMonth) * daysInMonth` run rate,
   // so an exactly-on-target month projects to exactly the limit.
-  if (elapsed > 0 && total > 0) return (spend / elapsed) * total
+  if (elapsed > 0 && total > 0) {
+    return (spend / elapsed) * total
+  }
   const day = dayOfMonth(date)
   return day > 0 ? (spend / day) * daysInMonth(date) : 0
 }
@@ -306,16 +342,22 @@ export function daysToExhaustion(
   date = new Date(),
   model: ProjectionModel = CALENDAR_PROJECTION
 ): number | undefined {
-  if (limit <= 0 || avgDailySpend <= 0) return undefined
+  if (limit <= 0 || avgDailySpend <= 0) {
+    return undefined
+  }
   const remaining = limit - spend
-  if (remaining <= 0) return 0
+  if (remaining <= 0) {
+    return 0
+  }
   let accumulated = 0
   let days = 0
   const cursor = new Date(date.getTime())
   while (days < MAX_EXHAUSTION_DAYS) {
     cursor.setUTCDate(cursor.getUTCDate() + 1)
     const rate = avgDailySpend * (model.weights[cursor.getUTCDay()] ?? 0)
-    if (accumulated + rate > remaining) break
+    if (accumulated + rate > remaining) {
+      break
+    }
     accumulated += rate
     days++
   }
@@ -333,19 +375,31 @@ export const PACE_TOLERANCE = 0.05
  * spend/limit vs the month's elapsed weight share, within PACE_TOLERANCE → "on".
  */
 export function paceStatus(spend: number, limit: number, date = new Date(), model: ProjectionModel = CALENDAR_PROJECTION): Pace | undefined {
-  if (limit <= 0) return undefined
+  if (limit <= 0) {
+    return undefined
+  }
   const timeRatio = monthElapsedRatio(date, model)
   const spendRatio = spend / limit
-  if (spendRatio - timeRatio > PACE_TOLERANCE) return 'over'
-  if (timeRatio - spendRatio > PACE_TOLERANCE) return 'under'
+  if (spendRatio - timeRatio > PACE_TOLERANCE) {
+    return 'over'
+  }
+  if (timeRatio - spendRatio > PACE_TOLERANCE) {
+    return 'under'
+  }
   return 'on'
 }
 
 /** Direction glyph for a pace: ↑ over, → on, ↓ under, "" when unlimited. */
 export function paceMarker(pace: Pace | undefined): string {
-  if (pace === 'over') return '↑'
-  if (pace === 'under') return '↓'
-  if (pace === 'on') return '→'
+  if (pace === 'over') {
+    return '↑'
+  }
+  if (pace === 'under') {
+    return '↓'
+  }
+  if (pace === 'on') {
+    return '→'
+  }
   return ''
 }
 
@@ -358,8 +412,12 @@ export interface PaceTheme {
 
 /** Map a pace to the matching theme color: over → error, under → success, else muted. */
 export function paceColor<T extends PaceTheme>(pace: Pace | undefined, theme: T): T['error'] {
-  if (pace === 'over') return theme.error
-  if (pace === 'under') return theme.success as T['error']
+  if (pace === 'over') {
+    return theme.error
+  }
+  if (pace === 'under') {
+    return theme.success as T['error']
+  }
   return theme.textMuted as T['error']
 }
 
@@ -382,7 +440,9 @@ export function formatProjectionParts(
   date = new Date(),
   model: ProjectionModel = CALENDAR_PROJECTION
 ): ProjectionParts | undefined {
-  if (spend <= 0) return undefined
+  if (spend <= 0) {
+    return undefined
+  }
   const projected = projectedMonthEnd(spend, date, model)
   const pace = paceStatus(spend, limit, date, model)
   return { projected, arrow: paceMarker(pace), pace, method: model.method }
@@ -405,7 +465,9 @@ export function formatMonthDeltaParts(
   date = new Date(),
   model: ProjectionModel = CALENDAR_PROJECTION
 ): MonthDeltaParts | undefined {
-  if (lastMonthSpend <= 0 || currentSpend <= 0) return undefined
+  if (lastMonthSpend <= 0 || currentSpend <= 0) {
+    return undefined
+  }
   const projected = projectedMonthEnd(currentSpend, date, model)
   // `|| 0` collapses the -0 that rounding a tiny negative delta produces, so a
   // no-change month reports a plain 0 rather than a signed zero.
@@ -443,14 +505,20 @@ export const DEFAULT_THRESHOLDS: SpendThresholds = { warning: 0.7, error: 0.9 }
  *   else                 → ok (green)
  */
 export function spendSeverity(ratio: number, thresholds: SpendThresholds = DEFAULT_THRESHOLDS): SpendSeverity {
-  if (ratio >= thresholds.error) return 'critical'
-  if (ratio >= thresholds.warning) return 'warning'
+  if (ratio >= thresholds.error) {
+    return 'critical'
+  }
+  if (ratio >= thresholds.warning) {
+    return 'warning'
+  }
   return 'ok'
 }
 
 /** Normalize a user-provided threshold (0–1 ratio or 0–100 percent) to a ratio. */
 export function normalizeThreshold(value: unknown): number | undefined {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return undefined
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    return undefined
+  }
   return value > 1 ? value / PERCENTAGE_SCALE : value
 }
 
@@ -463,7 +531,9 @@ export function resolveThresholds(warning: unknown, error: unknown): SpendThresh
     warning: normalizeThreshold(warning) ?? DEFAULT_THRESHOLDS.warning,
     error: normalizeThreshold(error) ?? DEFAULT_THRESHOLDS.error
   }
-  if (thresholds.warning >= thresholds.error) return { ...DEFAULT_THRESHOLDS }
+  if (thresholds.warning >= thresholds.error) {
+    return { ...DEFAULT_THRESHOLDS }
+  }
   return thresholds
 }
 
@@ -502,10 +572,14 @@ function hashMix(seed: number, value: number): number {
  * the object uses plain numbers or string-serialized decimals.
  */
 function foldMessageValue(value: unknown): number {
-  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
   if (typeof value === 'string' && value !== '') {
     const parsed = Number(value)
-    if (Number.isFinite(parsed)) return parsed
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
   }
   return 0
 }
@@ -526,7 +600,9 @@ export function sessionRepaintKey(messages: readonly MessageRepaintFields[]): nu
     seed = hashMix(seed, foldMessageValue(message.cost))
     seed = hashMix(seed, foldMessageValue(message.time?.completed ?? message.time?.created))
     const tokens = message.tokens
-    if (!tokens) continue
+    if (!tokens) {
+      continue
+    }
     seed = hashMix(seed, foldMessageValue(tokens.input))
     seed = hashMix(seed, foldMessageValue(tokens.output))
     seed = hashMix(seed, foldMessageValue(tokens.reasoning))
@@ -545,7 +621,11 @@ export interface SeverityTheme {
 
 /** Map a spend severity to the matching theme color. Preserves the theme's color type. */
 export function severityColor<T extends SeverityTheme>(severity: SpendSeverity, theme: T): T['error'] {
-  if (severity === 'critical') return theme.error
-  if (severity === 'warning') return theme.warning as T['error']
+  if (severity === 'critical') {
+    return theme.error
+  }
+  if (severity === 'warning') {
+    return theme.warning as T['error']
+  }
   return theme.success as T['error']
 }

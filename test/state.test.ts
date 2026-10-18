@@ -798,7 +798,9 @@ describe('createRequestyStore', () => {
     const queries: UsageQuery[] = []
     const store = createStore({
       fetchUsage: (query) => {
-        if (query) queries.push(query)
+        if (query) {
+          queries.push(query)
+        }
         return Promise.resolve(USAGE)
       }
     })
@@ -815,7 +817,9 @@ describe('createRequestyStore', () => {
     const store = createStore({
       activeSession: () => ({ id: sessionId, created }),
       fetchUsage: (query) => {
-        if (query) queries.push(query)
+        if (query) {
+          queries.push(query)
+        }
         return Promise.resolve(USAGE)
       }
     })
@@ -833,7 +837,9 @@ describe('createRequestyStore', () => {
     const store = createStore({
       activeSession: () => ({ id: sessionId, created }),
       fetchUsage: (query) => {
-        if (query) queries.push(query)
+        if (query) {
+          queries.push(query)
+        }
         return Promise.resolve(USAGE)
       }
     })
@@ -847,7 +853,9 @@ describe('createRequestyStore', () => {
     assert.equal(globalCalls.length, 1)
     assert.ok(sessionCalls.length >= 1)
     // Every session chunk carries an explicit end (chunked range).
-    for (const call of sessionCalls) assert.ok(call.end)
+    for (const call of sessionCalls) {
+      assert.ok(call.end)
+    }
   })
 
   test('derives last month spend from the merged usage response', async () => {
@@ -908,7 +916,9 @@ describe('createRequestyStore', () => {
     const store = createStore({
       projection: { method: 'weekday', historyDays: 84 },
       fetchUsage: (query) => {
-        if (query) queries.push(query)
+        if (query) {
+          queries.push(query)
+        }
         return Promise.resolve(USAGE)
       }
     })
@@ -922,7 +932,9 @@ describe('createRequestyStore', () => {
     const store = createStore({
       projection: { method: 'workdays', historyDays: 84 },
       fetchUsage: (query) => {
-        if (query) queries.push(query)
+        if (query) {
+          queries.push(query)
+        }
         return Promise.resolve(USAGE)
       }
     })

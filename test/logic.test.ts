@@ -311,7 +311,9 @@ describe('splitUsageWindow', () => {
     for (let i = 0; i < windows.length; i++) {
       const span = new Date(windows[i].end).getTime() - new Date(windows[i].start).getTime()
       assert.ok(span <= maxMs)
-      if (i > 0) assert.equal(windows[i].start, windows[i - 1].end)
+      if (i > 0) {
+        assert.equal(windows[i].start, windows[i - 1].end)
+      }
     }
   })
 
@@ -755,7 +757,9 @@ describe('weekday projection model', () => {
     const series = emptyWeekdaySeries()
     const totals = series.totals as number[]
     const counts = series.counts as number[]
-    for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) counts[weekday] = 2
+    for (let weekday = 0; weekday < WEEKDAY_COUNT; weekday++) {
+      counts[weekday] = 2
+    }
     totals[1] = 20
     const model = weekdayProjection(series)
     assert.equal(model.method, 'weekday')

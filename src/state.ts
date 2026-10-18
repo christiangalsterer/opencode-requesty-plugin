@@ -185,12 +185,16 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   const sessionCache = new Map<string, SessionSnapshot>()
 
   function cacheSessionSnapshot(snapshot: SessionSnapshot): void {
-    if (!snapshot.sessionId) return
+    if (!snapshot.sessionId) {
+      return
+    }
     sessionCache.delete(snapshot.sessionId)
     sessionCache.set(snapshot.sessionId, snapshot)
     while (sessionCache.size > SESSION_CACHE_LIMIT) {
       const oldest = sessionCache.keys().next().value
-      if (oldest === undefined) break
+      if (oldest === undefined) {
+        break
+      }
       sessionCache.delete(oldest)
     }
   }
@@ -201,7 +205,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
     // Track the raw displayed id even when the resolved root is unchanged, so a
     // later update for this exact session is recognized by `syncActiveSession`.
     displayedID = id
-    if (next?.id === current?.id && next?.created === current?.created) return
+    if (next?.id === current?.id && next?.created === current?.created) {
+      return
+    }
     const idChanged = next?.id !== current?.id
     setSession(next)
     // Publish any cached figures for this session synchronously so the current
@@ -218,7 +224,9 @@ export function createRequestyStore(options: RequestyStoreOptions): RequestyStor
   function syncActiveSession(id: string): void {
     // Only re-resolve updates for the session currently displayed; updates for
     // any other session (e.g. a sub-agent of a different root) are ignored.
-    if (id !== displayedID) return
+    if (id !== displayedID) {
+      return
+    }
     setActiveSession(id)
   }
 

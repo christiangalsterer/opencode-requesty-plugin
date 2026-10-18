@@ -26,7 +26,9 @@ export function normalizeV2ConfigDocuments(entries: readonly V2ConfigDocument[])
 
   for (const entry of entries) {
     const info = entry.info
-    if (!info) continue
+    if (!info) {
+      continue
+    }
     mergeProviders(config.provider, info.provider)
     mergeProviders(config.providers, info.providers, true)
   }
@@ -36,7 +38,9 @@ export function normalizeV2ConfigDocuments(entries: readonly V2ConfigDocument[])
 
 function mergeProviders(target: Record<string, RequestyProviderConfig>, source: Record<string, unknown> | undefined, useSettings = false): void {
   for (const [id, value] of Object.entries(source ?? {})) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) continue
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      continue
+    }
     const provider = value as Record<string, unknown>
     const current = target[id]
     const nextSettings = asRecord(provider.settings)
@@ -60,6 +64,8 @@ function mergeProviders(target: Record<string, RequestyProviderConfig>, source: 
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined
+  }
   return value as Record<string, unknown>
 }

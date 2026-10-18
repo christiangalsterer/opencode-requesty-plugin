@@ -71,9 +71,15 @@ export function RequestyPromptWidget(props: PromptProps): JSX.Element {
         }
         metrics.push(label)
       }
-      if (props.dailyAvg) metrics.push(`D ${formatUsd(data.dailyAverage)}`)
-      if (props.avg7d) metrics.push(`7d ${formatUsd(data.avg7d)}`)
-      if (props.avg30d) metrics.push(`30d ${formatUsd(data.avg30d)}`)
+      if (props.dailyAvg) {
+        metrics.push(`D ${formatUsd(data.dailyAverage)}`)
+      }
+      if (props.avg7d) {
+        metrics.push(`7d ${formatUsd(data.avg7d)}`)
+      }
+      if (props.avg30d) {
+        metrics.push(`30d ${formatUsd(data.avg30d)}`)
+      }
       if (metrics.length > 0) {
         parts.push({ text: `${metrics.join(' · ')} `, color: props.theme.textMuted })
       }

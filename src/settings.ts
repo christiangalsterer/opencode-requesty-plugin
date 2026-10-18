@@ -73,14 +73,22 @@ export interface PluginSettings {
 }
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return fallback
-  if (value < min) return fallback
-  if (value > max) return fallback
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return fallback
+  }
+  if (value < min) {
+    return fallback
+  }
+  if (value > max) {
+    return fallback
+  }
   return value
 }
 
 function parseOrder(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return DEFAULT_ORDER
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_ORDER
+  }
   return value
 }
 

@@ -49,7 +49,9 @@ describe('descendantSessionIDs', () => {
 
   test('a rejecting fetchChildren resolves the children found so far without throwing', async () => {
     const found = await descendantSessionIDs('root', (id) => {
-      if (id === 'root') return Promise.resolve(['a', 'b'])
+      if (id === 'root') {
+        return Promise.resolve(['a', 'b'])
+      }
       return Promise.reject(new Error('nope'))
     })
     assert.deepEqual(found, ['a', 'b'])
