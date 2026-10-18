@@ -34,7 +34,7 @@
     "docker:build:v2": "docker build -f Dockerfile.v2 -t opencode-requesty-plugin:v2 .",
     "docker:run:v1": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui-v1.json:/home/harness/workspace/.opencode/tui.json:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v1",
     "docker:run:v2": "bun run build && docker run --rm -it -v \"$HOME\"/.config/opencode/opencode.json:/home/harness/.config/opencode/opencode.json:ro -v \"$PWD\":/home/harness/plugin:ro -v \"$PWD\"/docker/tui.ts:/home/harness/workspace/.opencode/plugins/requesty/tui.ts:ro -e REQUESTY_API_KEY=\"$REQUESTY_API_KEY\" opencode-requesty-plugin:v2",
-    "husky": "biome format --fix",
+    "husky": "bun run biome:fix",
     "package:check": "bun scripts/check-package-artifact.ts",
     "prepare": "husky",
     "publish-npm": "bun run ci && bun publish --access=public",
