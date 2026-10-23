@@ -52,7 +52,7 @@
     "solid-js": "$solid-js"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.2",
     "@opencode-ai/plugin": "1.18.32",
     "@opencode-ai/sdk": "1.18.32",
     "@opencode/client": "2.0.24",
@@ -61,12 +61,12 @@
     "@opentui/core": "0.5.14",
     "@opentui/keymap": "0.5.14",
     "@opentui/solid": "0.5.14",
-    "@types/bun": "1.4.3",
+    "@types/bun": "1.4.4",
     "@types/node": "26.6.5",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "prettier": "3.9.10",
-    "renovate": "44.167.5",
+    "renovate": "44.181.0",
     "solid-js": "1.9.15",
     "typescript": "6.0.3",
     "typescript-7": "npm:typescript@7.0.2"
