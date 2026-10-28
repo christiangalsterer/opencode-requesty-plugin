@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.1](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v2.0.0...v2.0.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* enforce non-null assertion lint rule ([e61dc59](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/e61dc59b41fa3ba27a6976ce607cb3538dab6409))
+* handle fire-and-forget refresh rejections ([f33ae9d](https://github.com/christiangalsterer/opencode-requesty-plugin/commit/f33ae9d86ef0a2645cb48117f81ccaf8a1e7f5c6))
+
 ## [2.0.0](https://github.com/christiangalsterer/opencode-requesty-plugin/compare/v1.4.0...v2.0.0) (2026-10-10)
 
 
