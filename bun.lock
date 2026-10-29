@@ -5,7 +5,7 @@
     "": {
       "name": "@christiangalsterer/opencode-requesty-plugin",
       "devDependencies": {
-        "@biomejs/biome": "2.6.3",
+        "@biomejs/biome": "2.6.4",
         "@opencode-ai/plugin": "1.18.32",
         "@opencode-ai/sdk": "1.18.32",
         "@opencode/client": "2.0.24",
@@ -15,11 +15,11 @@
         "@opentui/keymap": "0.5.14",
         "@opentui/solid": "0.5.14",
         "@types/bun": "1.4.4",
-        "@types/node": "26.6.5",
+        "@types/node": "26.6.6",
         "husky": "9.1.7",
         "lint-staged": "17.6.0",
         "prettier": "3.9.10",
-        "renovate": "44.190.0",
+        "renovate": "44.198.0",
         "solid-js": "1.9.15",
         "typescript": "6.0.3",
         "typescript-7": "npm:typescript@7.0.2",
@@ -182,33 +182,33 @@
 
     "@baszalmstra/rattler": ["@baszalmstra/rattler@0.2.1", "", {}, "sha512-HZ2xu6Nk+XzAeateyzDKYM47ySkjkuKtTNpKRAy+Y+YcRH1qHM2le4iLlG32wDddaHCLUsBsyBxirClOj1TLjw=="],
 
-    "@biomejs/biome": ["@biomejs/biome@2.6.3", "", { "optionalDependencies": { "@biomejs/cli-android-arm64": "2.6.3", "@biomejs/cli-android-x64": "2.6.3", "@biomejs/cli-darwin-arm64": "2.6.3", "@biomejs/cli-darwin-x64": "2.6.3", "@biomejs/cli-linux-arm64": "2.6.3", "@biomejs/cli-linux-arm64-musl": "2.6.3", "@biomejs/cli-linux-x64": "2.6.3", "@biomejs/cli-linux-x64-musl": "2.6.3", "@biomejs/cli-win32-arm64": "2.6.3", "@biomejs/cli-win32-x64": "2.6.3" }, "bin": { "biome": "bin/biome" } }, "sha512-va/0xPku7wnfzv+D8Zpdm5uKiGJWiV8neqoEPnRjvNQQwhl4tVXS4fETs4H0CCB2rGeqJ4cu9y4iOZOnOYKAUA=="],
+    "@biomejs/biome": ["@biomejs/biome@2.6.4", "", { "optionalDependencies": { "@biomejs/cli-android-arm64": "2.6.4", "@biomejs/cli-android-x64": "2.6.4", "@biomejs/cli-darwin-arm64": "2.6.4", "@biomejs/cli-darwin-x64": "2.6.4", "@biomejs/cli-linux-arm64": "2.6.4", "@biomejs/cli-linux-arm64-musl": "2.6.4", "@biomejs/cli-linux-x64": "2.6.4", "@biomejs/cli-linux-x64-musl": "2.6.4", "@biomejs/cli-win32-arm64": "2.6.4", "@biomejs/cli-win32-x64": "2.6.4" }, "bin": { "biome": "bin/biome" } }, "sha512-8sKKwaNW4ot22awZ3lBjwWLHnUFXgXnrBPYS2gNlBAXRbDC++7kqjK2H7dR/FgCDtPvO1xfKpgEhJkGxAKYkxA=="],
 
-    "@biomejs/cli-android-arm64": ["@biomejs/cli-android-arm64@2.6.3", "", { "os": "android", "cpu": "arm64" }, "sha512-5JD7QQDEHxdeEb4sftEHG+lsuUyu8Cob/hVLqRELbgGlFl68Rldv/PPi2k4dRjERZ/EItJ3O6Xmv8lqsEtUBiw=="],
+    "@biomejs/cli-android-arm64": ["@biomejs/cli-android-arm64@2.6.4", "", { "os": "android", "cpu": "arm64" }, "sha512-jwrwigP4tBcHxzuV8izioX/BOUhJL/4e2rNSOE5nCjBkVC018LQAQUGiH+CNkFYvLtQ1dcZo5/xXERmaAGc7JQ=="],
 
-    "@biomejs/cli-android-x64": ["@biomejs/cli-android-x64@2.6.3", "", { "os": "android", "cpu": "x64" }, "sha512-70WOGKCgpT+Uqg6LFdTLqefV54/DypdZg+LnBQDO6AWvkgXO+9xhVClajQyDsIHYjnXMtI1pRO5sP+zMXlS/bw=="],
+    "@biomejs/cli-android-x64": ["@biomejs/cli-android-x64@2.6.4", "", { "os": "android", "cpu": "x64" }, "sha512-HdGInPJ4nZFwHxzvEtcp2nmSBtUyJrurmtIK43upFckuS3+ZqVM05HtsxQWnqGsuy/pxckIAjyKWlEKRlBXUyA=="],
 
-    "@biomejs/cli-darwin-arm64": ["@biomejs/cli-darwin-arm64@2.6.3", "", { "os": "darwin", "cpu": "arm64" }, "sha512-ezf+XEKeyJ2yYlBhrzyEEHLvfRYrhtNKc6maLzR/WcAcBccb4RVDeFxsymjBve2LO0bpIMRUAiS90D4bUBRT0A=="],
+    "@biomejs/cli-darwin-arm64": ["@biomejs/cli-darwin-arm64@2.6.4", "", { "os": "darwin", "cpu": "arm64" }, "sha512-0VvcUz46wbg59Q4TZ59KkIjDJrxEyu4Eoe79+F4SChxoWe+W7AEyIp6F5r72C9+p6MsB6dIovnZt1D30lGM3XA=="],
 
-    "@biomejs/cli-darwin-x64": ["@biomejs/cli-darwin-x64@2.6.3", "", { "os": "darwin", "cpu": "x64" }, "sha512-Lg2tFdg4elJo+7i707PpLMs6N1hATVt4kqDo6MD/q/VnPs8rsKReKXsz1TA5GNdfRVAQNJ5GRiyK2EwNptK+MA=="],
+    "@biomejs/cli-darwin-x64": ["@biomejs/cli-darwin-x64@2.6.4", "", { "os": "darwin", "cpu": "x64" }, "sha512-fxmvkF81srlS3DiMyfm+aG3J0eG+6/BjaxRyjy57KbLSafnq0PO+hHfVWmtH2ty0S7nm6yDXBRwySfFeaRJKRQ=="],
 
-    "@biomejs/cli-linux-arm64": ["@biomejs/cli-linux-arm64@2.6.3", "", { "os": "linux", "cpu": "arm64", "libc": "glibc" }, "sha512-8Stcvq98n1gs9VyLKuaWrnsd8kbXE2nKDAHtuLHGSYdGyNWN5JIIm5a28xdnmgdKzKHmiDgYyATetkEv7+zGow=="],
+    "@biomejs/cli-linux-arm64": ["@biomejs/cli-linux-arm64@2.6.4", "", { "os": "linux", "cpu": "arm64", "libc": "glibc" }, "sha512-6+bK1Y/evmIUiJr7auertuMbiaYVicJhqA1bZyL47lCMWugv8l0gFQCqvR/gN1vZMHYm+HwoTKgeMxdNFCoQTg=="],
 
-    "@biomejs/cli-linux-arm64-musl": ["@biomejs/cli-linux-arm64-musl@2.6.3", "", { "os": "linux", "cpu": "arm64", "libc": "musl" }, "sha512-dYU70A89OFHzakQPE9VOPbE60JNcQt4mtxvUGQl+EgTkGtqCFxLD2RUn1SbiMu8Mu5xFscS1bfYDpoasaUrqNA=="],
+    "@biomejs/cli-linux-arm64-musl": ["@biomejs/cli-linux-arm64-musl@2.6.4", "", { "os": "linux", "cpu": "arm64", "libc": "musl" }, "sha512-31ZaH/MHqPX+O+evRwRrCHQ8W5/9adY+/eMytGGWZnRx1T41QsWIF09+/WujynLBhWZUxNGS5CtsWLwgOFTAyg=="],
 
-    "@biomejs/cli-linux-x64": ["@biomejs/cli-linux-x64@2.6.3", "", { "os": "linux", "cpu": "x64", "libc": "glibc" }, "sha512-CShmx0bO6BngywT3minv8K1xsQX1ig1vsBqYTLnmDY3mBiDYHlaLRIsdHoM1pEU9dV3BN5a0uiH0IGDtYh9TWA=="],
+    "@biomejs/cli-linux-x64": ["@biomejs/cli-linux-x64@2.6.4", "", { "os": "linux", "cpu": "x64", "libc": "glibc" }, "sha512-tbFZMdL6dP/ws4edXxYG9WhvaVa1ZDzL4G5DzahnWW7Psib9H+VTdyU4XXVxpJk5j/nYZroSbvSNyYlpW3yCIw=="],
 
-    "@biomejs/cli-linux-x64-musl": ["@biomejs/cli-linux-x64-musl@2.6.3", "", { "os": "linux", "cpu": "x64", "libc": "musl" }, "sha512-j6eFjUcWSphmgVTbrobEMA0wdbfNHKrGi8hRsFkc17jeS1n7nHwFACxp6jWqe9sxQqyFAeyOgt2/1bOGVcbATA=="],
+    "@biomejs/cli-linux-x64-musl": ["@biomejs/cli-linux-x64-musl@2.6.4", "", { "os": "linux", "cpu": "x64", "libc": "musl" }, "sha512-bomSa2XdQAGGj6Cwdm4M13qE+lN9+AOlW8KtI4hdyVyRRF/Z71qPAi95T4wtdZK0QpBbkTW8hgbZZCwPi4xzIw=="],
 
-    "@biomejs/cli-win32-arm64": ["@biomejs/cli-win32-arm64@2.6.3", "", { "os": "win32", "cpu": "arm64" }, "sha512-00SthDxBPwNiT7IL/mOneif6fiEU1PXK875zhr+InpeZjovY1mF5tCuDhXo1Hh0GYyiKHKzLbItzn58SAyLhJQ=="],
+    "@biomejs/cli-win32-arm64": ["@biomejs/cli-win32-arm64@2.6.4", "", { "os": "win32", "cpu": "arm64" }, "sha512-eCsqt8Ma3eVap+oyJCDnJZH60SIU464B66n3y38EUTJdM1T/HfZol1FJC9vb+sHToX0ix8XzqPcwJnOzyAJz0g=="],
 
-    "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.6.3", "", { "os": "win32", "cpu": "x64" }, "sha512-GhtOPphBWlnCepqpNk/w5eGN5oGRCzL20EbAkL1XCIpyboeVC9R642noyT43l8LSenGS4qz9IL8sKPfwY37V/Q=="],
+    "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.6.4", "", { "os": "win32", "cpu": "x64" }, "sha512-pYsMy5AThiHFOZAsngg8qN4PurM6nInKBhVX7sbj3eNpRQqo1Hb0MgCwPL7VqVMrmcEEMj9Ks3qbkallR65e8g=="],
 
     "@breejs/later": ["@breejs/later@4.2.0", "", {}, "sha512-EVMD0SgJtOuFeg0lAVbCwa+qeTKILb87jqvLyUtQswGD9+ce2nB52Y5zbTF1Hc0MDFfbydcMcxb47jSdhikVHA=="],
 
     "@cdktf/hcl2json": ["@cdktf/hcl2json@0.21.0", "", { "dependencies": { "fs-extra": "11.3.0" } }, "sha512-cwX3i/mSJI/cRrtqwEPRfawB7pXgNioriSlkvou8LWiCrrcDe9ZtTbAbu8W1tEJQpe1pnX9VEgpzf/BbM7xF8Q=="],
 
-    "@containerbase/base": ["@containerbase/base@14.55.1", "", { "dependencies": { "semver": "^7.8.5" }, "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-hb51SW56AUmOOmKCqk6GYg67AGY11ZnP8w7iJMBdUpANr1SdF3X3OVCBYapxZceYsWrxN+jfF87NOANPlCgh1g=="],
+    "@containerbase/base": ["@containerbase/base@14.57.1", "", { "dependencies": { "semver": "^7.8.5" }, "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-TaewVUnV5FM5VouI6jQeQNix83GWStGNjYTKjrurzouveI15XeVuMtCZCvlf6/aFQHNQfinhRHnzEKw71HUDTw=="],
 
     "@gar/promise-retry": ["@gar/promise-retry@1.0.3", "", {}, "sha512-GmzA9ckNokPypTg10pgpeHNQe7ph+iIKKmhKu3Ob9ANkswreCx7R3cKmY781K8QK3AqVL3xVh9A42JvIAbkkSA=="],
 
@@ -436,15 +436,15 @@
 
     "@redis/time-series": ["@redis/time-series@6.3.0", "", { "peerDependencies": { "@redis/client": "^6.3.0" } }, "sha512-+fJOB8mN1z5WRakCJNh5lVdz1KqvHGSOistsKeitD24QsCtPwyRQXWC0iq6T/i/ubLE/YcguZqPm8F598MKk4A=="],
 
-    "@renovatebot/base-image": ["@renovatebot/base-image@13.145.2", "", { "dependencies": { "@containerbase/base": "14.55.1" }, "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-bG0sHMugpd1GkfLz9utYy8HPyqaFPhNnlK3osaiIwrTe+LTiK9eo2nNofykyoLGHSPDH8Oc4XDs82fyV6C3+gA=="],
+    "@renovatebot/base-image": ["@renovatebot/base-image@13.149.0", "", { "dependencies": { "@containerbase/base": "14.57.1" }, "peerDependencies": { "zod": "^4.0.0" }, "optionalPeers": ["zod"] }, "sha512-xrP1E/u2ch5QnkpZMg8HE1ZNOaS/MmV3j4OAQlM+C8mX/o/yx9u2d11MQVEXVj811+PdXPlbm5g05Re4RMxuxA=="],
 
     "@renovatebot/detect-tools": ["@renovatebot/detect-tools@4.0.23", "", { "dependencies": { "fs-extra": "^11.4.1", "toml-eslint-parser": "^1.0.3", "upath": "^3.0.8", "zod": "^4.6.7" } }, "sha512-+mZxeioZUc1UAs2NO02x5RcPQdvX4B4eJsrFYSIVT8yRdtsc9OV8L/KeYnKatWFd8BxbOyr5mS8I8JbolOPVqg=="],
 
-    "@renovatebot/good-enough-parser": ["@renovatebot/good-enough-parser@2.0.1", "", { "dependencies": { "@thi.ng/zipper": "1.0.3", "@types/moo": "0.5.10", "klona": "2.0.6", "moo": "0.5.3" } }, "sha512-FBLawccaWOPwqXgMSB3FTp1VTfGJWSTTXY2Q3kWPoLYOpKYBr3V37vtqFLjb5wUFkrXN2Sj+S840JXKfHwy8Rg=="],
+    "@renovatebot/good-enough-parser": ["@renovatebot/good-enough-parser@3.0.0", "", { "dependencies": { "@thi.ng/zipper": "1.0.3", "@types/moo": "0.5.10", "klona": "2.0.6", "moo": "0.5.3" } }, "sha512-dvFb9ST8WVo+YsrhK6vbWBib49Biu4/fPmZf1QRNIR1Ov5T04god/AA3rRJcyRrofzt/K96vPO9RPhEE3u+hfg=="],
 
-    "@renovatebot/osv-offline": ["@renovatebot/osv-offline@4.1.2", "", { "dependencies": { "@renovatebot/osv-offline-db": "4.1.2", "debug": "^4.4.3", "fs-extra": "^11.4.1", "got": "^15.1.0", "luxon": "^3.7.2", "ms": "^2.1.3", "yauzl": "^3.4.0" } }, "sha512-ZQla9Zj0W7zKqkeI2GZwT56teLJD9rt5//hTGiu6YjjT4G97ZUWj9pTZtQZAFJ8E425hLuUHRSeffJqDEUsMwQ=="],
+    "@renovatebot/osv-offline": ["@renovatebot/osv-offline@4.4.0", "", { "dependencies": { "@renovatebot/osv-offline-db": "4.4.0", "debug": "^4.4.3", "fs-extra": "^11.4.1", "got": "^15.1.0", "luxon": "^3.7.2", "ms": "^2.1.3", "yauzl": "^3.4.0" } }, "sha512-fEW7adrcSKve1XslE9gOWvyfNVS1zBMrEwJIlgBhkzM5hgTY2RVbqbP9GZSfgzXlhdn2ENKSaGeAgXMrVxqWxA=="],
 
-    "@renovatebot/osv-offline-db": ["@renovatebot/osv-offline-db@4.1.2", "", { "dependencies": { "debug": "^4.4.3" } }, "sha512-zCMxjLZeYzPS75OuMe+Ch8/lAY7gDGCalTtzeMkOpJydF4tZx+aKJNHr1F2ApTQXoeei1HD4D+wvR57MidqidQ=="],
+    "@renovatebot/osv-offline-db": ["@renovatebot/osv-offline-db@4.4.0", "", { "dependencies": { "debug": "^4.4.3" } }, "sha512-LsAsuAvLXP+naIkJ8ac2RWLo+KV20C18zP4Hl9ygM0BxAJNbCTMs8qvSelYHFsLItAwY4lEkITgBgJCHw86Lfw=="],
 
     "@renovatebot/pep440": ["@renovatebot/pep440@5.0.1", "", {}, "sha512-KmMz+X68YvrS6aN6TJWtDiH8aCIL2Igcvceh17STHxMUN3KxXsC24COoOXjMOl/Gb+okBwwduMm8PY/WY/0Cpg=="],
 
@@ -540,7 +540,7 @@
 
     "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
-    "@types/node": ["@types/node@26.6.5", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg=="],
+    "@types/node": ["@types/node@26.6.6", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog=="],
 
     "@types/parse-path": ["@types/parse-path@7.1.0", "", { "dependencies": { "parse-path": "*" } }, "sha512-EULJ8LApcVEPbrfND0cRQqutIOdiIgJ1Mgrhpy755r14xMohPTEpkV/k28SJvuOs9bHRFW8x+KeDAEPiGQPB9Q=="],
 
@@ -736,7 +736,7 @@
 
     "croner": ["croner@10.0.1", "", {}, "sha512-ixNtAJndqh173VQ4KodSdJEI6nuioBWI0V1ITNKhZZsO0pEMoDxz539T4FTTbSZ/xIOSuDnzxLVRqBVSvPNE2g=="],
 
-    "cronstrue": ["cronstrue@3.37.0", "", { "bin": { "cronstrue": "bin/cli.js" } }, "sha512-Nc5PL23nz3HjRcHRc6O7ikCc3lnFM2SQg5nwSDMGOi0jv0g178mUMClgfT6WuOevrEsPOTQCWOaGFV5PKFYymg=="],
+    "cronstrue": ["cronstrue@3.38.0", "", { "bin": { "cronstrue": "bin/cli.js" } }, "sha512-i10xR7fS4AH9LKwmt3gYdt/5lSsB2qFGSNfC8aeyYybxo48DCMz+nUrSVI4kUj8yo+SgTbMJqp/BWEem9avlcA=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 
@@ -1388,7 +1388,7 @@
 
     "remark-stringify": ["remark-stringify@11.0.0", "", { "dependencies": { "@types/mdast": "^4.0.0", "mdast-util-to-markdown": "^2.0.0", "unified": "^11.0.0" } }, "sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw=="],
 
-    "renovate": ["renovate@44.190.0", "", { "dependencies": { "@aws-sdk/client-codecommit": "3.1139.0", "@aws-sdk/client-ec2": "3.1139.0", "@aws-sdk/client-ecr": "3.1139.0", "@aws-sdk/client-eks": "3.1139.0", "@aws-sdk/client-rds": "3.1139.0", "@aws-sdk/client-s3": "3.1139.0", "@aws-sdk/credential-providers": "3.1139.0", "@baszalmstra/rattler": "0.2.1", "@breejs/later": "4.2.0", "@cdktf/hcl2json": "0.21.0", "@opentelemetry/api": "1.9.1", "@opentelemetry/context-async-hooks": "2.12.0", "@opentelemetry/exporter-trace-otlp-grpc": "0.223.0", "@opentelemetry/exporter-trace-otlp-http": "0.223.0", "@opentelemetry/exporter-trace-otlp-proto": "0.223.0", "@opentelemetry/instrumentation": "0.223.0", "@opentelemetry/instrumentation-bunyan": "0.68.0", "@opentelemetry/instrumentation-http": "0.223.0", "@opentelemetry/instrumentation-redis": "0.71.0", "@opentelemetry/otlp-transformer": "0.223.0", "@opentelemetry/resource-detector-aws": "2.23.0", "@opentelemetry/resource-detector-azure": "0.31.0", "@opentelemetry/resource-detector-gcp": "0.58.0", "@opentelemetry/resource-detector-github": "0.33.0", "@opentelemetry/resources": "2.12.0", "@opentelemetry/sdk-trace-base": "2.12.0", "@opentelemetry/sdk-trace-node": "2.12.0", "@opentelemetry/semantic-conventions": "1.43.0", "@pnpm/parse-overrides": "1001.0.4", "@qnighy/marshal": "0.1.3", "@redis/client": "6.3.0", "@renovatebot/base-image": "13.145.2", "@renovatebot/detect-tools": "4.0.23", "@renovatebot/good-enough-parser": "2.0.1", "@renovatebot/osv-offline": "4.1.2", "@renovatebot/pep440": "5.0.1", "@renovatebot/pgp": "2.0.4", "@renovatebot/ruby-semver": "5.0.0", "@sindresorhus/is": "8.1.0", "@yarnpkg/core": "4.9.1", "@yarnpkg/parsers": "3.1.0", "adm-zip": "0.6.1", "ae-cvss-calculator": "1.0.13", "agentkeepalive": "4.6.0", "async-mutex": "0.5.0", "aws4": "1.13.2", "azure-devops-node-api": "17.0.1", "bunyan": "1.8.15", "cacache": "20.0.4", "changelog-filename-regex": "2.0.1", "clean-git-ref": "2.0.1", "commander": "15.0.0", "common-tags": "1.8.2", "croner": "10.0.1", "cronstrue": "3.37.0", "deepmerge": "4.3.1", "dequal": "2.0.3", "detect-indent": "7.0.2", "diff": "9.0.0", "editorconfig": "3.0.2", "email-addresses": "5.0.0", "emoji-regex": "10.6.0", "emojibase": "17.0.0", "emojibase-regex": "17.0.0", "execa": "10.1.1", "find-packages": "10.0.4", "find-up": "8.0.0", "fs-extra": "11.4.1", "git-url-parse": "16.1.0", "github-url-from-git": "1.5.0", "glob": "13.0.6", "global-agent": "3.0.0", "google-auth-library": "11.3.1", "got": "16.1.0", "graph-data-structure": "4.5.0", "handlebars": "4.7.10", "ignore": "7.0.13", "ini": "6.0.0", "json-dup-key-validator": "1.0.3", "json-stringify-pretty-compact": "4.0.0", "json5": "2.2.3", "jsonata": "2.2.1", "jsonc-weaver": "0.3.1", "klona": "2.0.6", "luxon": "3.7.2", "markdown-it": "15.0.3", "markdown-table": "3.0.4", "minimatch": "10.2.6", "moo": "0.5.3", "ms": "2.1.3", "neotraverse": "1.0.1", "node-html-parser": "9.0.5", "p-all": "5.0.1", "p-map": "7.1.1", "p-queue": "9.3.5", "p-throttle": "8.1.1", "parse-link-header": "2.0.0", "prettier": "3.9.10", "protobufjs": "8.8.1", "punycode": "2.3.1", "remark": "15.0.1", "remark-gfm": "4.0.1", "remark-github": "12.0.0", "safe-stable-stringify": "2.5.0", "sax": "1.6.1", "semver": "7.8.5", "semver-stable": "3.0.0", "semver-utils": "1.1.4", "shlex": "3.0.0", "simple-git": "4.0.2", "slugify": "1.6.9", "source-map-support": "0.5.21", "strip-json-comments": "5.0.3", "tar": "7.5.22", "toml-eslint-parser": "1.0.3", "upath": "3.0.8", "url-join": "5.0.0", "validate-npm-package-name": "7.0.2", "xmldoc": "3.0.0", "yaml": "2.9.1", "yauzl": "3.4.0", "zod": "4.6.7" }, "optionalDependencies": { "openpgp": "6.3.2", "re2": "1.27.0" }, "bin": { "renovate": "dist/renovate.js", "renovate-config-validator": "dist/config-validator.js" } }, "sha512-wLQM7aCsd863Cyef3sztwhZ7Yf+g1WPCTfWDmAJLb2t8sk12yEMa8Szevv3o/A2QsJbfQhafmEAtrkVvfYjp4w=="],
+    "renovate": ["renovate@44.198.0", "", { "dependencies": { "@aws-sdk/client-codecommit": "3.1139.0", "@aws-sdk/client-ec2": "3.1139.0", "@aws-sdk/client-ecr": "3.1139.0", "@aws-sdk/client-eks": "3.1139.0", "@aws-sdk/client-rds": "3.1139.0", "@aws-sdk/client-s3": "3.1139.0", "@aws-sdk/credential-providers": "3.1139.0", "@baszalmstra/rattler": "0.2.1", "@breejs/later": "4.2.0", "@cdktf/hcl2json": "0.21.0", "@opentelemetry/api": "1.9.1", "@opentelemetry/context-async-hooks": "2.12.0", "@opentelemetry/exporter-trace-otlp-grpc": "0.223.0", "@opentelemetry/exporter-trace-otlp-http": "0.223.0", "@opentelemetry/exporter-trace-otlp-proto": "0.223.0", "@opentelemetry/instrumentation": "0.223.0", "@opentelemetry/instrumentation-bunyan": "0.68.0", "@opentelemetry/instrumentation-http": "0.223.0", "@opentelemetry/instrumentation-redis": "0.71.0", "@opentelemetry/otlp-transformer": "0.223.0", "@opentelemetry/resource-detector-aws": "2.23.0", "@opentelemetry/resource-detector-azure": "0.31.0", "@opentelemetry/resource-detector-gcp": "0.58.0", "@opentelemetry/resource-detector-github": "0.33.0", "@opentelemetry/resources": "2.12.0", "@opentelemetry/sdk-trace-base": "2.12.0", "@opentelemetry/sdk-trace-node": "2.12.0", "@opentelemetry/semantic-conventions": "1.43.0", "@pnpm/parse-overrides": "1001.0.4", "@qnighy/marshal": "0.1.3", "@redis/client": "6.3.0", "@renovatebot/base-image": "13.149.0", "@renovatebot/detect-tools": "4.0.23", "@renovatebot/good-enough-parser": "3.0.0", "@renovatebot/osv-offline": "4.4.0", "@renovatebot/pep440": "5.0.1", "@renovatebot/pgp": "2.0.4", "@renovatebot/ruby-semver": "5.0.0", "@sindresorhus/is": "8.1.0", "@yarnpkg/core": "4.9.1", "@yarnpkg/parsers": "3.1.0", "adm-zip": "0.6.1", "ae-cvss-calculator": "1.0.13", "agentkeepalive": "4.6.0", "async-mutex": "0.5.0", "aws4": "1.13.2", "azure-devops-node-api": "17.0.1", "bunyan": "1.8.15", "cacache": "20.0.4", "changelog-filename-regex": "2.0.1", "clean-git-ref": "2.0.1", "commander": "15.0.0", "common-tags": "1.8.2", "croner": "10.0.1", "cronstrue": "3.38.0", "deepmerge": "4.3.1", "dequal": "2.0.3", "detect-indent": "7.0.2", "diff": "9.0.0", "editorconfig": "3.0.2", "email-addresses": "5.0.0", "emoji-regex": "10.6.0", "emojibase": "17.0.0", "emojibase-regex": "17.0.0", "execa": "10.1.1", "find-packages": "10.0.4", "find-up": "8.0.0", "fs-extra": "11.4.1", "git-url-parse": "16.1.0", "github-url-from-git": "1.5.0", "glob": "13.0.6", "global-agent": "3.0.0", "google-auth-library": "11.3.1", "got": "16.1.0", "graph-data-structure": "4.5.0", "handlebars": "4.7.10", "ignore": "7.0.13", "ini": "6.0.0", "json-dup-key-validator": "1.0.3", "json-stringify-pretty-compact": "4.0.0", "json5": "2.2.3", "jsonata": "2.2.1", "jsonc-weaver": "0.3.1", "klona": "2.0.6", "luxon": "3.7.2", "markdown-it": "15.0.3", "markdown-table": "3.0.4", "minimatch": "10.2.6", "moo": "0.5.3", "ms": "2.1.3", "neotraverse": "1.0.1", "node-html-parser": "9.0.5", "p-all": "5.0.1", "p-map": "7.1.1", "p-queue": "9.3.5", "p-throttle": "8.1.1", "parse-link-header": "2.0.0", "prettier": "3.9.10", "protobufjs": "8.8.1", "punycode": "2.3.1", "remark": "15.0.1", "remark-gfm": "4.0.1", "remark-github": "12.0.0", "safe-stable-stringify": "2.5.0", "sax": "1.6.1", "semver": "7.8.5", "semver-stable": "3.0.0", "semver-utils": "1.1.4", "shlex": "3.0.0", "simple-git": "4.0.2", "slugify": "1.6.9", "source-map-support": "0.5.21", "strip-json-comments": "5.0.3", "tar": "7.5.22", "toml-eslint-parser": "1.0.3", "upath": "3.0.8", "url-join": "5.0.0", "validate-npm-package-name": "7.0.2", "xmldoc": "3.0.0", "yaml": "2.9.1", "yauzl": "3.4.0", "zod": "4.6.7" }, "optionalDependencies": { "openpgp": "6.3.2", "re2": "1.27.0" }, "bin": { "renovate": "dist/renovate.js", "renovate-config-validator": "dist/config-validator.js" } }, "sha512-TPKFkA2a8P2eChGYhnV5IeZemQS/Qpl/aEJgcHBuVf1YHLGBWnQSGQu7eLmUqUbii1vmEtVGS62TFgoQVJ9h0Q=="],
 
     "require-directory": ["require-directory@2.1.1", "", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
 
