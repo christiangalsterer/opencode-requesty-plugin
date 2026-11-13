@@ -52,7 +52,7 @@
     "solid-js": "$solid-js"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.6",
+    "@biomejs/biome": "2.6.7",
     "@opencode-ai/plugin": "1.18.32",
     "@opencode-ai/sdk": "1.18.32",
     "@opencode/client": "2.0.24",
@@ -65,8 +65,8 @@
     "@types/node": "26.6.6",
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
-    "prettier": "3.9.10",
-    "renovate": "44.227.4",
+    "prettier": "3.10.1",
+    "renovate": "44.239.1",
     "solid-js": "1.9.15",
     "typescript": "6.0.3",
     "typescript-7": "npm:typescript@7.0.2"
