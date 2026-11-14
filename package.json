@@ -2,7 +2,15 @@
   "name": "@christiangalsterer/opencode-requesty-plugin",
   "version": "2.0.1",
   "description": "opencode TUI plugin: shows Requesty.ai monthly budget, current spend, and per-model cost distribution in the session sidebar, in the session prompt and with a detail dialog via the /requesty command",
-  "keywords": ["opencode", "opencode-plugin", "opencode-tui", "opencode-tui-plugin", "requesty", "tui", "cost-tracking"],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "opencode-tui",
+    "opencode-tui-plugin",
+    "requesty",
+    "tui",
+    "cost-tracking"
+  ],
   "homepage": "https://github.com/christiangalsterer/opencode-requesty-plugin#readme",
   "repository": {
     "type": "git",
@@ -20,7 +28,12 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist", "!dist/**/*.map", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "biome": "biome check",
     "biome:fix": "biome check --fix",
